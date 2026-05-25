@@ -1,0 +1,23 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "@caixa-familia/shared-types": ["./libs/shared-types/src/index.ts"],
+      "@caixa-familia/shared-utils": ["./libs/shared-utils/src/index.ts"],
+      "@caixa-familia/shared-mocks": ["./libs/shared-mocks/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
