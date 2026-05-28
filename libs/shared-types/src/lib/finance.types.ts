@@ -51,6 +51,9 @@ export interface Goal {
   balance: number;
   monthly: number;
   color: string;
+  subtitle: string;
+  type: 'sonho' | 'emergencia';
+  history: number[];
 }
 
 export interface Installments {
