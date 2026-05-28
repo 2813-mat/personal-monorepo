@@ -91,7 +91,7 @@ Inputs: goal: Goal, history: number[]
 - `pct` = `goal.balance / goal.target * 100`
 - `remaining` = `goal.target - goal.balance`
 - `months` = `Math.ceil(remaining / goal.monthly)`
-- `softColor` = amber → `#FBF1E1` / green → `#E0F0E7` (derivado de `goal.color`)
+- `softColor` = `goal.type === 'sonho'` → `#FBF1E1` / `'emergencia'` → `#E0F0E7`
 - `typeLabel` = `'sonho'` → `'Sonho'` / `'emergencia'` → `'Emergência'`
 
 **Template (seções):**
