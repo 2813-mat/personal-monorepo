@@ -17,6 +17,16 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./features/transactions/transactions.component').then(m => m.TransactionsComponent),
       },
+      {
+        path: 'cards',
+        loadComponent: () =>
+          import('./features/cards/cards.component').then(m => m.CardsComponent),
+      },
+      {
+        path: 'budgets',
+        loadComponent: () =>
+          import('./features/budgets/budgets.component').then(m => m.BudgetsComponent),
+      },
     ],
   },
 ];
