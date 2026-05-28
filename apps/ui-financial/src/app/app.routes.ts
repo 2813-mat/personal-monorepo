@@ -23,6 +23,11 @@ export const appRoutes: Route[] = [
           import('./features/cards/cards.component').then(m => m.CardsComponent),
       },
       {
+        path: 'goals',
+        loadComponent: () =>
+          import('./features/goals/goals.component').then(m => m.GoalsComponent),
+      },
+      {
         path: 'budgets',
         loadComponent: () =>
           import('./features/budgets/budgets.component').then(m => m.BudgetsComponent),
