@@ -27,6 +27,11 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./features/budgets/budgets.component').then(m => m.BudgetsComponent),
       },
+      {
+        path: 'fixed',
+        loadComponent: () =>
+          import('./features/fixed/fixed.component').then(m => m.FixedComponent),
+      },
     ],
   },
 ];
