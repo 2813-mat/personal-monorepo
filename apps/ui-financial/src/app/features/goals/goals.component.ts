@@ -65,17 +65,17 @@ function fmtShort(v: number): string {
           </div>
           <div class="stat-col">
             <span class="stat-label">Aportes feitos</span>
-            <span class="stat-value num">{{ history.length }}×</span>
+            <span class="stat-value num">{{ goal.history.length }}×</span>
           </div>
           <div class="stat-col stat-col-end">
             <span class="stat-label">Histórico</span>
             <cf-sparkbars
-              [data]="history"
+              [data]="goal.history"
               [width]="140"
               [height]="28"
               [baseColor]="goal.color"
               [highlightColor]="goal.color"
-              [highlightIndex]="history.length - 1"
+              [highlightIndex]="goal.history.length - 1"
             />
           </div>
         </div>
@@ -84,6 +84,7 @@ function fmtShort(v: number): string {
     </div>
   `,
   styles: [`
+    :host { display: block; }
     .goal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
     .goal-stripe { height: 4px; }
     .goal-body { padding: 14px 16px; }
@@ -113,7 +114,6 @@ function fmtShort(v: number): string {
 })
 export class GoalCardComponent {
   @Input() goal!: Goal;
-  @Input() history!: number[];
 
   protected readonly fmtShort = fmtShort;
 
@@ -159,7 +159,7 @@ type ProjectionRow = {
       <div class="kpi-box">
         <div class="kpi-label">Metas ativas</div>
         <div class="kpi-value">{{ goals().length }}</div>
-        <div class="kpi-sub">1 emergência · 1 sonho</div>
+        <div class="kpi-sub">{{ goalsSubtitle() }}</div>
       </div>
 
       <!-- Aporte mensal -->
@@ -182,7 +182,7 @@ type ProjectionRow = {
     <!-- Goal cards -->
     <div class="cards-grid">
       @for (goal of goals(); track goal.id) {
-        <cf-goal-card [goal]="goal" [history]="goal.history" />
+        <cf-goal-card [goal]="goal" />
       }
     </div>
 
@@ -236,6 +236,7 @@ type ProjectionRow = {
     </div>
   `,
   styles: [`
+    :host { display: block; }
     /* KPI strip */
     .kpi-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 
@@ -268,6 +269,16 @@ export class GoalsComponent {
 
   private readonly data = inject(AppDataService);
   readonly goals = this.data.goals;
+
+  readonly goalsSubtitle = computed(() => {
+    const goals = this.goals();
+    const e = goals.filter(g => g.type === 'emergencia').length;
+    const s = goals.filter(g => g.type === 'sonho').length;
+    const parts: string[] = [];
+    if (e) parts.push(`${e} emergência`);
+    if (s) parts.push(`${s} sonho`);
+    return parts.join(' · ');
+  });
 
   readonly totalSaved   = computed(() => this.goals().reduce((s, g) => s + g.balance, 0));
   readonly totalTarget  = computed(() => this.goals().reduce((s, g) => s + g.target, 0));
