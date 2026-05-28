@@ -50,8 +50,28 @@ export const MOCK_FIXED: FixedExpense[] = [
 ];
 
 export const MOCK_GOALS: Goal[] = [
-  { id: 'sos',       label: 'Reserva S.O.S', target: 12000, balance:  7500, monthly: 1000, color: '#0B6E2F' },
-  { id: 'casamento', label: 'Casamento',     target: 30000, balance: 18420, monthly:  800, color: '#A16207' },
+  {
+    id: 'casamento',
+    label: 'Casamento',
+    target: 30000,
+    balance: 18420,
+    monthly: 800,
+    color: '#A16207',
+    subtitle: 'evento · agosto/2027',
+    type: 'sonho',
+    history: [500, 500, 500, 600, 600, 700, 700, 800, 800, 800, 800, 800],
+  },
+  {
+    id: 'sos',
+    label: 'Reserva S.O.S',
+    target: 12000,
+    balance: 7500,
+    monthly: 1000,
+    color: '#0B6E2F',
+    subtitle: 'emergência · 6 meses de despesas',
+    type: 'emergencia',
+    history: [200, 200, 300, 300, 300, 300, 300, 300, 500, 800, 1000, 1000],
+  },
 ];
 
 export const MOCK_TRANSACTIONS: Transaction[] = [
