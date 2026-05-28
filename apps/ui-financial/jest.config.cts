@@ -2,7 +2,7 @@ module.exports = {
   displayName: 'web',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/apps/web',
+  coverageDirectory: '../../coverage/apps/ui-financial',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

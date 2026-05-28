@@ -1,5 +1,6 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+design_handoff_controle_financeiro
 # compiled output
 dist
 tmp

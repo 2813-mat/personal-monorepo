@@ -1,4 +1,4 @@
-import type { Card, Installments } from '@caixa/shared-types';
+import type { Card, Installments } from '@caixa-familia/shared-types';
 
 export function daysUntilClosing(card: Card, ref: Date = new Date()): number {
   const closing = new Date(ref.getFullYear(), ref.getMonth(), card.closing);

@@ -1,0 +1,91 @@
+/* Design tokens — private-banking serious aesthetic */
+:root {
+  /* Surfaces */
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-sunk: #FAFAFB;
+  --surface-alt: #F8F9FB;
+
+  /* Text */
+  --ink-1: #0A0E1A;
+  --ink-2: #3F4654;
+  --ink-3: #6B7280;
+  --ink-4: #9CA3AF;
+
+  /* Border / divider */
+  --line: #E5E7EB;
+  --line-strong: #CFD3DA;
+  --line-soft: #EEF0F3;
+
+  /* Brand & semantic */
+  --brand: #0F2D4F;
+  --brand-soft: #E5EAF1;
+  --accent: #B45309;
+  --accent-soft: #FBF1E1;
+
+  --neg: #B91C1C;
+  --neg-soft: #FBE8E8;
+  --pos: #0B6E2F;
+  --pos-soft: #E0F0E7;
+  --warn: #A16207;
+  --warn-soft: #FEF3C7;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 0 rgba(15, 45, 79, 0.04), 0 1px 2px rgba(15, 45, 79, 0.04);
+
+  /* Type */
+  --font-sans: 'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+/* Global reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01' on, 'cv11' on;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Tabular numbers — apply on all monetary/numeric values */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' on, 'cv11' on;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Skeleton shimmer animation for loading states */
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--line-soft) 25%, var(--surface-alt) 50%, var(--line-soft) 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
