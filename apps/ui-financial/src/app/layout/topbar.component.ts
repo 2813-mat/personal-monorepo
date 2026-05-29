@@ -1,13 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import type { HolderFilter } from '@caixa-familia/shared-types';
 import { AppDataService } from './app-data.service';
 import { IconComponent } from '../ui/icon/icon.component';
 import { AvatarComponent } from '../ui/avatar/avatar.component';
+import { ExpenseDrawerComponent } from '../features/expense-drawer/expense-drawer.component';
 
 @Component({
   selector: 'cf-topbar',
   standalone: true,
-  imports: [IconComponent, AvatarComponent],
+  imports: [IconComponent, AvatarComponent, ExpenseDrawerComponent],
   template: `
     <header class="topbar">
       <div class="month-nav">
@@ -37,10 +38,14 @@ import { AvatarComponent } from '../ui/avatar/avatar.component';
       <button class="topbar-btn ghost">
         <cf-icon name="upload" [size]="11" /> Importar
       </button>
-      <button class="topbar-btn" disabled>
+      <button class="topbar-btn" (click)="drawerOpen.set(true)">
         <cf-icon name="plus" [size]="11" /> Lançar gasto
       </button>
     </header>
+
+    @if (drawerOpen()) {
+      <cf-expense-drawer (closed)="drawerOpen.set(false)" />
+    }
   `,
   styles: [`
     .topbar {
@@ -99,6 +104,8 @@ import { AvatarComponent } from '../ui/avatar/avatar.component';
 })
 export class TopBarComponent {
   protected data = inject(AppDataService);
+
+  protected drawerOpen = signal(false);
 
   filter() {
     return this.data.holderFilter();
