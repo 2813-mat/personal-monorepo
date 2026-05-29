@@ -47,6 +47,11 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./features/settings/settings.component').then(m => m.SettingsComponent),
       },
+      {
+        path: 'cards/:cardId/invoice',
+        loadComponent: () =>
+          import('./features/invoice/invoice.component').then(m => m.InvoiceComponent),
+      },
     ],
   },
 ];
