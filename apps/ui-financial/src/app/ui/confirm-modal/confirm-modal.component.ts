@@ -7,8 +7,16 @@ import { Component, input, output } from '@angular/core';
     '(document:keydown.escape)': 'cancelled.emit()',
   },
   template: `
-    <div class="backdrop" (click)="cancelled.emit()">
-      <div class="card" (click)="$event.stopPropagation()">
+    <div
+      class="backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fechar"
+      (click)="onBackdrop($event)"
+      (keydown.enter)="cancelled.emit()"
+      (keydown.space)="cancelled.emit()"
+    >
+      <div class="card" role="dialog" aria-modal="true">
         <div class="card__title">{{ title() }}</div>
         @if (description()) {
           <div class="card__desc">{{ description() }}</div>
@@ -112,4 +120,10 @@ export class ConfirmModalComponent {
 
   confirmed = output<void>();
   cancelled = output<void>();
+
+  onBackdrop(event: MouseEvent) {
+    if (event.target === event.currentTarget) {
+      this.cancelled.emit();
+    }
+  }
 }

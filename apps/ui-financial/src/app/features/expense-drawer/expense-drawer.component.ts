@@ -36,7 +36,15 @@ function todayIso(): string {
     '(document:keydown.meta.enter)': 'save()',
   },
   template: `
-    <div class="backdrop" (click)="onClose()"></div>
+    <div
+      class="backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fechar"
+      (click)="onClose()"
+      (keydown.enter)="onClose()"
+      (keydown.space)="onClose()"
+    ></div>
 
     <div class="panel" [formGroup]="form">
       <!-- Header -->

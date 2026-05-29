@@ -9,8 +9,16 @@ import { IconComponent } from '../icon/icon.component';
     '(document:keydown.escape)': 'dismissed.emit()',
   },
   template: `
-    <div class="backdrop" (click)="dismissed.emit()">
-      <div class="card" (click)="$event.stopPropagation()">
+    <div
+      class="backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fechar"
+      (click)="onBackdrop($event)"
+      (keydown.enter)="dismissed.emit()"
+      (keydown.space)="dismissed.emit()"
+    >
+      <div class="card" role="dialog" aria-modal="true">
         <div class="card__check">
           <cf-icon name="check" [size]="28" color="var(--pos)" />
         </div>
@@ -134,6 +142,12 @@ export class SuccessModalComponent {
 
   dismissed = output<void>();
   receipt = output<void>();
+
+  onBackdrop(event: MouseEvent) {
+    if (event.target === event.currentTarget) {
+      this.dismissed.emit();
+    }
+  }
 
   formattedAmount = computed(() => {
     const value = this.amount();

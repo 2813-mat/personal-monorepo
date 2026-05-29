@@ -257,7 +257,9 @@ export class DashboardBComponent {
     const income = this.data.incomes().reduce((s, i) => s + i.value, 0);
     const spent = this.totalSpent();
     const saldo = income - spent;
-    const sos = this.data.goals().find(g => g.id === 'sos')!;
+    const sos = this.data.goals().find(g => g.id === 'sos');
+    const sosBalance = sos?.balance ?? 0;
+    const sosTarget = sos?.target ?? 1;
 
     const ih = this.data.incomeHistory();
     const prevIncome = ih[ih.length - 2]?.total ?? income;
@@ -283,10 +285,10 @@ export class DashboardBComponent {
         sub: `${((saldo / income) * 100).toFixed(0)}% da receita`, bar: undefined,
       },
       {
-        label: 'Reserva S.O.S', value: sos.balance, color: 'var(--ink-1)',
+        label: 'Reserva S.O.S', value: sosBalance, color: 'var(--ink-1)',
         delta: undefined, deltaUp: undefined,
-        sub: `${((sos.balance / sos.target) * 100).toFixed(0)}% da meta · R$ ${this.formatShort(sos.target)}`,
-        bar: sos.balance / sos.target,
+        sub: `${((sosBalance / sosTarget) * 100).toFixed(0)}% da meta · R$ ${this.formatShort(sosTarget)}`,
+        bar: sosBalance / sosTarget,
       },
     ];
   });

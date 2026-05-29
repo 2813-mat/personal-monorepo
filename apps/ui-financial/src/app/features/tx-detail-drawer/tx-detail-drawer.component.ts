@@ -21,7 +21,15 @@ import type { Transaction } from '@caixa-familia/shared-types';
   ],
   host: { '(document:keydown.escape)': 'onClose()' },
   template: `
-    <div class="backdrop" (click)="onClose()"></div>
+    <div
+      class="backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fechar"
+      (click)="onClose()"
+      (keydown.enter)="onClose()"
+      (keydown.space)="onClose()"
+    ></div>
 
     <aside class="panel">
       <!-- Header -->
