@@ -8,6 +8,7 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { TxDetailDrawerComponent } from '../tx-detail-drawer/tx-detail-drawer.component';
 import type { Transaction } from '@caixa-familia/shared-types';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -34,6 +35,7 @@ interface TxGroup {
     CardChipComponent,
     ProgressBarComponent,
     IconComponent,
+    TxDetailDrawerComponent,
   ],
   template: `
     <!-- Sub-header KPI + filter strip -->
@@ -161,10 +163,14 @@ interface TxGroup {
       </div>
     </div>
 
+    @if (selectedTx(); as tx) {
+      <cf-tx-detail-drawer [tx]="tx" (closed)="selectedTx.set(null)" />
+    }
+
     <!-- Row template -->
     <ng-template #txRow let-tx>
-      <tr class="tx-row">
-        <td><input type="checkbox" class="tx-check" /></td>
+      <tr class="tx-row" style="cursor:pointer" (click)="selectedTx.set(tx)">
+        <td (click)="$event.stopPropagation()"><input type="checkbox" class="tx-check" /></td>
         <td class="tx-date num">{{ formatDate(tx.date) }}</td>
         <td>
           <div class="desc-cell">
@@ -393,6 +399,7 @@ export class TransactionsComponent {
   protected data = inject(AppDataService);
 
   searchQuery = signal('');
+  selectedTx = signal<Transaction | null>(null);
   selectedCat = signal<string | null>(null);
   sortCol = signal<SortCol>('date');
   sortDir = signal<SortDir>('desc');
