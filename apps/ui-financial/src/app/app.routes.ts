@@ -37,6 +37,16 @@ export const appRoutes: Route[] = [
         loadComponent: () =>
           import('./features/fixed/fixed.component').then(m => m.FixedComponent),
       },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./features/reports/reports.component').then(m => m.ReportsComponent),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/settings/settings.component').then(m => m.SettingsComponent),
+      },
     ],
   },
 ];
