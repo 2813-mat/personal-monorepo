@@ -229,7 +229,9 @@ inject(AppDataService).goals(); // MOCK_GOALS: sos + casamento
 
 ---
 
-## T6 — Tela: Relatórios (`/reports`)
+## ~~T6 — Tela: Relatórios (`/reports`)~~ ✅ concluída
+
+> Implementado em `features/reports/reports.component.ts`. KPI strip YTD (5), gráfico SVG dual-bar como subcomponente privado `cf-report-chart`, tabela top categorias e breakdown por pessoa. Proxies: "média histórica" = média de `MOCK_HISTORY` × peso do orçamento da categoria; "maior categoria" e breakdown usam as transações do mês atual (única fonte por-transação disponível).
 
 **Referência:** `design_handoff_controle_financeiro/src/screens/reports.jsx`
 **Arquivo a criar:** `apps/ui-financial/src/app/features/reports/reports.component.ts`
@@ -279,7 +281,9 @@ inject(AppDataService).categories(); // para tabela de categorias
 
 ---
 
-## T7 — Tela: Configurações (`/settings`)
+## ~~T7 — Tela: Configurações (`/settings`)~~ ✅ concluída
+
+> Implementado em `features/settings/settings.component.ts`. Layout 2 colunas (nav 200px + conteúdo) com `activeSection` signal. Categorias, Pessoas e Cartões implementados (somente leitura, contagens reais via `transactions()`); Recorrências, Importar, Notificações e Backup como placeholder "Em breve".
 
 **Referência:** `design_handoff_controle_financeiro/src/screens/settings.jsx`
 **Arquivo a criar:** `apps/ui-financial/src/app/features/settings/settings.component.ts`
@@ -318,7 +322,9 @@ Categorias · Pessoas · Cartões · Recorrências · Importar · Notificações
 
 ---
 
-## T8 — Tela: Fatura (`/cards/:cardId/invoice`) ⚠️ depende de T2
+## ~~T8 — Tela: Fatura (`/cards/:cardId/invoice`)~~ ✅ concluída
+
+> Implementado em `features/invoice/invoice.component.ts` + rota registrada. Lê `cardId` via `ActivatedRoute`; header com cor do banco, tabela de compras filtrada por `method === cardId`, sidebar com donut por categoria, sparkbars de histórico sintético (9 meses) e projeção de parcelas futuras. A lista de cartões (T2) já navegava para cá via `routerLink`.
 
 **Referência:** `design_handoff_controle_financeiro/src/screens/invoice.jsx`
 **Arquivo a criar:** `apps/ui-financial/src/app/features/invoice/invoice.component.ts`
@@ -362,7 +368,9 @@ inject(AppDataService)
 
 ---
 
-## T9 — Drawer: Lançar gasto
+## ~~T9 — Drawer: Lançar gasto~~ ✅ concluída
+
+> Implementado em `features/expense-drawer/expense-drawer.component.ts`. Botão "+ Lançar gasto" da TopBar habilitado; overlay com Reactive Forms (tipo, valor, descrição, categoria, data, método, pessoa, parcelamento, recorrente); salva via `data.transactions.update`; atalhos ⌘/Ctrl+Enter (salvar) e Escape (fechar).
 
 **Referência:** `design_handoff_controle_financeiro/src/screens/add-expense.jsx`
 **Arquivo a criar:** `apps/ui-financial/src/app/features/expense-drawer/expense-drawer.component.ts`
@@ -419,7 +427,9 @@ Atalhos: `⌘+Enter` (ou `Ctrl+Enter`) salva, `Escape` fecha.
 
 ---
 
-## T10 — Drawer: Detalhe de transação
+## ~~T10 — Drawer: Detalhe de transação~~ ✅ concluída
+
+> Implementado em `features/tx-detail-drawer/tx-detail-drawer.component.ts`. Clique na linha da tabela de transações abre o drawer (signal `selectedTx`); mostra valor, categoria, método, pessoa, parcelas e nota; ações Duplicar e Excluir funcionais (mutam `transactions`), Editar/Conferir desabilitados.
 
 **Referência:** `design_handoff_controle_financeiro/src/screens/tx-detail.jsx`
 **Arquivo a criar:** `apps/ui-financial/src/app/features/tx-detail-drawer/tx-detail-drawer.component.ts`
@@ -443,9 +453,11 @@ Emitir evento ao clicar em qualquer linha da tabela de transações. O `Transact
 
 ---
 
-## T11 — UI States (componentes reutilizáveis)
+## ~~T11 — UI States (componentes reutilizáveis)~~ ✅ concluída
 
-**Referência:** `design_handoff_controle_financeiro/src/screens/states/empty-loading-error.jsx` e `overlays.jsx`
+> Implementados em `ui/`: `cf-empty-state`, `cf-skeleton`, `cf-confirm-modal`, `cf-success-modal`, `ToastService` + `cf-toast-container` (montado no `app-shell`). Todos exportados no barrel `ui/index.ts`. Sem referência de design (os arquivos `states/`/`overlays.jsx` não existem no handoff) — construídos a partir da spec; prontos para uso futuro nas telas.
+
+**Referência (inexistente no handoff):** `design_handoff_controle_financeiro/src/screens/states/empty-loading-error.jsx` e `overlays.jsx`
 **Diretório:** `apps/ui-financial/src/app/ui/` (adicionar ao barrel `index.ts`)
 **Paralelo:** sim — componentes puros sem dependência de features
 
