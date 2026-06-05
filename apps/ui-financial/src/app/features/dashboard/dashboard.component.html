@@ -1,0 +1,18 @@
+<div class="tab-bar">
+  @for (tab of tabs; track tab.id) {
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === tab.id"
+      (click)="setTab(tab.id)"
+      [title]="tab.desc"
+    >
+      {{ tab.label }}
+    </button>
+  }
+</div>
+
+@switch (activeTab()) {
+  @case ('a') { <cf-dashboard-a /> }
+  @case ('b') { <cf-dashboard-b /> }
+  @default    { <cf-dashboard-c /> }
+}

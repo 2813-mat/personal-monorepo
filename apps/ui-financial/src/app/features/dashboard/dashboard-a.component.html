@@ -1,0 +1,162 @@
+<!-- Header strip: KPIs + sparkline -->
+<div class="header-strip">
+  @for (k of kpis(); track k.label) {
+  <div class="kpi-inline">
+    <div class="ki-label">{{ k.label }}</div>
+    <cf-money [value]="k.value" size="lg" [negColor]="false" [color]="k.color" />
+    <div class="ki-sub">{{ k.sub }}</div>
+  </div>
+  }
+  <div class="header-spacer"></div>
+  <div class="sparkline-block">
+    <div class="kpi-label mb4">Gastos · últ. 12 meses</div>
+    <cf-sparkbars [data]="historyTotals()" [width]="180" [height]="32" />
+    <div class="spark-range">
+      <span>{{ historyFirst() }}</span>
+      <span>{{ historyLast() }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- 2-col: transactions left, side panels right -->
+<div class="main-grid">
+  <!-- LEFT: transaction table -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-head-left">
+        <span class="panel-title">Lançamentos · Maio 2026</span>
+        <span class="count-pill">{{ data.transactions().length }}</span>
+      </div>
+      <div class="panel-head-right">
+        <span class="panel-meta">Ordenar: Data</span>
+        <cf-icon name="filter" [size]="11" color="var(--ink-3)" />
+      </div>
+    </div>
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:64px">Data</th>
+          <th>Descrição</th>
+          <th style="width:110px">Categoria</th>
+          <th style="width:96px">Método</th>
+          <th style="width:48px">Quem</th>
+          <th class="r" style="width:100px">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tx of topTx(); track tx.id) {
+          <tr class="tx-row">
+            <td class="tx-date num">{{ formatDate(tx.date) }}</td>
+            <td>
+              <div class="desc-cell">
+                <span>{{ tx.label }}</span>
+                @if (tx.installments) {
+                  <span class="mini-pill">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
+                }
+                @if (tx.recurring) {
+                  <span class="mini-pill"><cf-icon name="repeat" [size]="9" /> fixo</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="cat-cell">
+                <cf-cat-dot [catId]="tx.cat" [size]="6" />
+                <span class="cat-label">{{ catLabel(tx.cat) }}</span>
+              </div>
+            </td>
+            <td>
+              @if (cardOf(tx.method)) {
+                <div class="method-cell">
+                  <cf-card-chip [cardId]="tx.method" size="sm" />
+                  <span class="last4">···{{ cardOf(tx.method)!.last4 }}</span>
+                </div>
+              } @else {
+                <div class="method-cell">
+                  <cf-icon name="pix" [size]="11" color="var(--ink-3)" />
+                  <span class="last4">Pix</span>
+                </div>
+              }
+            </td>
+            <td>
+              <cf-avatar [holder]="tx.holder === 'shared' ? 'Mateus' : tx.holder" [size]="16" />
+            </td>
+            <td class="r num tx-val">
+              <cf-money [value]="tx.value" [negColor]="false" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="panel-foot">
+      <span>Mostrando {{ topTx().length }} de {{ data.transactions().length }}</span>
+      <a class="foot-link" routerLink="/transactions">Ver todos →</a>
+    </div>
+  </div>
+
+  <!-- RIGHT column -->
+  <div class="col-side">
+    <!-- Faturas abertas -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Faturas abertas</span>
+        <span class="panel-meta">{{ data.cards().length }} cartões</span>
+      </div>
+      <table class="tx-table">
+        <tbody>
+          @for (card of data.cards(); track card.id) {
+            <tr class="tx-row">
+              <td style="width:8px;padding:8px 4px 8px 12px">
+                <span class="card-stripe" [style.background]="card.color"></span>
+              </td>
+              <td>
+                <div class="card-bank">{{ card.bank }}</div>
+                <div class="card-sub">{{ card.holder }} · fecha dia {{ card.closing }}</div>
+              </td>
+              <td style="width:90px">
+                <cf-progress-bar [value]="card.current" [max]="card.limit" [color]="card.color" [height]="3" />
+                <div class="card-pct num">{{ utilPct(card.current, card.limit) }}% do limite</div>
+              </td>
+              <td class="r num" style="width:80px">
+                <cf-money [value]="card.current" [negColor]="false" size="sm" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="panel-foot">
+        <span>Total acumulado</span>
+        <cf-money [value]="totalFaturas()" [negColor]="false" size="sm" />
+      </div>
+    </div>
+
+    <!-- Categorias -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Gasto por categoria</span>
+        <span class="panel-meta">vs. orçamento</span>
+      </div>
+      <div class="cat-list">
+        @for (item of catSpend(); track item.cat.id) {
+          <div class="cat-row">
+            <div class="cat-row-top">
+              <div class="cat-cell">
+                <cf-cat-dot [catId]="item.cat.id" [size]="7" />
+                <span class="cat-name">{{ item.cat.label }}</span>
+              </div>
+              <span class="cat-amount num" [style.color]="item.spent > item.cat.budget ? 'var(--neg)' : 'var(--ink-2)'">
+                <cf-money [value]="item.spent" [negColor]="false" size="sm" />
+                <span class="cat-budget"> / {{ formatShort(item.cat.budget) }}</span>
+              </span>
+            </div>
+            <cf-progress-bar
+              [value]="item.spent"
+              [max]="item.cat.budget"
+              [color]="item.spent > item.cat.budget ? 'var(--neg)' : item.cat.color"
+              [height]="3"
+            />
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

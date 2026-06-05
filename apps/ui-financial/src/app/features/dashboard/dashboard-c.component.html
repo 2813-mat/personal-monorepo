@@ -1,0 +1,128 @@
+<div class="kpi-strip">
+  <div class="kpi-item">
+    <div class="kpi-label">Receita</div>
+    <cf-money [value]="receita()" size="lg" [negColor]="false" />
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">Gastos</div>
+    <cf-money [value]="gastos()" size="lg" [negColor]="false" color="var(--neg)" />
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">Saldo</div>
+    <cf-money [value]="saldo()" size="lg" [negColor]="false" [color]="saldo() >= 0 ? 'var(--pos)' : 'var(--neg)'" />
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">Faturas</div>
+    <cf-money [value]="totalFaturas()" size="lg" [negColor]="false" />
+  </div>
+  <div class="kpi-end">
+    <div class="kpi-label">{{ todayStr }}</div>
+    <div class="kpi-sub">{{ daysLeftInMonth }} dias até o mês fechar</div>
+  </div>
+</div>
+
+<div class="dash-grid">
+  <div class="col-main">
+    <div class="section-header">
+      <h1 class="section-title">Faturas em aberto</h1>
+      <span class="section-meta">Ordenado por proximidade do fechamento</span>
+    </div>
+    <div class="cards-grid">
+      @for (card of sortedCards(); track card.id) {
+        <div class="card-item">
+          <div class="card-color-bar" [style.background]="card.color"></div>
+          <div class="card-body">
+            <div class="card-row">
+              <div>
+                <div class="card-name-row">
+                  <span class="card-name">{{ card.bank }}</span>
+                  <span class="card-last4">···{{ card.last4 }}</span>
+                </div>
+                <div class="card-holder-row">
+                  <cf-avatar [holder]="card.holder" [size]="14" />
+                  <span class="card-holder-label">{{ card.holder }}</span>
+                </div>
+              </div>
+              <div class="card-close-info">
+                <span class="close-pill" [class.warn]="daysLeft(card) <= 7 && daysLeft(card) > 3" [class.urgent]="daysLeft(card) <= 3">
+                  <cf-icon name="calendar" [size]="9" />
+                  {{ daysLeft(card) === 0 ? 'fecha hoje' : daysLeft(card) + 'd p/ fechar' }}
+                </span>
+                <span class="card-close-day num">dia {{ card.closing }}</span>
+              </div>
+            </div>
+            <div class="card-value-row">
+              <cf-money [value]="card.current" size="xl" [negColor]="false" />
+              <span class="card-limit num">/ R$ {{ formatShort(card.limit) }}</span>
+            </div>
+            <cf-progress-bar [value]="card.current" [max]="card.limit" [color]="card.color" [height]="4" />
+            <div class="card-meta-row">
+              <span class="card-util num">{{ utilPct(card) }}% do limite</span>
+              <span class="card-due num">vence dia {{ card.due }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="col-side">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Metas &amp; reservas</span>
+        <span class="panel-meta">aporte mensal: R$ 1.800</span>
+      </div>
+      <div class="panel-body">
+        @for (goal of data.goals(); track goal.id) {
+          <div class="goal-item">
+            <div class="goal-row">
+              <div>
+                <div class="goal-name">{{ goal.label }}</div>
+                <div class="goal-months">{{ monthsLeft(goal) }} meses no ritmo atual</div>
+              </div>
+              <div class="goal-values">
+                <cf-money [value]="goal.balance" size="md" [negColor]="false" />
+                <span class="goal-target num">/ R$ {{ formatShort(goal.target) }}</span>
+              </div>
+            </div>
+            <cf-progress-bar [value]="goal.balance" [max]="goal.target" [color]="goal.color" [height]="4" />
+            <div class="goal-pct num">{{ goalPct(goal) }}% concluído</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="panel panel--flex">
+      <div class="panel-head">
+        <span class="panel-title">Atividade recente</span>
+        <a class="panel-meta panel-link" routerLink="/transactions">Ver tudo →</a>
+      </div>
+      <div class="panel-body panel-body--compact">
+        @for (tx of recentTx(); track tx.id) {
+          <div class="activity-item">
+            <div class="activity-left">
+              <div class="activity-date-dot">
+                <span class="activity-date num">{{ formatDay(tx.date) }}/mai</span>
+                <cf-cat-dot [catId]="tx.cat" [size]="7" />
+              </div>
+              <div class="activity-info">
+                <span class="activity-label">{{ tx.label }}</span>
+                <span class="activity-cat">
+                  {{ catLabel(tx.cat) }}
+                  @if (tx.installments) { · {{ tx.installments.n }}/{{ tx.installments.of }} }
+                </span>
+              </div>
+            </div>
+            <div class="activity-right">
+              <cf-money [value]="tx.value" size="sm" [negColor]="false" />
+              <span class="activity-method">{{ methodLabel(tx.method) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

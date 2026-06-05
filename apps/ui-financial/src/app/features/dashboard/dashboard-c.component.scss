@@ -1,0 +1,60 @@
+:host { display: block; }
+.kpi-strip { display:flex; align-items:center; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow-sm); padding:10px 16px; margin-bottom:12px; }
+.kpi-item { display:flex; flex-direction:column; gap:2px; }
+.kpi-divider { width:1px; height:32px; background:var(--line); margin:0 16px; }
+.kpi-label { font-size:10.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.6px; font-weight:600; }
+.kpi-end { margin-left:auto; text-align:right; }
+.kpi-sub { font-size:11px; color:var(--ink-4); margin-top:2px; }
+
+.dash-grid { display:grid; grid-template-columns:1.55fr 1fr; gap:12px; }
+.section-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+.section-title { font-size:16px; font-weight:600; letter-spacing:-0.2px; color:var(--ink-1); }
+.section-meta { font-size:11px; color:var(--ink-4); }
+
+.cards-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.card-item { background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow-sm); overflow:hidden; }
+.card-color-bar { height:4px; }
+.card-body { padding:10px 14px; }
+.card-row { display:flex; justify-content:space-between; align-items:flex-start; }
+.card-name-row { display:flex; align-items:center; gap:6px; }
+.card-name { font-size:13px; font-weight:600; color:var(--ink-1); }
+.card-last4 { font-size:11px; color:var(--ink-4); }
+.card-holder-row { display:flex; align-items:center; gap:6px; margin-top:4px; }
+.card-holder-label { font-size:11px; color:var(--ink-4); }
+.card-close-info { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.close-pill { display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:500; padding:2px 6px; background:var(--surface-alt); border:1px solid var(--line); color:var(--ink-2); text-transform:uppercase; letter-spacing:0.4px; }
+.close-pill.warn { background:var(--warn-soft); color:var(--warn); border-color:transparent; }
+.close-pill.urgent { background:var(--neg-soft); color:var(--neg); border-color:transparent; }
+.card-close-day { font-size:11px; color:var(--ink-4); }
+.card-value-row { display:flex; align-items:baseline; justify-content:space-between; margin-top:12px; }
+.card-limit { font-size:11px; color:var(--ink-4); }
+.card-meta-row { display:flex; justify-content:space-between; margin-top:4px; }
+.card-util, .card-due { font-size:11px; color:var(--ink-4); }
+
+.col-side { display:flex; flex-direction:column; gap:12px; }
+.panel { background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow-sm); }
+.panel--flex { flex:1; }
+.panel-head { display:flex; align-items:baseline; justify-content:space-between; padding:10px 14px 8px; border-bottom:1px solid var(--line-soft); }
+.panel-title { font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.7px; font-weight:600; }
+.panel-meta { font-size:11px; color:var(--ink-4); }
+.panel-link:hover { color:var(--brand); }
+.panel-body { padding:8px 14px 10px; }
+.panel-body--compact { padding:4px 14px 8px; }
+.goal-item { padding:8px 0; border-bottom:1px solid var(--line-soft); }
+.goal-item:last-child { border-bottom:none; }
+.goal-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.goal-name { font-size:13px; font-weight:500; color:var(--ink-1); }
+.goal-months { font-size:11px; color:var(--ink-4); margin-top:2px; }
+.goal-values { display:flex; flex-direction:column; align-items:flex-end; }
+.goal-target { font-size:11px; color:var(--ink-4); }
+.goal-pct { font-size:11px; color:var(--ink-4); margin-top:4px; }
+.activity-item { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--line-soft); gap:8px; }
+.activity-item:last-child { border-bottom:none; }
+.activity-left { display:flex; gap:8px; align-items:center; min-width:0; }
+.activity-date-dot { display:flex; flex-direction:column; align-items:center; gap:2px; width:28px; flex-shrink:0; }
+.activity-date { font-size:10px; color:var(--ink-4); }
+.activity-info { display:flex; flex-direction:column; min-width:0; }
+.activity-label { font-size:12.5px; color:var(--ink-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.activity-cat { font-size:11px; color:var(--ink-4); }
+.activity-right { display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
+.activity-method { font-size:11px; color:var(--ink-4); }
