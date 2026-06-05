@@ -1,0 +1,97 @@
+<!-- KPI strip -->
+<div class="kpi-grid">
+  <!-- Acumulado (wide card) -->
+  <div class="kpi-wide">
+    <div class="kpi-wide-row">
+      <div>
+        <div class="kpi-label">Acumulado em metas</div>
+        <cf-money [value]="totalSaved()" size="xl" [negColor]="false" />
+      </div>
+      <div class="kpi-wide-right">
+        <div class="kpi-label">Objetivo total</div>
+        <cf-money [value]="totalTarget()" size="lg" [negColor]="false" />
+        <span class="kpi-sub num">{{ totalPct().toFixed(0) }}% atingido</span>
+      </div>
+    </div>
+    <cf-progress-bar [value]="totalSaved()" [max]="totalTarget()" color="var(--pos)" [height]="6" />
+  </div>
+
+  <!-- Metas ativas -->
+  <div class="kpi-box">
+    <div class="kpi-label">Metas ativas</div>
+    <div class="kpi-value">{{ goals().length }}</div>
+    <div class="kpi-sub">{{ goalsSubtitle() }}</div>
+  </div>
+
+  <!-- Aporte mensal -->
+  <div class="kpi-box">
+    <div class="kpi-label">Aporte mensal</div>
+    <div class="kpi-value">
+      <cf-money [value]="totalMonthly()" size="lg" [negColor]="false" [cents]="false" />
+    </div>
+    <div class="kpi-sub">soma de todas as metas</div>
+  </div>
+
+  <!-- Próx. aporte -->
+  <div class="kpi-box">
+    <div class="kpi-label">Próx. aporte</div>
+    <div class="kpi-value num" style="font-size:18px">22/mai</div>
+    <div class="kpi-sub">automático · Pix débito conta</div>
+  </div>
+</div>
+
+<!-- Goal cards -->
+<div class="cards-grid">
+  @for (goal of goals(); track goal.id) {
+    <cf-goal-card [goal]="goal" />
+  }
+</div>
+
+<!-- Projection table -->
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">Projeção · próximos 12 meses</span>
+    <span class="panel-meta">no ritmo atual de aporte</span>
+  </div>
+  <table class="tx">
+    <thead>
+      <tr>
+        <th style="width:70px">Mês</th>
+        @for (goal of goals(); track goal.id) {
+          <th class="r" style="width:100px">{{ goal.label }}</th>
+          <th style="width:220px">Acumulado</th>
+        }
+        <th class="r" style="width:110px">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of projectionRows(); track row.label) {
+        <tr>
+          <td class="num">{{ row.label }}</td>
+          @for (item of row.goalAccs; track item.goal.id) {
+            <td class="r num">
+              <cf-money [value]="item.goal.monthly" size="sm" [negColor]="false" [cents]="false" />
+            </td>
+            <td>
+              <div class="proj-acc-row">
+                <span class="num tx-meta">R$ {{ fmtShort(item.acc) }} / R$ {{ fmtShort(item.goal.target) }}</span>
+                @if (item.reached) {
+                  <span class="pill pos">meta atingida</span>
+                }
+              </div>
+              <cf-progress-bar
+                [value]="item.acc"
+                [max]="item.goal.target"
+                [color]="item.goal.color"
+                [height]="3"
+              />
+            </td>
+          }
+          <td class="r num">
+            <cf-money [value]="row.total" size="sm" [negColor]="false" [cents]="false" />
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

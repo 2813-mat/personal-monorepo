@@ -1,0 +1,26 @@
+:host { display: block; }
+/* KPI strip */
+.kpi-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+.kpi-wide { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.kpi-wide-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.kpi-wide-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+
+.kpi-box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.kpi-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.kpi-value { font-size: 22px; font-weight: 700; color: var(--ink-1); }
+.kpi-sub { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+
+/* Cards grid */
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+/* Projection table */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.panel-title { font-size: 13px; font-weight: 600; color: var(--ink-1); }
+.panel-meta { font-size: 12px; color: var(--ink-3); }
+
+.proj-acc-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.tx-meta { font-size: 12px; color: var(--ink-3); }
+
+.pill.pos { background: var(--pos-soft); color: var(--pos); border: 1px solid var(--pos); font-size: 11px; padding: 1px 6px; border-radius: 20px; white-space: nowrap; }

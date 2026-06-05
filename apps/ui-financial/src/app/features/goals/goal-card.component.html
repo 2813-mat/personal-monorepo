@@ -1,0 +1,63 @@
+<div class="goal-card">
+  <div class="goal-stripe" [style.background]="goal.color"></div>
+  <div class="goal-body">
+
+    <!-- Header -->
+    <div class="goal-header">
+      <div class="goal-header-left">
+        <div class="goal-name-row">
+          <span class="goal-name">{{ goal.label }}</span>
+          <span class="goal-type-pill" [style.background]="softColor" [style.color]="goal.color">
+            {{ typeLabel }}
+          </span>
+        </div>
+        <span class="goal-subtitle">{{ goal.subtitle }}</span>
+      </div>
+      <div class="goal-header-actions">
+        <button class="btn-ghost" disabled>Editar</button>
+        <button class="btn-colored" [style.background]="goal.color" disabled>
+          <cf-icon name="plus" [size]="11" /> Aporte extra
+        </button>
+      </div>
+    </div>
+
+    <!-- Big progress -->
+    <div class="goal-progress-row">
+      <cf-money [value]="goal.balance" size="xxl" [negColor]="false" />
+      <span class="goal-target num">/ R$ {{ fmtShort(goal.target) }}</span>
+    </div>
+    <cf-progress-bar [value]="goal.balance" [max]="goal.target" [color]="goal.color" [height]="8" />
+    <div class="goal-pct-row">
+      <span class="goal-pct num" [style.color]="goal.color">{{ pct.toFixed(1) }}% concluído</span>
+      <span class="goal-remaining num">R$ {{ fmtShort(remaining) }} restantes</span>
+    </div>
+
+    <!-- Stats row -->
+    <div class="goal-stats">
+      <div class="stat-col">
+        <span class="stat-label">Aporte/mês</span>
+        <cf-money [value]="goal.monthly" size="md" [negColor]="false" [cents]="false" />
+      </div>
+      <div class="stat-col">
+        <span class="stat-label">Conclusão prev.</span>
+        <span class="stat-value num">{{ months }} meses</span>
+      </div>
+      <div class="stat-col">
+        <span class="stat-label">Aportes feitos</span>
+        <span class="stat-value num">{{ goal.history.length }}×</span>
+      </div>
+      <div class="stat-col stat-col-end">
+        <span class="stat-label">Histórico</span>
+        <cf-sparkbars
+          [data]="goal.history"
+          [width]="140"
+          [height]="28"
+          [baseColor]="goal.color"
+          [highlightColor]="goal.color"
+          [highlightIndex]="goal.history.length - 1"
+        />
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<svg
+  width="100%"
+  [attr.height]="H"
+  viewBox="0 0 1100 200"
+  preserveAspectRatio="none"
+>
+  <!-- Gridlines -->
+  @for (g of model.gridlines; track g.y) {
+    <line x1="0" [attr.y1]="g.y" x2="1100" [attr.y2]="g.y" stroke="var(--line-soft)" stroke-width="1" />
+  }
+
+  <!-- Bars -->
+  @for (b of model.bars; track b.m) {
+    <rect
+      [attr.x]="b.incX"
+      [attr.y]="b.incY"
+      [attr.width]="model.barW"
+      [attr.height]="b.incH"
+      fill="var(--pos)"
+      [attr.opacity]="b.opacity"
+    />
+    <rect
+      [attr.x]="b.expX"
+      [attr.y]="b.expY"
+      [attr.width]="model.barW"
+      [attr.height]="b.expH"
+      fill="var(--neg)"
+      [attr.opacity]="b.opacity"
+    />
+  }
+
+  <!-- Savings polyline -->
+  <polyline
+    [attr.points]="model.polyline"
+    fill="none"
+    stroke="var(--brand)"
+    stroke-width="2"
+    vector-effect="non-scaling-stroke"
+  />
+  @for (p of model.points; track $index) {
+    <circle [attr.cx]="p.x" [attr.cy]="p.y" r="3" fill="var(--brand)" />
+  }
+
+  <!-- Month labels -->
+  @for (b of model.bars; track b.m) {
+    <text
+      [attr.x]="b.labelX"
+      [attr.y]="labelY"
+      font-size="9"
+      fill="var(--ink-3)"
+      text-anchor="middle"
+    >{{ b.m.slice(0, 3) }}</text>
+  }
+</svg>
