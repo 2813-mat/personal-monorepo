@@ -1,0 +1,206 @@
+<div
+  class="backdrop"
+  role="button"
+  tabindex="0"
+  aria-label="Fechar"
+  (click)="onClose()"
+  (keydown.enter)="onClose()"
+  (keydown.space)="onClose()"
+></div>
+
+<div class="panel" [formGroup]="form">
+  <!-- Header -->
+  <header class="drawer-head">
+    <div class="head-text">
+      <div class="head-title">Novo lançamento</div>
+      <span class="head-sub">{{ data.currentMonth().label }}</span>
+    </div>
+    <button type="button" class="close-btn" (click)="onClose()" aria-label="Fechar">
+      <cf-icon name="x" [size]="12" />
+    </button>
+  </header>
+
+  <!-- Body -->
+  <div class="drawer-body">
+    <!-- Tipo -->
+    <div class="label">Tipo</div>
+    <div class="seg seg-full">
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.type.value === 'expense'"
+        (click)="form.controls.type.setValue('expense')"
+      >
+        <cf-icon name="arrowDown" [size]="11" /> Despesa
+      </button>
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.type.value === 'income'"
+        (click)="form.controls.type.setValue('income')"
+      >
+        <cf-icon name="arrowUp" [size]="11" /> Receita
+      </button>
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.type.value === 'contribution'"
+        (click)="form.controls.type.setValue('contribution')"
+      >
+        <cf-icon name="target" [size]="11" /> Aporte
+      </button>
+    </div>
+
+    <!-- Valor -->
+    <div class="label mt">Valor</div>
+    <div class="value-row">
+      <span class="value-prefix">R$</span>
+      <input
+        type="number"
+        class="value-input num"
+        formControlName="value"
+        min="0"
+        step="0.01"
+        placeholder="0,00"
+      />
+    </div>
+
+    <!-- Descrição -->
+    <div class="label mt">Descrição</div>
+    <input
+      type="text"
+      class="text-input"
+      formControlName="label"
+      placeholder="Ex.: Mercado mensal Guanabara"
+    />
+
+    <!-- Categoria -->
+    <div class="label mt">Categoria</div>
+    <div class="cat-grid">
+      @for (cat of data.categories(); track cat.id) {
+        <button
+          type="button"
+          class="cat-chip"
+          [class.active]="form.controls.cat.value === cat.id"
+          (click)="form.controls.cat.setValue(cat.id)"
+        >
+          <cf-cat-dot [catId]="cat.id" [size]="8" />
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Data -->
+    <div class="label mt">Data</div>
+    <input type="date" class="text-input num" formControlName="date" />
+
+    <!-- Método -->
+    <div class="label mt">Método de pagamento</div>
+    <div class="method-list">
+      <button
+        type="button"
+        class="method-row"
+        [class.active]="form.controls.method.value === 'pix'"
+        (click)="form.controls.method.setValue('pix')"
+      >
+        <span class="method-main">
+          <cf-icon name="pix" [size]="13" color="var(--brand)" />
+          <span class="method-text">
+            <span class="method-name">Pix / Débito</span>
+            <span class="method-sub">Conta corrente</span>
+          </span>
+        </span>
+        @if (form.controls.method.value === 'pix') {
+          <cf-icon name="check" [size]="13" color="var(--brand)" />
+        }
+      </button>
+
+      @for (c of data.cards(); track c.id) {
+        <button
+          type="button"
+          class="method-row"
+          [class.active]="form.controls.method.value === c.id"
+          (click)="form.controls.method.setValue(c.id)"
+        >
+          <span class="method-main">
+            <cf-card-chip [cardId]="c.id" size="md" />
+            <span class="method-text">
+              <span class="method-name">{{ c.bank }} ···{{ c.last4 }}</span>
+              <span class="method-sub num">fatura {{ c.current }}</span>
+            </span>
+          </span>
+          @if (form.controls.method.value === c.id) {
+            <cf-icon name="check" [size]="13" color="var(--brand)" />
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Quem fez o gasto -->
+    <div class="label mt">Quem fez o gasto</div>
+    <div class="seg seg-full">
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.holder.value === 'Mateus'"
+        (click)="form.controls.holder.setValue('Mateus')"
+      >
+        <cf-avatar holder="Mateus" [size]="14" /> Mateus
+      </button>
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.holder.value === 'Thais'"
+        (click)="form.controls.holder.setValue('Thais')"
+      >
+        <cf-avatar holder="Thais" [size]="14" /> Thais
+      </button>
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.holder.value === 'shared'"
+        (click)="form.controls.holder.setValue('shared')"
+      >
+        Compartilhado
+      </button>
+    </div>
+
+    <!-- Toggles -->
+    <div class="toggle-grid mt" formGroupName="installments">
+      <label class="toggle-row">
+        <span class="toggle-label">Parcelar</span>
+        <input type="checkbox" class="toggle-check" formControlName="enabled" />
+      </label>
+    </div>
+
+    @if (form.controls.installments.controls.enabled.value) {
+      <div class="installments-detail">
+        <span class="label brand">Parcelado em</span>
+        <div class="stepper" formGroupName="installments">
+          <button type="button" class="step-btn" (click)="stepInstallments(-1)" aria-label="Menos">
+            <cf-icon name="arrowLeft" [size]="9" />
+          </button>
+          <span class="step-value num">{{ form.controls.installments.controls.total.value }}×</span>
+          <button type="button" class="step-btn" (click)="stepInstallments(1)" aria-label="Mais">
+            <cf-icon name="arrowRight" [size]="9" />
+          </button>
+        </div>
+      </div>
+    }
+
+    <div class="toggle-grid mt">
+      <label class="toggle-row">
+        <span class="toggle-label">Recorrente (gasto fixo)</span>
+        <input type="checkbox" class="toggle-check" formControlName="recurring" />
+      </label>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="drawer-foot">
+    <span class="foot-hint">⌘/Ctrl + Enter para salvar</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid" (click)="save()">
+      <cf-icon name="check" [size]="11" /> Salvar lançamento
+    </button>
+  </footer>
+</div>

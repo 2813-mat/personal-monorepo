@@ -1,0 +1,237 @@
+<!-- Summary strip: 4 KPI blocks -->
+<div class="summary-grid">
+  <!-- Total aberto (card largo) -->
+  <div class="kpi-wide">
+    <div class="kpi-wide-row">
+      <div>
+        <div class="kpi-label">Total em faturas abertas</div>
+        <cf-money [value]="totalOpen()" size="xl" [negColor]="false" />
+      </div>
+      <div class="kpi-wide-right">
+        <div class="kpi-label">Limite consolidado</div>
+        <cf-money [value]="totalLimit()" size="lg" [negColor]="false" />
+        <span class="kpi-sub num">{{ utilizationPct() }}% utilizado</span>
+      </div>
+    </div>
+    <cf-progress-bar
+      [value]="totalOpen()"
+      [max]="totalLimit()"
+      [color]="utilizationPct() > 70 ? 'var(--warn)' : 'var(--brand)'"
+      [height]="6"
+    />
+  </div>
+
+  <!-- Cartões ativos -->
+  <div class="kpi-box">
+    <div class="kpi-label">Cartões ativos</div>
+    <div class="kpi-value">{{ data.cards().length }}</div>
+    <div class="kpi-sub">
+      {{ mateusCount() }} do Mateus · {{ thaisCount() }} da Thais
+    </div>
+  </div>
+
+  <!-- Fecham em ≤ 7 dias -->
+  <div class="kpi-box">
+    <div class="kpi-label">Fecham em ≤ 7 dias</div>
+    <div
+      class="kpi-value"
+      [style.color]="closingSoon() > 0 ? 'var(--warn)' : 'var(--ink-1)'"
+    >
+      {{ closingSoon() }}
+    </div>
+    <div class="kpi-sub">
+      {{
+        closingSoon() === 1
+          ? 'cartão prestes a fechar'
+          : 'cartões prestes a fechar'
+      }}
+    </div>
+  </div>
+
+  <!-- Próximo vencimento -->
+  <div class="kpi-box">
+    <div class="kpi-label">Próx. vencimento</div>
+    <div class="kpi-value num" style="font-size:18px">
+      {{ nextDueLabel() }}
+    </div>
+    <div class="kpi-sub">
+      {{ nextDueCard().bank }} ·
+      <cf-money
+        [value]="nextDueCard()?.current ?? 0"
+        size="sm"
+        [negColor]="false"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- Cards table -->
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">Meus cartões</span>
+    <div class="sort-seg">
+      <span class="panel-meta">Ordenar:</span>
+      <div class="seg">
+        <button
+          class="seg-btn"
+          [class.active]="sortMode() === 'closing'"
+          (click)="sortMode.set('closing')"
+        >
+          Fechamento
+        </button>
+        <button
+          class="seg-btn"
+          [class.active]="sortMode() === 'value'"
+          (click)="sortMode.set('value')"
+        >
+          Valor
+        </button>
+        <button
+          class="seg-btn"
+          [class.active]="sortMode() === 'holder'"
+          (click)="sortMode.set('holder')"
+        >
+          Pessoa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <table class="cards-table">
+    <thead>
+      <tr>
+        <th>Cartão</th>
+        <th style="width:100px">Quem</th>
+        <th style="width:120px">Fechamento</th>
+        <th style="width:110px">Vencimento</th>
+        <th style="width:210px">Utilização</th>
+        <th style="width:100px">Hist. 6m</th>
+        <th class="r" style="width:130px">Fatura aberta</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (card of sortedCards(); track card.id) {
+        <tr class="card-row" [routerLink]="['/cards', card.id, 'invoice']">
+          <!-- Cartão -->
+          <td>
+            <div class="card-name-cell">
+              <span class="card-badge" [style.background]="card.color">
+                {{ card.bank.slice(0, 4).toUpperCase() }}
+              </span>
+              <div>
+                <div class="card-bank">{{ card.bank }}</div>
+                <div class="card-number num">
+                  ···· ···· ···· {{ card.last4 }}
+                </div>
+              </div>
+            </div>
+          </td>
+          <!-- Quem -->
+          <td>
+            <div class="holder-cell">
+              <cf-avatar [holder]="card.holder" [size]="16" />
+              <span class="holder-label">{{ card.holder }}</span>
+            </div>
+          </td>
+          <!-- Fechamento -->
+          <td>
+            <div class="date-cell">
+              <span class="date-day num">dia {{ card.closing }}</span>
+              <span class="date-sub" [class.warn]="daysLeft(card) <= 7">
+                {{
+                  daysLeft(card) === 0
+                    ? 'fecha hoje'
+                    : daysLeft(card) <= 7
+                      ? 'em ' + daysLeft(card) + 'd'
+                      : 'em ' + daysLeft(card) + ' dias'
+                }}
+              </span>
+            </div>
+          </td>
+          <!-- Vencimento -->
+          <td>
+            <div class="date-cell">
+              <span class="date-day num">dia {{ card.due }}</span>
+              <span class="date-sub">mês seguinte</span>
+            </div>
+          </td>
+          <!-- Utilização -->
+          <td>
+            <div class="util-header">
+              <span class="util-values num">
+                R$ {{ fmtShort(card.current) }} / R$
+                {{ fmtShort(card.limit) }}
+              </span>
+              <span class="util-pct num" [class.over]="utilPct(card) > 80">
+                {{ utilPct(card) }}%
+              </span>
+            </div>
+            <cf-progress-bar
+              [value]="card.current"
+              [max]="card.limit"
+              [color]="card.color"
+              [height]="4"
+            />
+          </td>
+          <!-- Histórico -->
+          <td>
+            <cf-sparkbars
+              [data]="historyOf(card)"
+              [width]="80"
+              [height]="22"
+              [baseColor]="card.color"
+              [highlightColor]="card.color"
+            />
+          </td>
+          <!-- Fatura -->
+          <td class="r">
+            <cf-money [value]="card.current" [negColor]="false" />
+            <div class="invoice-sub">
+              {{
+                hasActivity(card.id) ? 'movimentação ativa' : 'sem compras'
+              }}
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="panel-foot">
+    <span class="foot-add">
+      <cf-icon name="plus" [size]="11" color="var(--ink-3)" />
+      Adicionar novo cartão
+    </span>
+    <span class="foot-total num">
+      Total: <cf-money [value]="totalOpen()" size="sm" [negColor]="false" />
+    </span>
+  </div>
+</div>
+
+<!-- Compromissos futuros -->
+<div class="panel commitments-panel">
+  <div class="panel-head">
+    <span class="panel-title">Compromissos futuros · parcelas</span>
+    <span class="panel-meta"
+      >próximos 6 meses, somando todos os cartões</span
+    >
+  </div>
+  <div class="commitments-grid">
+    @for (month of futureMonths(); track month.label) {
+      <div class="commitment-cell" [class.highlight]="month.isFirst">
+        <div class="commit-label">{{ month.label }}</div>
+        <cf-money
+          [value]="month.total"
+          [negColor]="false"
+          [cents]="false"
+        />
+        <div class="commit-sub num">
+          {{ month.count }} {{ month.count === 1 ? 'parcela' : 'parcelas' }}
+        </div>
+        @if (month.total > 1200) {
+          <span class="commit-pill-warn">pico</span>
+        }
+      </div>
+    }
+  </div>
+</div>

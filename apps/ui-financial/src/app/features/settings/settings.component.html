@@ -1,0 +1,202 @@
+<div class="layout">
+  <!-- Left nav -->
+  <nav class="nav-card">
+    @for (item of navItems; track item.id) {
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeSection() === item.id"
+        (click)="activeSection.set(item.id)"
+      >
+        <cf-icon [name]="item.icon" [size]="13" color="currentColor" />
+        <span>{{ item.label }}</span>
+      </button>
+    }
+  </nav>
+
+  <!-- Content -->
+  <section class="content">
+    @switch (activeSection()) {
+
+      @case ('cats') {
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-text">
+              <span class="card-title">Categorias</span>
+              <span class="card-sub">{{ data.categories().length }} ativas</span>
+            </div>
+            <div class="card-head-actions">
+              <button class="btn-ghost" disabled>Reordenar</button>
+              <button class="btn-primary" disabled>+ Nova categoria</button>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:24px"></th>
+                  <th>Nome</th>
+                  <th>Cor</th>
+                  <th class="r" style="width:130px">Orçamento/mês</th>
+                  <th class="r" style="width:110px">Lançamentos</th>
+                  <th style="width:80px">Status</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of data.categories(); track c.id) {
+                  <tr>
+                    <td class="drag-cell">
+                      <cf-icon name="grid" [size]="10" color="var(--ink-4)" />
+                    </td>
+                    <td>
+                      <div class="name-cell">
+                        <cf-cat-dot [catId]="c.id" [size]="8" />
+                        <div class="name-stack">
+                          <span class="name-label">{{ c.label }}</span>
+                          <span class="name-sub mono">{{ c.id }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="color-cell">
+                        <span class="color-swatch" [style.background]="c.color"></span>
+                        <span class="mono color-hex">{{ c.color }}</span>
+                      </div>
+                    </td>
+                    <td class="r num">
+                      <cf-money [value]="c.budget" [negColor]="false" size="sm" />
+                    </td>
+                    <td class="r num">{{ catTxCount(c.id) }}/mês</td>
+                    <td><span class="pill pos">Ativa</span></td>
+                    <td class="gear-cell">
+                      <cf-icon name="settings" [size]="11" color="var(--ink-4)" />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-foot">
+            <span class="foot-note">Categorias organizam orçamentos e relatórios.</span>
+            <span class="foot-total num">
+              Total budget: <cf-money [value]="totalBudget()" [negColor]="false" size="sm" />
+            </span>
+          </div>
+        </div>
+      }
+
+      @case ('people') {
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-text">
+              <span class="card-title">Pessoas</span>
+              <span class="card-sub">{{ people.length }} membros</span>
+            </div>
+          </div>
+
+          <div class="people-list">
+            @for (p of people; track p.name) {
+              <div class="person-row">
+                <cf-avatar [holder]="p.name" [size]="28" />
+                <div class="person-info">
+                  <span class="person-name">{{ p.name }}</span>
+                  <span class="person-email">{{ p.email }}</span>
+                </div>
+                <span class="role-pill" [style.background]="p.tag">{{ p.role }}</span>
+                <span class="person-count num">{{ personTxCount(p.name) }} lançamentos</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-foot">
+            <span class="foot-note">Cada pessoa vê e lança no caixa compartilhado.</span>
+            <button class="btn-ghost" disabled>Convidar pessoa</button>
+          </div>
+        </div>
+      }
+
+      @case ('cards') {
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-text">
+              <span class="card-title">Cartões</span>
+              <span class="card-sub">{{ data.cards().length }} cadastrados</span>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:48px"></th>
+                  <th>Banco</th>
+                  <th style="width:90px">Titular</th>
+                  <th>Fatura</th>
+                  <th class="r" style="width:130px">Limite</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of data.cards(); track c.id) {
+                  <tr>
+                    <td>
+                      <span class="bank-tag" [style.background]="c.color">{{ bankTag(c.bank) }}</span>
+                    </td>
+                    <td>
+                      <div class="name-stack">
+                        <span class="name-label">{{ c.bank }}</span>
+                        <span class="name-sub mono">···{{ c.last4 }}</span>
+                      </div>
+                    </td>
+                    <td><cf-avatar [holder]="c.holder" [size]="22" /></td>
+                    <td class="muted">fecha {{ c.closing }} · vence {{ c.due }}</td>
+                    <td class="r num">R$ {{ formatNum(c.limit) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-foot">
+            <span class="foot-note">Limites e datas de fechamento dos cartões.</span>
+            <span class="foot-total num">limite total: R$ {{ formatNum(totalLimit()) }}</span>
+          </div>
+        </div>
+      }
+
+      @case ('rules') {
+        <div class="placeholder">
+          <cf-icon name="repeat" [size]="28" color="var(--ink-4)" />
+          <span class="ph-title">Em breve</span>
+          <span class="ph-desc">Regras de recorrência para lançar gastos fixos automaticamente.</span>
+        </div>
+      }
+
+      @case ('import') {
+        <div class="placeholder">
+          <cf-icon name="upload" [size]="28" color="var(--ink-4)" />
+          <span class="ph-title">Em breve</span>
+          <span class="ph-desc">Importação de extratos e faturas em CSV/OFX.</span>
+        </div>
+      }
+
+      @case ('notif') {
+        <div class="placeholder">
+          <cf-icon name="bell" [size]="28" color="var(--ink-4)" />
+          <span class="ph-title">Em breve</span>
+          <span class="ph-desc">Alertas de vencimento, estouro de orçamento e metas.</span>
+        </div>
+      }
+
+      @case ('backup') {
+        <div class="placeholder">
+          <cf-icon name="download" [size]="28" color="var(--ink-4)" />
+          <span class="ph-title">Em breve</span>
+          <span class="ph-desc">Exportação e backup dos seus dados financeiros.</span>
+        </div>
+      }
+    }
+  </section>
+</div>

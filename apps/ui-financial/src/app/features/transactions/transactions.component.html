@@ -1,0 +1,187 @@
+<!-- Sub-header KPI + filter strip -->
+<div class="strip">
+  <div class="strip-kpis">
+    <div class="kpi-item">
+      <div class="kpi-label">Total</div>
+      <cf-money [value]="totalAll()" [negColor]="false" />
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-item">
+      <div class="kpi-label">Mateus</div>
+      <cf-money [value]="totalMateus()" [negColor]="false" />
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">Thais</div>
+      <cf-money [value]="totalThais()" [negColor]="false" />
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">Compartilhado</div>
+      <cf-money [value]="totalShared()" [negColor]="false" />
+    </div>
+  </div>
+  <div class="strip-filters">
+    <!-- Category filter -->
+    <div class="filter-chips">
+      <button class="filter-chip" [class.active]="!selectedCat()" (click)="selectedCat.set(null)">
+        Todas
+      </button>
+      @for (cat of data.categories(); track cat.id) {
+        <button
+          class="filter-chip"
+          [class.active]="selectedCat() === cat.id"
+          (click)="selectedCat.set(cat.id)"
+        >
+          <cf-cat-dot [catId]="cat.id" [size]="6" />
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+    <!-- Search -->
+    <div class="search-box">
+      <cf-icon name="search" [size]="11" color="var(--ink-4)" />
+      <input
+        class="search-input"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Buscar lançamento…"
+      />
+    </div>
+    <button class="action-btn">
+      <cf-icon name="download" [size]="11" /> Exportar
+    </button>
+  </div>
+</div>
+
+<!-- Table card -->
+<div class="table-card">
+  <div class="table-head">
+    <span class="table-title">Lançamentos · {{ filteredCount() }}</span>
+    <div class="group-seg">
+      <span class="seg-label">Agrupar:</span>
+      <div class="seg">
+        <button class="seg-btn" [class.active]="groupMode() === 'date'" (click)="groupMode.set('date')">Data</button>
+        <button class="seg-btn" [class.active]="groupMode() === 'category'" (click)="groupMode.set('category')">Categoria</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:18px"></th>
+          <th class="sortable" style="width:80px" (click)="toggleSort('date')">
+            Data <cf-icon [name]="sortIcon('date')" [size]="9" color="var(--ink-3)" />
+          </th>
+          <th>Descrição</th>
+          <th style="width:130px">Categoria</th>
+          <th style="width:130px">Método</th>
+          <th style="width:60px">Quem</th>
+          <th style="width:100px">Parcela</th>
+          <th class="r sortable" style="width:110px" (click)="toggleSort('value')">
+            Valor <cf-icon [name]="sortIcon('value')" [size]="9" color="var(--ink-3)" />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (groupMode() === 'category') {
+          @for (group of groupedByCategory(); track group.catId) {
+            <tr class="group-row">
+              <td colspan="7" class="group-cell">
+                <cf-cat-dot [catId]="group.catId" [size]="8" />
+                <span class="group-label">{{ group.catLabel }}</span>
+                <span class="group-count">· {{ group.items.length }} itens</span>
+              </td>
+              <td class="r group-total">
+                <cf-money [value]="group.total" [negColor]="false" size="sm" />
+              </td>
+            </tr>
+            @for (tx of group.items; track tx.id) {
+              <ng-container *ngTemplateOutlet="txRow; context: { $implicit: tx }" />
+            }
+          }
+        } @else {
+          @for (tx of flatSorted(); track tx.id) {
+            <ng-container *ngTemplateOutlet="txRow; context: { $implicit: tx }" />
+          }
+        }
+
+        @if (filteredCount() === 0) {
+          <tr>
+            <td colspan="8" class="empty-cell">Nenhuma transação encontrada</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-foot">
+    <span>Mostrando {{ filteredCount() }} lançamentos</span>
+    <span class="table-foot-total num">
+      Total: <cf-money [value]="totalAll()" [negColor]="false" size="sm" />
+    </span>
+  </div>
+</div>
+
+@if (selectedTx(); as tx) {
+  <cf-tx-detail-drawer [tx]="tx" (closed)="selectedTx.set(null)" />
+}
+
+<!-- Row template -->
+<ng-template #txRow let-tx>
+  <tr class="tx-row" style="cursor:pointer" (click)="selectedTx.set(tx)">
+    <td (click)="$event.stopPropagation()"><input type="checkbox" class="tx-check" /></td>
+    <td class="tx-date num">{{ formatDate(tx.date) }}</td>
+    <td>
+      <div class="desc-cell">
+        <span class="desc-label">{{ tx.label }}</span>
+        @if (tx.recurring) {
+          <span class="pill-fixed">
+            <cf-icon name="repeat" [size]="9" /> fixo
+          </span>
+        }
+      </div>
+    </td>
+    <td class="tx-cat">{{ catLabel(tx.cat) }}</td>
+    <td>
+      @if (cardOf(tx.method)) {
+        <div class="method-cell">
+          <cf-card-chip [cardId]="tx.method" size="sm" />
+          <span class="method-last4">···{{ cardOf(tx.method)!.last4 }}</span>
+        </div>
+      } @else {
+        <div class="method-cell">
+          <cf-icon name="pix" [size]="11" color="var(--ink-3)" />
+          <span class="method-label">Pix</span>
+        </div>
+      }
+    </td>
+    <td>
+      @if (tx.holder !== 'shared') {
+        <cf-avatar [holder]="tx.holder" [size]="18" />
+      } @else {
+        <div class="shared-avatars">
+          <cf-avatar holder="Mateus" [size]="15" />
+          <cf-avatar holder="Thais"  [size]="15" />
+        </div>
+      }
+    </td>
+    <td>
+      @if (tx.installments) {
+        <div class="installment-cell">
+          <span class="inst-label num">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
+          <cf-progress-bar
+            [value]="tx.installments.n"
+            [max]="tx.installments.of"
+            [height]="2"
+          />
+        </div>
+      } @else {
+        <span class="tx-avista">À vista</span>
+      }
+    </td>
+    <td class="r num tx-value">
+      <cf-money [value]="tx.value" [negColor]="false" />
+    </td>
+  </tr>
+</ng-template>

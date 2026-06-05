@@ -1,0 +1,136 @@
+<!-- KPI Strip -->
+<div class="strip">
+  <div class="kpi-item">
+    <div class="kpi-label">Orçamento mensal total</div>
+    <cf-money [value]="totalBudget()" [negColor]="false" />
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">Gasto até hoje</div>
+    <cf-money [value]="totalSpent()" [negColor]="false" />
+    <div class="kpi-sub num">{{ budgetPct() }}% do orçamento</div>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">No vermelho</div>
+    <div class="kpi-value num" [style.color]="overCount() > 0 ? 'var(--neg)' : 'var(--ink-1)'">
+      {{ overCount() }}
+    </div>
+    <div class="kpi-sub">categorias estouradas</div>
+  </div>
+  <div class="kpi-divider"></div>
+  <div class="kpi-item">
+    <div class="kpi-label">Sobra projetada</div>
+    <cf-money [value]="surplus()" [color]="surplus() >= 0 ? 'var(--pos)' : 'var(--neg)'" />
+    <div class="kpi-sub">no fim do mês</div>
+  </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
+  <div class="table-head">
+    <span class="table-title">Orçamento por categoria · {{ data.currentMonth().short }}</span>
+  </div>
+
+  <div class="table-scroll">
+    <table class="bud-table">
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th class="r" style="width:110px">Orçamento</th>
+          <th class="r" style="width:110px">Gasto</th>
+          <th class="r" style="width:110px">Restante</th>
+          <th style="width:200px">Progresso</th>
+          <th style="width:130px">Tendência (6m)</th>
+          <th style="width:90px">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of catRows(); track row.cat.id) {
+          <tr class="bud-row">
+            <td>
+              <div class="cat-cell">
+                <span class="cat-stripe" [style.background]="row.cat.color"></span>
+                <cf-cat-dot [catId]="row.cat.id" [size]="8" />
+                <span class="cat-label">{{ row.cat.label }}</span>
+              </div>
+            </td>
+            <td class="r num">
+              <cf-money [value]="row.cat.budget" [negColor]="false" size="sm" />
+            </td>
+            <td class="r num">
+              <cf-money [value]="row.spent" [negColor]="false" size="sm" />
+            </td>
+            <td class="r num">
+              <cf-money
+                [value]="row.remaining"
+                [color]="row.remaining >= 0 ? 'var(--ink-2)' : 'var(--neg)'"
+                size="sm"
+              />
+            </td>
+            <td>
+              <div class="prog-cell">
+                <cf-progress-bar
+                  [value]="row.spent"
+                  [max]="row.cat.budget"
+                  [color]="row.pct >= 1 ? 'var(--neg)' : row.cat.color"
+                  [height]="5"
+                />
+                <div class="prog-meta">
+                  <span class="num">{{ (row.pct * 100).toFixed(0) }}%</span>
+                  @if (row.pct < 1) {
+                    <span>R$ {{ formatNum(row.remaining) }} restante</span>
+                  } @else {
+                    <span style="color:var(--neg)">R$ {{ formatNum(-row.remaining) }} acima</span>
+                  }
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="trend-cell">
+                <cf-sparkbars
+                  [data]="row.history"
+                  [width]="70"
+                  [height]="20"
+                  [baseColor]="row.cat.color"
+                  [highlightColor]="row.cat.color"
+                />
+                <span class="trend-avg num">méd. {{ formatNum(row.histAvg) }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-pill" [class]="'pill-' + row.status">
+                {{ statusLabel(row.status) }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-foot">
+    <span class="legend">
+      <span class="legend-item">
+        <span class="status-pill pill-folga">Folga</span>
+        <span class="legend-range">&lt; 70%</span>
+      </span>
+      <span class="legend-item">
+        <span class="status-pill pill-no-ritmo">No ritmo</span>
+        <span class="legend-range">70–90%</span>
+      </span>
+      <span class="legend-item">
+        <span class="status-pill pill-atencao">Atenção</span>
+        <span class="legend-range">90–100%</span>
+      </span>
+      <span class="legend-item">
+        <span class="status-pill pill-estourou">Estourou</span>
+        <span class="legend-range">&gt; 100%</span>
+      </span>
+    </span>
+    <span class="foot-total num">
+      Total: <cf-money [value]="totalSpent()" [negColor]="false" size="sm" /> /
+      <cf-money [value]="totalBudget()" [negColor]="false" size="sm" />
+    </span>
+  </div>
+</div>

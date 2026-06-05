@@ -1,0 +1,161 @@
+<div
+  class="backdrop"
+  role="button"
+  tabindex="0"
+  aria-label="Fechar"
+  (click)="onClose()"
+  (keydown.enter)="onClose()"
+  (keydown.space)="onClose()"
+></div>
+
+<aside class="panel">
+  <!-- Header -->
+  <header class="head">
+    <div class="head-info">
+      <div class="head-title-row">
+        <span class="head-title">Detalhe do lançamento</span>
+        <span class="pill pill-brand num">#{{ tx().id.toUpperCase() }}</span>
+      </div>
+      <span class="meta">{{ longDate() }}</span>
+    </div>
+    <button type="button" class="icon-btn" (click)="onClose()" aria-label="Fechar">
+      <cf-icon name="x" [size]="11" />
+    </button>
+  </header>
+
+  <!-- Big value block -->
+  <div class="value-block">
+    <div class="label">{{ tx().installments ? 'Valor da parcela' : 'Valor' }}</div>
+    <div class="value-row">
+      <cf-money [value]="tx().value" size="xxl" [negColor]="false" />
+      @if (tx().installments; as inst) {
+        <span class="pill pill-brand">parcela {{ inst.n }}/{{ inst.of }}</span>
+      }
+    </div>
+    <div class="value-label">{{ tx().label }}</div>
+    <div class="meta value-paid">Pago em <span class="num">{{ shortDate() }}</span></div>
+  </div>
+
+  <!-- Detail rows -->
+  <div class="body">
+    <div class="drow">
+      <span class="drow-label">Categoria</span>
+      <div class="drow-value">
+        <span class="inline">
+          <cf-cat-dot [catId]="tx().cat" [size]="8" />
+          <span class="strong">{{ catLabel() }}</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="drow">
+      <span class="drow-label">Método</span>
+      <div class="drow-value">
+        @if (card(); as c) {
+          <span class="inline">
+            <cf-card-chip [cardId]="tx().method" size="md" />
+            <span class="col">
+              <span class="strong">{{ c.bank }} ···{{ c.last4 }}</span>
+              <span class="meta">fatura fecha dia {{ c.closing }}</span>
+            </span>
+          </span>
+        } @else {
+          <span class="inline">
+            <cf-icon name="pix" [size]="12" color="var(--brand)" />
+            <span>Pix / débito</span>
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="drow">
+      <span class="drow-label">Quem fez</span>
+      <div class="drow-value">
+        @if (tx().holder === 'shared') {
+          <span class="inline">
+            <span class="avatars">
+              <cf-avatar holder="Mateus" [size]="18" />
+              <cf-avatar holder="Thais" [size]="18" />
+            </span>
+            <span>Compartilhado</span>
+          </span>
+        } @else {
+          <span class="inline">
+            <cf-avatar [holder]="tx().holder" [size]="18" />
+            <span>{{ tx().holder }}</span>
+          </span>
+        }
+      </div>
+    </div>
+
+    @if (tx().installments; as inst) {
+      <div class="drow">
+        <span class="drow-label">Parcelamento</span>
+        <div class="drow-value">
+          <div class="inst">
+            <div class="inst-top">
+              <span class="strong">{{ inst.n }} de {{ inst.of }} parcelas</span>
+              <span class="meta num inst-total">
+                total: <cf-money [value]="tx().value * inst.of" size="sm" [negColor]="false" />
+              </span>
+            </div>
+            <cf-progress-bar [value]="inst.n" [max]="inst.of" [color]="'var(--brand)'" [height]="4" />
+            <div class="segments">
+              @for (seg of segments(); track $index) {
+                <span class="segment" [style.background]="seg ? 'var(--brand)' : 'var(--line)'"></span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="drow">
+      <span class="drow-label">Recorrência</span>
+      <div class="drow-value">
+        @if (tx().recurring) {
+          <span class="inline">
+            <cf-icon name="repeat" [size]="11" color="var(--brand)" />
+            <span>Mensal · ativa</span>
+          </span>
+        } @else {
+          <span class="meta">Lançamento único</span>
+        }
+      </div>
+    </div>
+
+    <div class="drow drow-last">
+      <span class="drow-label">Anotação</span>
+      <div class="drow-value">
+        @if (tx().note) {
+          <span class="note">{{ tx().note }}</span>
+        } @else {
+          <span class="meta">Sem anotação.</span>
+        }
+      </div>
+    </div>
+
+    <!-- History block (mock) -->
+    <div class="hist-card">
+      <div class="hist-head"><span class="hist-title">Histórico</span></div>
+      <div class="hist-body">
+        <div class="hist-line">
+          <span class="hist-dot"></span>
+          <span class="meta">Criado em <span class="num">{{ shortDate() }}</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer actions -->
+  <footer class="foot">
+    <div class="foot-group">
+      <button type="button" class="btn ghost" (click)="duplicate()">Duplicar</button>
+      <button type="button" class="btn ghost btn-neg" (click)="remove()">Excluir</button>
+    </div>
+    <div class="foot-group">
+      <button type="button" class="btn ghost" disabled>Editar</button>
+      <button type="button" class="btn btn-primary" disabled>Marcar como conferido</button>
+    </div>
+  </footer>
+</aside>

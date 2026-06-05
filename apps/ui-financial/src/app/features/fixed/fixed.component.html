@@ -1,0 +1,191 @@
+<!-- KPI Grid: 1 large card + 3 small KPIs -->
+<div class="kpi-grid">
+  <div class="card summary-card">
+    <div class="summary-header">
+      <div class="summary-left">
+        <div class="kpi-label">Compromissos fixos do mês</div>
+        <cf-money [value]="totalFixed()" [negColor]="false" size="xl" />
+      </div>
+      <div class="summary-right">
+        <span class="pill brand">{{ data.fixed().length }} contas</span>
+        <span class="tx-meta">renovam todo mês</span>
+      </div>
+    </div>
+    <cf-progress-bar
+      [value]="totalPaid()"
+      [max]="totalFixed()"
+      color="var(--pos)"
+      [height]="6"
+    />
+    <div class="summary-footer">
+      <span class="tx-meta num">
+        <cf-money [value]="totalPaid()" [negColor]="false" size="sm" /> pagos
+      </span>
+      <span class="tx-meta num">
+        <cf-money [value]="totalPending()" [negColor]="false" size="sm" /> a vencer
+      </span>
+    </div>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">Pagos</div>
+    <div class="kpi-value pos">{{ paidItems().length }}</div>
+    <div class="kpi-meta">de {{ data.fixed().length }} contas</div>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">Próx. 7 dias</div>
+    <div class="kpi-value warn">{{ upcoming7() }}</div>
+    <div class="kpi-meta">vencendo em breve</div>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">% da receita</div>
+    <div class="kpi-value">{{ formatPercent(pctReceita()) }}</div>
+    <div class="kpi-meta">renda fixa comprometida</div>
+  </div>
+</div>
+
+<!-- Two tables side by side -->
+<div class="tables-grid">
+  <!-- Left: A vencer (pending) -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <span class="card-title">A vencer</span>
+        <span class="pill warn">{{ pendingItems().length }}</span>
+      </div>
+      <span class="card-meta">ordenado por vencimento</span>
+    </div>
+
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:80px">Venc.</th>
+          <th>Conta</th>
+          <th style="width:110px">Categoria</th>
+          <th style="width:60px">Quem</th>
+          <th class="r" style="width:100px">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of pendingItems(); track f.id) {
+          <tr class="tx-row">
+            <td>
+              <div class="due-cell">
+                <span class="num date-label">{{ formatDay(f.due) }}</span>
+                <span class="num days-away">{{ formatDaysAway(f.due) }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="desc-cell">
+                <cf-icon name="repeat" [size]="11" color="var(--ink-4)" />
+                <span>{{ f.label }}</span>
+                @if (daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
+                  <span class="pill warn">urgente</span>
+                }
+                @if (daysAway(f.due) < 0) {
+                  <span class="pill neg">vencido</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="cat-cell">
+                <cf-cat-dot [catId]="f.cat" />
+                <span class="cat-label">{{ catLabel(f.cat) }}</span>
+              </div>
+            </td>
+            <td>
+              @if (f.holder === 'shared') {
+                <div class="shared-avatars">
+                  <cf-avatar holder="Mateus" [size]="16" />
+                  <cf-avatar holder="Thais"  [size]="16" />
+                </div>
+              } @else {
+                <cf-avatar [holder]="f.holder" [size]="18" />
+              }
+            </td>
+            <td class="r num">
+              <cf-money [value]="f.value" [negColor]="false" />
+            </td>
+          </tr>
+        }
+        @if (pendingItems().length === 0) {
+          <tr>
+            <td colspan="5" class="empty-cell">Todos os fixos foram pagos</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="card-foot">
+      <span>{{ pendingItems().length }} contas</span>
+      <cf-money [value]="totalPending()" [negColor]="false" size="sm" />
+    </div>
+  </div>
+
+  <!-- Right: Pagos no mês -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <span class="card-title">Pagos no mês</span>
+        <span class="pill pos">{{ paidItems().length }}</span>
+      </div>
+      <span class="card-meta">automático via boleto/PIX</span>
+    </div>
+
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:80px">Pago</th>
+          <th>Conta</th>
+          <th style="width:110px">Categoria</th>
+          <th style="width:60px">Quem</th>
+          <th class="r" style="width:100px">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of paidItems(); track f.id) {
+          <tr class="tx-row">
+            <td>
+              <div class="paid-date">
+                <cf-icon name="check" [size]="11" color="var(--pos)" />
+                <span class="num date-label">{{ formatDay(f.due) }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="desc-cell">
+                <cf-icon name="repeat" [size]="11" color="var(--ink-4)" />
+                <span>{{ f.label }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="cat-cell">
+                <cf-cat-dot [catId]="f.cat" />
+                <span class="cat-label">{{ catLabel(f.cat) }}</span>
+              </div>
+            </td>
+            <td>
+              @if (f.holder === 'shared') {
+                <div class="shared-avatars">
+                  <cf-avatar holder="Mateus" [size]="16" />
+                  <cf-avatar holder="Thais"  [size]="16" />
+                </div>
+              } @else {
+                <cf-avatar [holder]="f.holder" [size]="18" />
+              }
+            </td>
+            <td class="r num paid-value">
+              <cf-money [value]="f.value" [negColor]="false" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="card-foot">
+      <span>{{ paidItems().length }} contas</span>
+      <cf-money [value]="totalPaid()" [negColor]="false" size="sm" />
+    </div>
+  </div>
+</div>

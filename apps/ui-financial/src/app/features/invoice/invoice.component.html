@@ -1,0 +1,261 @@
+@if (card(); as c) {
+  <!-- Breadcrumb -->
+  <div class="crumbs">
+    <span class="crumb-muted">Cartões</span>
+    <cf-icon name="chevRight" [size]="9" color="var(--ink-4)" />
+    <span class="crumb-muted">{{ c.bank }}</span>
+    <cf-icon name="chevRight" [size]="9" color="var(--ink-4)" />
+    <span class="crumb-current">Fatura {{ data.currentMonth().short }}</span>
+  </div>
+
+  <!-- Header card -->
+  <div class="head-card">
+    <div class="head-stripe" [style.background]="c.color"></div>
+    <div class="head-row">
+      <!-- Identity -->
+      <div class="head-col">
+        <div class="head-bank-row">
+          <span class="head-bank">{{ c.bank }}</span>
+          <span class="head-last4 num">···{{ c.last4 }}</span>
+        </div>
+        <div class="head-holder-row">
+          <cf-avatar [holder]="c.holder" [size]="14" />
+          <span class="head-meta">{{ c.holder }} · cartão de crédito</span>
+        </div>
+      </div>
+
+      <div class="vdiv"></div>
+
+      <!-- Total -->
+      <div class="head-stat">
+        <div class="stat-label">Total da fatura</div>
+        <cf-money [value]="c.current" size="xl" [negColor]="false" />
+      </div>
+
+      <!-- Limite -->
+      <div class="head-stat">
+        <div class="stat-label">Limite</div>
+        <cf-money [value]="c.limit" size="md" [negColor]="false" />
+        <div class="limit-bar">
+          <cf-progress-bar [value]="c.current" [max]="c.limit" [color]="c.color" [height]="4" />
+        </div>
+        <span class="stat-sub num">{{ (c.current / c.limit * 100).toFixed(0) }}% utilizado</span>
+      </div>
+
+      <!-- Fecha em -->
+      <div class="head-stat">
+        <div class="stat-label">Fecha em</div>
+        <div class="stat-big num">dia {{ c.closing }}</div>
+      </div>
+
+      <!-- Vence em -->
+      <div class="head-stat">
+        <div class="stat-label">Vence em</div>
+        <div class="stat-big num">dia {{ c.due }}</div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- Actions (disabled) -->
+      <div class="head-actions">
+        <button class="btn-ghost" disabled>
+          <cf-icon name="download" [size]="11" /> Boleto
+        </button>
+        <button class="btn-primary" disabled>
+          <cf-icon name="pix" [size]="11" /> Pagar agora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="grid">
+    <!-- Left: purchases -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Compras nesta fatura</span>
+        <span class="panel-meta">{{ items().length }} lançamentos · fechamento dia {{ c.closing }}</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:70px">Data</th>
+              <th>Estabelecimento</th>
+              <th style="width:120px">Categoria</th>
+              <th style="width:96px">Parcela</th>
+              <th style="width:60px">Quem</th>
+              <th class="r" style="width:100px">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of items(); track tx.id) {
+              <tr class="row">
+                <td class="muted num">{{ fmtDate(tx.date) }}</td>
+                <td>
+                  <div class="estab-cell">
+                    <span class="estab-label">{{ tx.label }}</span>
+                    @if (tx.installments) {
+                      <span class="estab-sub num">parcela {{ tx.installments.n }} de {{ tx.installments.of }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <div class="cat-cell">
+                    <cf-cat-dot [catId]="tx.cat" [size]="7" />
+                    <span class="cat-label">{{ catLabel(tx.cat) }}</span>
+                  </div>
+                </td>
+                <td>
+                  @if (tx.installments) {
+                    <div class="inst-cell">
+                      <span class="inst-label num">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
+                      <cf-progress-bar
+                        [value]="tx.installments.n"
+                        [max]="tx.installments.of"
+                        [color]="c.color"
+                        [height]="2"
+                      />
+                    </div>
+                  } @else {
+                    <span class="avista">À vista</span>
+                  }
+                </td>
+                <td>
+                  @if (tx.holder !== 'shared') {
+                    <cf-avatar [holder]="tx.holder" [size]="18" />
+                  } @else {
+                    <div class="shared-avatars">
+                      <cf-avatar holder="Mateus" [size]="15" />
+                      <cf-avatar holder="Thais" [size]="15" />
+                    </div>
+                  }
+                </td>
+                <td class="r num value-cell">
+                  <cf-money [value]="tx.value" [negColor]="false" />
+                </td>
+              </tr>
+            }
+            @if (items().length === 0) {
+              <tr>
+                <td colspan="6" class="empty-cell">Nenhuma compra nesta fatura</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel-foot">
+        <span>{{ items().length }} compras nesta fatura</span>
+        <span class="foot-total num">
+          Subtotal: <cf-money [value]="total()" [negColor]="false" size="sm" />
+        </span>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="side-col">
+      <!-- By category -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Por categoria</span>
+        </div>
+        <div class="cat-body">
+          @if (breakdown().length > 0) {
+            <div class="donut-wrap">
+              <cf-donut [segments]="donutSegments()" [size]="96" [stroke]="14" />
+            </div>
+          }
+          @for (b of breakdown(); track b.catId) {
+            <div class="cat-line">
+              <div class="cat-line-top">
+                <span class="cat-line-name">
+                  <cf-cat-dot [catId]="b.catId" [size]="7" />
+                  <span class="cat-line-label">{{ b.label }}</span>
+                </span>
+                <cf-money [value]="b.total" [negColor]="false" size="sm" />
+              </div>
+              <cf-progress-bar [value]="b.total" [max]="total()" [color]="b.color" [height]="3" />
+            </div>
+          }
+          @if (breakdown().length === 0) {
+            <div class="empty-mini">Sem categorias</div>
+          }
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Histórico desta fatura</span>
+          <span class="panel-meta">9 meses</span>
+        </div>
+        <div class="hist-body">
+          <cf-sparkbars
+            [data]="history()"
+            [width]="320"
+            [height]="48"
+            [baseColor]="c.color"
+            [highlightColor]="c.color"
+            [highlightIndex]="8"
+          />
+          <hr class="hr" />
+          <div class="hist-stats">
+            <div class="stat-col">
+              <span class="stat-label">Média</span>
+              <cf-money [value]="histAvg()" [negColor]="false" size="sm" />
+            </div>
+            <div class="stat-col">
+              <span class="stat-label">Maior</span>
+              <cf-money [value]="histMax()" [negColor]="false" size="sm" />
+            </div>
+            <div class="stat-col">
+              <span class="stat-label">Menor</span>
+              <cf-money [value]="histMin()" [negColor]="false" size="sm" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Future installments -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Parcelas futuras desta fatura</span>
+          <span class="panel-meta">próximos meses</span>
+        </div>
+        <table class="tbl">
+          <tbody>
+            @for (f of futureInstallments(); track f.txId + '-' + f.k) {
+              <tr class="row">
+                <td class="future-label">{{ f.label }}</td>
+                <td class="muted num future-meta">{{ f.k }}/{{ f.of }} · {{ f.monthLabel }}</td>
+                <td class="r num future-value">
+                  <cf-money [value]="f.value" [negColor]="false" size="sm" />
+                </td>
+              </tr>
+            }
+            @if (futureInstallments().length === 0) {
+              <tr>
+                <td colspan="3" class="empty-cell">Nenhuma parcela a vencer</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (futureInstallments().length > 0) {
+          <div class="panel-foot">
+            <span>{{ futureInstallments().length }} {{ futureInstallments().length === 1 ? 'parcela a vencer' : 'parcelas a vencer' }}</span>
+            <span class="foot-total num">
+              <cf-money [value]="futureTotal()" [negColor]="false" size="sm" />
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="not-found">
+    <div class="nf-title">Cartão não encontrado</div>
+    <div class="nf-note">O cartão solicitado não existe ou foi removido. Volte para a lista de cartões.</div>
+  </div>
+}
