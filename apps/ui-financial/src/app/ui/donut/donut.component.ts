@@ -9,34 +9,7 @@ export interface DonutSegment {
 @Component({
   selector: 'cf-donut',
   standalone: true,
-  template: `
-    <svg
-      [attr.width]="size()"
-      [attr.height]="size()"
-      style="transform: rotate(-90deg); display:block"
-    >
-      <circle
-        [attr.cx]="cx()"
-        [attr.cy]="cy()"
-        [attr.r]="r()"
-        fill="none"
-        stroke="var(--line-soft)"
-        [attr.stroke-width]="stroke()"
-      />
-      @for (arc of arcs(); track $index) {
-        <circle
-          [attr.cx]="cx()"
-          [attr.cy]="cy()"
-          [attr.r]="r()"
-          fill="none"
-          [attr.stroke]="arc.color"
-          [attr.stroke-width]="stroke()"
-          [attr.stroke-dasharray]="arc.dashArray"
-          [attr.stroke-dashoffset]="arc.dashOffset"
-        />
-      }
-    </svg>
-  `,
+  templateUrl: './donut.component.html',
 })
 export class DonutComponent {
   segments = input.required<DonutSegment[]>();

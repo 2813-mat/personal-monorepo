@@ -1,0 +1,23 @@
+<div class="toast-stack">
+  @for (t of toasts(); track t.id) {
+    <div class="toast" [class]="'toast--' + t.type">
+      <div class="toast__accent"></div>
+      <span class="toast__message">{{ t.message }}</span>
+      @if (t.action) {
+        <button
+          type="button"
+          class="toast__action"
+          (click)="onAction(t)"
+        >{{ t.action.label }}</button>
+      }
+      <button
+        type="button"
+        class="toast__close"
+        aria-label="Fechar"
+        (click)="toastSvc.dismiss(t.id)"
+      >
+        <cf-icon name="x" [size]="11" color="currentColor" />
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,12 @@
+.pbar {
+  width: 100%;
+  background: var(--line-soft);
+  position: relative;
+  overflow: hidden;
+}
+.pbar__fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: var(--brand);
+  transition: width 0.3s ease;
+}

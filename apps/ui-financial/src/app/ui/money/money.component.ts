@@ -7,26 +7,8 @@ type MoneySize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   selector: 'cf-money',
   standalone: true,
   imports: [NgClass],
-  template: `
-    <span class="money num" [ngClass]="sizeClass()" [style.color]="textColor()">
-      <span class="money__currency">R$</span>
-      <span class="money__integer">{{ intPart() }}</span>
-      @if (cents()) {
-        <span class="money__cents">,{{ centPart() }}</span>
-      }
-    </span>
-  `,
-  styles: [`
-    .money { display: inline-flex; align-items: baseline; gap: 2px; }
-    .money__currency { opacity: 0.6; font-weight: 400; margin-right: 2px; }
-    .money__cents { opacity: 0.55; margin-left: 1px; }
-
-    .money--sm { font-size: 12px; }
-    .money--md { font-size: 13px; }
-    .money--lg { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; }
-    .money--xl { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
-    .money--xxl { font-size: 28px; font-weight: 600; letter-spacing: -0.6px; }
-  `],
+  templateUrl: './money.component.html',
+  styleUrl: './money.component.scss',
 })
 export class MoneyComponent {
   value = input.required<number>();

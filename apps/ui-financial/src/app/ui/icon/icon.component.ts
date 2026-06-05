@@ -36,21 +36,7 @@ const PATHS: Record<string, string> = {
 @Component({
   selector: 'cf-icon',
   standalone: true,
-  template: `
-    <svg
-      [attr.width]="size()"
-      [attr.height]="size()"
-      viewBox="0 0 18 18"
-      fill="none"
-      [attr.stroke]="color()"
-      stroke-width="1.6"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      style="display:block;flex-shrink:0"
-    >
-      <path [attr.d]="path()" />
-    </svg>
-  `,
+  templateUrl: './icon.component.html',
 })
 export class IconComponent {
   name = input.required<string>();

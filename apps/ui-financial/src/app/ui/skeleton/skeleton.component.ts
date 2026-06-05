@@ -3,22 +3,8 @@ import { Component, input, computed } from '@angular/core';
 @Component({
   selector: 'cf-skeleton',
   standalone: true,
-  template: `
-    <div class="sk-wrap" [style.gap.px]="gap()">
-      @for (bar of bars(); track $index) {
-        <div
-          class="skeleton sk-bar"
-          [style.width]="bar.width"
-          [style.height]="bar.height"
-        ></div>
-      }
-    </div>
-  `,
-  styles: [`
-    :host { display: block; }
-    .sk-wrap { display: flex; flex-direction: column; }
-    .sk-bar { border-radius: 4px; }
-  `],
+  templateUrl: './skeleton.component.html',
+  styleUrl: './skeleton.component.scss',
 })
 export class SkeletonComponent {
   width = input<string | number>('100%');

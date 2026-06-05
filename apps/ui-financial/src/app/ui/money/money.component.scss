@@ -1,0 +1,9 @@
+.money { display: inline-flex; align-items: baseline; gap: 2px; }
+.money__currency { opacity: 0.6; font-weight: 400; margin-right: 2px; }
+.money__cents { opacity: 0.55; margin-left: 1px; }
+
+.money--sm { font-size: 12px; }
+.money--md { font-size: 13px; }
+.money--lg { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; }
+.money--xl { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
+.money--xxl { font-size: 28px; font-weight: 600; letter-spacing: -0.6px; }

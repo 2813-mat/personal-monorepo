@@ -4,26 +4,8 @@ import type { Holder } from '@caixa-familia/shared-types';
 @Component({
   selector: 'cf-avatar',
   standalone: true,
-  template: `
-    <span
-      class="avatar"
-      [style.width.px]="size()"
-      [style.height.px]="size()"
-      [style.font-size.px]="size() * 0.5"
-      [style.background]="bgColor()"
-    >{{ letter() }}</span>
-  `,
-  styles: [`
-    .avatar {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.3px;
-      flex-shrink: 0;
-    }
-  `],
+  templateUrl: './avatar.component.html',
+  styleUrl: './avatar.component.scss',
 })
 export class AvatarComponent {
   holder = input.required<Holder>();

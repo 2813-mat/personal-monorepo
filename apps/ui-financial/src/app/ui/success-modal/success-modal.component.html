@@ -1,0 +1,30 @@
+<div
+  class="backdrop"
+  role="button"
+  tabindex="0"
+  aria-label="Fechar"
+  (click)="onBackdrop($event)"
+  (keydown.enter)="dismissed.emit()"
+  (keydown.space)="dismissed.emit()"
+>
+  <div class="card" role="dialog" aria-modal="true">
+    <div class="card__check">
+      <cf-icon name="check" [size]="28" color="var(--pos)" />
+    </div>
+    <div class="card__title">{{ title() }}</div>
+    @if (formattedAmount()) {
+      <div class="card__amount num">{{ formattedAmount() }}</div>
+    }
+    @if (transactionId()) {
+      <div class="card__id mono">#{{ transactionId() }}</div>
+    }
+    <div class="card__actions">
+      <button type="button" class="btn btn--ghost" (click)="receipt.emit()">
+        Recibo
+      </button>
+      <button type="button" class="btn btn--brand" (click)="dismissed.emit()">
+        Voltar
+      </button>
+    </div>
+  </div>
+</div>

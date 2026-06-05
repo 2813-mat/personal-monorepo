@@ -4,34 +4,8 @@ import { AppDataService } from '../../layout/app-data.service';
 @Component({
   selector: 'cf-card-chip',
   standalone: true,
-  template: `
-    @if (card()) {
-      <span
-        class="card-chip"
-        [class.card-chip--md]="size() === 'md'"
-        [style.background]="card()!.color"
-      >{{ label() }}</span>
-    }
-  `,
-  styles: [`
-    .card-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 16px;
-      font-size: 8px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.3px;
-      flex-shrink: 0;
-    }
-    .card-chip--md {
-      width: 36px;
-      height: 22px;
-      font-size: 9px;
-    }
-  `],
+  templateUrl: './card-chip.component.html',
+  styleUrl: './card-chip.component.scss',
 })
 export class CardChipComponent {
   private data = inject(AppDataService);

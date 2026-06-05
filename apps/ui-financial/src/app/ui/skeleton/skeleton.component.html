@@ -1,0 +1,9 @@
+<div class="sk-wrap" [style.gap.px]="gap()">
+  @for (bar of bars(); track $index) {
+    <div
+      class="skeleton sk-bar"
+      [style.width]="bar.width"
+      [style.height]="bar.height"
+    ></div>
+  }
+</div>

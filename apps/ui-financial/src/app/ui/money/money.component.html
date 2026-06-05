@@ -1,0 +1,7 @@
+<span class="money num" [ngClass]="sizeClass()" [style.color]="textColor()">
+  <span class="money__currency">R$</span>
+  <span class="money__integer">{{ intPart() }}</span>
+  @if (cents()) {
+    <span class="money__cents">,{{ centPart() }}</span>
+  }
+</span>

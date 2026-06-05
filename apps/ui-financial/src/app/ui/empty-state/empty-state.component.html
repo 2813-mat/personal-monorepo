@@ -1,0 +1,27 @@
+<div class="empty">
+  <div class="empty__icon">
+    <cf-icon [name]="icon()" [size]="32" color="var(--ink-4)" />
+  </div>
+  <div class="empty__title">{{ title() }}</div>
+  @if (description()) {
+    <div class="empty__desc">{{ description() }}</div>
+  }
+  @if (visibleActions().length) {
+    <div class="empty__actions">
+      @for (action of visibleActions(); track $index) {
+        <button
+          type="button"
+          class="empty__btn"
+          [class.empty__btn--primary]="$index === 0"
+          [class.empty__btn--ghost]="$index !== 0"
+          (click)="actionClick.emit($index)"
+        >
+          @if (action.icon) {
+            <cf-icon [name]="action.icon" [size]="13" color="currentColor" />
+          }
+          {{ action.label }}
+        </button>
+      }
+    </div>
+  }
+</div>

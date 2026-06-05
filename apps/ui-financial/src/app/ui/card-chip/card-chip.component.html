@@ -1,0 +1,7 @@
+@if (card()) {
+  <span
+    class="card-chip"
+    [class.card-chip--md]="size() === 'md'"
+    [style.background]="card()!.color"
+  >{{ label() }}</span>
+}

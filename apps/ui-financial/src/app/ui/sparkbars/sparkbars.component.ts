@@ -3,20 +3,7 @@ import { Component, input, computed } from '@angular/core';
 @Component({
   selector: 'cf-sparkbars',
   standalone: true,
-  template: `
-    <svg [attr.width]="width()" [attr.height]="height()" style="display:block">
-      @for (bar of bars(); track $index) {
-        <rect
-          [attr.x]="bar.x"
-          [attr.y]="bar.y"
-          [attr.width]="bar.w"
-          [attr.height]="bar.h"
-          [attr.fill]="bar.isHighlight ? highlightColor() : baseColor()"
-          [attr.opacity]="bar.isHighlight ? 1 : 0.45"
-        />
-      }
-    </svg>
-  `,
+  templateUrl: './sparkbars.component.html',
 })
 export class SparkbarsComponent {
   data = input.required<number[]>();
