@@ -1,0 +1,42 @@
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-brand-mark">CF</div>
+    <div class="sb-brand-info">
+      <div class="sb-brand-name">Planejador Financeiro</div>
+      <div class="sb-brand-sub">Mateus &amp; Thais</div>
+    </div>
+  </div>
+
+  <div class="sb-section-label">Operação</div>
+  @for (item of operacao; track item.id) {
+    <a class="sb-item" [routerLink]="item.route" routerLinkActive="active">
+      <cf-icon [name]="item.icon" [size]="13" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+
+  <div class="sb-section-label">Planejamento</div>
+  @for (item of planejamento; track item.id) {
+    <a class="sb-item" [routerLink]="item.route" routerLinkActive="active">
+      <cf-icon [name]="item.icon" [size]="13" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+
+  <div class="sb-section-label">Sistema</div>
+  @for (item of sistema; track item.id) {
+    <a class="sb-item" [routerLink]="item.route" routerLinkActive="active">
+      <cf-icon [name]="item.icon" [size]="13" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+
+  <div class="sb-foot">
+    <span class="sb-avatar">MT</span>
+    <div class="sb-foot-info">
+      <div class="sb-foot-name">Mateus</div>
+      <div class="sb-foot-role">admin</div>
+    </div>
+    <cf-icon name="bell" [size]="12" color="var(--ink-3)" />
+  </div>
+</aside>

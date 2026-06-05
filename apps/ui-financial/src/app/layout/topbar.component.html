@@ -1,0 +1,36 @@
+<header class="topbar">
+  <div class="month-nav">
+    <button class="month-nav-btn" (click)="prevMonth()" aria-label="Mês anterior">
+      <cf-icon name="arrowLeft" [size]="11" />
+    </button>
+    <div class="month-label">{{ data.monthLabel() }}</div>
+    <button class="month-nav-btn" (click)="nextMonth()" aria-label="Próximo mês">
+      <cf-icon name="arrowRight" [size]="11" />
+    </button>
+  </div>
+
+  <div class="seg" role="group" aria-label="Filtrar por pessoa">
+    <button class="seg-btn" [class.active]="filter() === 'todos'" (click)="setFilter('todos')">
+      Todos
+    </button>
+    <button class="seg-btn" [class.active]="filter() === 'Mateus'" (click)="setFilter('Mateus')">
+      <cf-avatar holder="Mateus" [size]="12" /> Mateus
+    </button>
+    <button class="seg-btn" [class.active]="filter() === 'Thais'" (click)="setFilter('Thais')">
+      <cf-avatar holder="Thais" [size]="12" /> Thais
+    </button>
+  </div>
+
+  <div class="topbar-spacer"></div>
+
+  <button class="topbar-btn ghost">
+    <cf-icon name="upload" [size]="11" /> Importar
+  </button>
+  <button class="topbar-btn" (click)="drawerOpen.set(true)">
+    <cf-icon name="plus" [size]="11" /> Lançar gasto
+  </button>
+</header>
+
+@if (drawerOpen()) {
+  <cf-expense-drawer (closed)="drawerOpen.set(false)" />
+}
