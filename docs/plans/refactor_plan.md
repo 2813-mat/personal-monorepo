@@ -1,6 +1,6 @@
 # Refactor: separar template e estilos por componente — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Mover o template e o CSS inline de cada componente do `ui-financial` para arquivos `.html`/`.scss` próprios, sem mudar nenhum comportamento.
 
@@ -75,7 +75,7 @@ export class ProgressBarComponent { /* inalterado */ }
 
 ## Verificação (gate ao fim de cada lote)
 
-- [ ] Rodar: `npx nx build ui-financial`
+- [x] Rodar: `npx nx build ui-financial`
 - Esperado: `Successfully ran target build for project ui-financial`.
 - Conferir que os chunks lazy continuam presentes (`dashboard-component`, `transactions-component`, `reports-component`, `cards-component`, `settings-component`, `goals-component`, `fixed-component`, `budgets-component`, `invoice-component`).
 - Warnings **pré-existentes** continuam e NÃO contam como regressão: `NG8107` em `cards.component.ts`; budgets de estilo (4 kB) em vários componentes. Qualquer **erro** novo, ou chunk/feature sumindo, é regressão → corrigir antes do commit.
@@ -113,9 +113,9 @@ Não tocar: `app-data.service.ts`, `ui/toast/toast.service.ts` (sem template), `
 - `ui/success-modal/success-modal.component.ts`
 - `ui/toast/toast-container.component.ts`
 
-- [ ] **Passo 1:** Para cada arquivo acima, aplicar o **Transform Recipe**. Atenção aos que **não têm `styles`** (ex.: `donut`, e quaisquer outros só com template) — esses ganham apenas `.html`.
-- [ ] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde, sem erros novos.
-- [ ] **Passo 3:** Commit
+- [x] **Passo 1:** Para cada arquivo acima, aplicar o **Transform Recipe**. Atenção aos que **não têm `styles`** (ex.: `donut`, e quaisquer outros só com template) — esses ganham apenas `.html`.
+- [x] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde, sem erros novos.
+- [x] **Passo 3:** Commit
 ```bash
 git add apps/ui-financial/src/app/ui
 git commit -m "refactor(ui-financial): externalize ui component templates and styles"
@@ -131,10 +131,10 @@ git commit -m "refactor(ui-financial): externalize ui component templates and st
 - `layout/app-shell.component.ts` (template + styles)
 - `app.ts` (root): template `'<router-outlet />'`, **sem** styles → criar `app.html` e usar `templateUrl: './app.html'`. Sem `.scss`.
 
-- [ ] **Passo 1:** Aplicar Transform Recipe aos 3 de `layout/`.
-- [ ] **Passo 2:** No `app.ts`, mover o template de uma linha para `apps/ui-financial/src/app/app.html` e trocar para `templateUrl: './app.html'`. (Caso de borda trivial; incluído por causa da decisão "consistência total".)
-- [ ] **Passo 3:** Verificação — `npx nx build ui-financial` → build verde.
-- [ ] **Passo 4:** Commit
+- [x] **Passo 1:** Aplicar Transform Recipe aos 3 de `layout/`.
+- [x] **Passo 2:** No `app.ts`, mover o template de uma linha para `apps/ui-financial/src/app/app.html` e trocar para `templateUrl: './app.html'`. (Caso de borda trivial; incluído por causa da decisão "consistência total".)
+- [x] **Passo 3:** Verificação — `npx nx build ui-financial` → build verde.
+- [x] **Passo 4:** Commit
 ```bash
 git add apps/ui-financial/src/app/layout apps/ui-financial/src/app/app.ts apps/ui-financial/src/app/app.html
 git commit -m "refactor(ui-financial): externalize layout and root templates/styles"
@@ -154,9 +154,9 @@ git commit -m "refactor(ui-financial): externalize layout and root templates/sty
 - `features/tx-detail-drawer/tx-detail-drawer.component.ts`
 - `features/transactions/transactions.component.ts` (o `<ng-template #txRow>` faz parte do template e vai verbatim para o `.html`)
 
-- [ ] **Passo 1:** Aplicar Transform Recipe a cada arquivo acima.
-- [ ] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde; conferir chunks `cards/budgets/fixed/settings/invoice/transactions`.
-- [ ] **Passo 3:** Commit
+- [x] **Passo 1:** Aplicar Transform Recipe a cada arquivo acima.
+- [x] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde; conferir chunks `cards/budgets/fixed/settings/invoice/transactions`.
+- [x] **Passo 3:** Commit
 ```bash
 git add apps/ui-financial/src/app/features/cards apps/ui-financial/src/app/features/budgets apps/ui-financial/src/app/features/fixed apps/ui-financial/src/app/features/settings apps/ui-financial/src/app/features/invoice apps/ui-financial/src/app/features/expense-drawer apps/ui-financial/src/app/features/tx-detail-drawer apps/ui-financial/src/app/features/transactions
 git commit -m "refactor(ui-financial): externalize feature screen templates/styles"
@@ -175,9 +175,9 @@ Estes dois arquivos têm 2 classes cada. Extrair o subcomponente para arquivo pr
 - Modify: `features/reports/reports.component.ts`
 - Create: `features/reports/reports.component.html`, `reports.component.scss`
 
-- [ ] **Passo 1:** Criar `report-chart.component.ts` movendo a classe `ReportChartComponent` (com seu decorator) **e** as interfaces `ChartBar` e `ChartModel` (que são o contrato do chart). `export`ar `ChartModel` (e `ChartBar` se quiser). Aplicar o Transform Recipe a esse componente (template → `report-chart.component.html`, styles → `report-chart.component.scss`). Manter `@Input({ required: true }) model!: ChartModel` e os campos `H`/`labelY`.
-- [ ] **Passo 2:** Em `reports.component.ts`: remover a classe `ReportChartComponent` e as interfaces `ChartBar`/`ChartModel`; adicionar `import { ReportChartComponent, ChartModel } from './report-chart.component';`. Manter `fmtNum` e as interfaces `KpiCard`/`TopCatRow`/`SplitLine`/`HolderBlock` (usadas só por `ReportsComponent`). Aplicar o Transform Recipe à `ReportsComponent` (template → `reports.component.html`, styles → `reports.component.scss`). `ReportChartComponent` continua no array `imports` do decorator.
-- [ ] **Passo 3:** Verificação — `npx nx build ui-financial` → build verde; chunk `reports-component` presente.
+- [x] **Passo 1:** Criar `report-chart.component.ts` movendo a classe `ReportChartComponent` (com seu decorator) **e** as interfaces `ChartBar` e `ChartModel` (que são o contrato do chart). `export`ar `ChartModel` (e `ChartBar` se quiser). Aplicar o Transform Recipe a esse componente (template → `report-chart.component.html`, styles → `report-chart.component.scss`). Manter `@Input({ required: true }) model!: ChartModel` e os campos `H`/`labelY`.
+- [x] **Passo 2:** Em `reports.component.ts`: remover a classe `ReportChartComponent` e as interfaces `ChartBar`/`ChartModel`; adicionar `import { ReportChartComponent, ChartModel } from './report-chart.component';`. Manter `fmtNum` e as interfaces `KpiCard`/`TopCatRow`/`SplitLine`/`HolderBlock` (usadas só por `ReportsComponent`). Aplicar o Transform Recipe à `ReportsComponent` (template → `reports.component.html`, styles → `reports.component.scss`). `ReportChartComponent` continua no array `imports` do decorator.
+- [x] **Passo 3:** Verificação — `npx nx build ui-financial` → build verde; chunk `reports-component` presente.
 
 ### D2 — Goals
 
@@ -187,7 +187,7 @@ Estes dois arquivos têm 2 classes cada. Extrair o subcomponente para arquivo pr
 - Modify: `features/goals/goals.component.ts`
 - Create: `features/goals/goals.component.html`, `goals.component.scss`
 
-- [ ] **Passo 4:** Criar `goal-format.utils.ts` exportando o helper `fmtShort` e a const `MONTH_ABBR` (movidos de `goals.component.ts`). Isso evita import circular, já que tanto `GoalsComponent` quanto `GoalCardComponent` usam `fmtShort`.
+- [x] **Passo 4:** Criar `goal-format.utils.ts` exportando o helper `fmtShort` e a const `MONTH_ABBR` (movidos de `goals.component.ts`). Isso evita import circular, já que tanto `GoalsComponent` quanto `GoalCardComponent` usam `fmtShort`.
 ```ts
 export const MONTH_ABBR = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
@@ -195,10 +195,10 @@ export function fmtShort(v: number): string {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 ```
-- [ ] **Passo 5:** Criar `goal-card.component.ts` movendo a classe `GoalCardComponent` (com decorator); `import { fmtShort } from './goal-format.utils';`. Aplicar Transform Recipe (template → `goal-card.component.html`, styles → `goal-card.component.scss`).
-- [ ] **Passo 6:** Em `goals.component.ts`: remover a classe `GoalCardComponent` e as definições locais de `fmtShort`/`MONTH_ABBR`; adicionar `import { GoalCardComponent } from './goal-card.component';` e `import { fmtShort, MONTH_ABBR } from './goal-format.utils';`. Manter o tipo `ProjectionRow`. Aplicar Transform Recipe à `GoalsComponent`. `GoalCardComponent` continua em `imports`.
-- [ ] **Passo 7:** Verificação — `npx nx build ui-financial` → build verde; chunk `goals-component` presente.
-- [ ] **Passo 8:** Commit
+- [x] **Passo 5:** Criar `goal-card.component.ts` movendo a classe `GoalCardComponent` (com decorator); `import { fmtShort } from './goal-format.utils';`. Aplicar Transform Recipe (template → `goal-card.component.html`, styles → `goal-card.component.scss`).
+- [x] **Passo 6:** Em `goals.component.ts`: remover a classe `GoalCardComponent` e as definições locais de `fmtShort`/`MONTH_ABBR`; adicionar `import { GoalCardComponent } from './goal-card.component';` e `import { fmtShort, MONTH_ABBR } from './goal-format.utils';`. Manter o tipo `ProjectionRow`. Aplicar Transform Recipe à `GoalsComponent`. `GoalCardComponent` continua em `imports`.
+- [x] **Passo 7:** Verificação — `npx nx build ui-financial` → build verde; chunk `goals-component` presente.
+- [x] **Passo 8:** Commit
 ```bash
 git add apps/ui-financial/src/app/features/reports apps/ui-financial/src/app/features/goals
 git commit -m "refactor(ui-financial): externalize reports/goals and extract chart/card subcomponents"
@@ -214,9 +214,9 @@ git commit -m "refactor(ui-financial): externalize reports/goals and extract cha
 - `features/dashboard/dashboard-b.component.ts`
 - `features/dashboard/dashboard-c.component.ts`
 
-- [ ] **Passo 1:** Aplicar Transform Recipe aos 4 arquivos.
-- [ ] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde; chunk `dashboard-component` presente.
-- [ ] **Passo 3:** Commit
+- [x] **Passo 1:** Aplicar Transform Recipe aos 4 arquivos.
+- [x] **Passo 2:** Verificação — `npx nx build ui-financial` → build verde; chunk `dashboard-component` presente.
+- [x] **Passo 3:** Commit
 ```bash
 git add apps/ui-financial/src/app/features/dashboard
 git commit -m "refactor(ui-financial): externalize dashboard templates/styles"
@@ -226,11 +226,11 @@ git commit -m "refactor(ui-financial): externalize dashboard templates/styles"
 
 ## Definition of Done
 
-- [ ] Todo `@Component` do app usa `templateUrl` (+ `styleUrl` quando há estilos); nenhum `template`/`styles` inline restante em `apps/ui-financial/src/app` (exceto serviços, que não têm template).
-- [ ] `npx nx build ui-financial` verde, com os mesmos warnings pré-existentes e nada de erro novo.
-- [ ] `ReportChartComponent` e `GoalCardComponent` em arquivos próprios; sem import circular (`goal-format.utils.ts` criado).
-- [ ] Nenhuma mudança de comportamento: rotas, seletores, inputs/outputs, lógica e DI idênticos.
-- [ ] (Opcional) Rodar o app e conferir 1–2 telas + um drawer para validação visual.
+- [x] Todo `@Component` do app usa `templateUrl` (+ `styleUrl` quando há estilos); nenhum `template`/`styles` inline restante em `apps/ui-financial/src/app` (exceto serviços, que não têm template).
+- [x] `npx nx build ui-financial` verde, com os mesmos warnings pré-existentes e nada de erro novo.
+- [x] `ReportChartComponent` e `GoalCardComponent` em arquivos próprios; sem import circular (`goal-format.utils.ts` criado).
+- [x] Nenhuma mudança de comportamento: rotas, seletores, inputs/outputs, lógica e DI idênticos.
+- [x] (Opcional) Rodar o app e conferir 1–2 telas + um drawer para validação visual.
 
 ## Verificação rápida final (grep)
 
