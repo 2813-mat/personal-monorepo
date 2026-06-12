@@ -74,7 +74,7 @@ modules/<ctx>/<aggregate>/
 **Files:**
 - Create: `apps/api-financial/**` (gerado pelo Nx)
 
-- [ ] **Step 1: Gerar o app Nest**
+- [X] **Step 1: Gerar o app Nest**
 
 Run:
 ```bash
@@ -82,7 +82,7 @@ npx nx g @nx/nest:application apps/api-financial --unitTestRunner=jest --e2eTest
 ```
 Expected: cria `apps/api-financial` com `main.ts`, `app/app.module.ts`, `project.json`, `jest.config.ts`.
 
-- [ ] **Step 2: Verificar build**
+- [X] **Step 2: Verificar build**
 
 Run: `npx nx build api-financial`
 Expected: `Successfully ran target build for project api-financial`.
