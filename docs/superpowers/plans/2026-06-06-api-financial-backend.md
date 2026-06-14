@@ -12,6 +12,27 @@
 
 ---
 
+## Progresso da implementação
+
+**Status:** Tasks 1–11 ✅ concluídas e verificadas. Próxima: Task 12 (Cards). Branch: `feat/api-financial-backend`.
+
+Verificação end-to-end já feita no módulo de referência (Task 11): com Postgres + Keycloak no ar, `GET /api/categories` retorna 401 sem token, 11 categorias com token (escopo por household), e `POST` cria com `householdId` resolvido (201). Stack de teste local: `docker compose up -d`, `.env` (cópia de `.env.example`), `npx prisma migrate deploy`, `npx prisma db seed`, `npx nx serve api-financial`. Token de teste: password grant no client `ui-financial`, usuários `mateus/mateus` (admin) e `thais/thais` (editor).
+
+### Desvios do plano original (importantes para as próximas tasks)
+
+1. **Prisma fixado em v6** (não v7). O v7 exige `prisma.config.ts`, `output` obrigatório no generator e novo import path — o plano foi escrito para o generator `prisma-client-js` com `import { PrismaClient } from '@prisma/client'`. Mantido v6 (`^6`).
+2. **Enums multi-linha** no `schema.prisma` (o v6 rejeita `enum X { A B }` inline).
+3. **Realm Keycloak 26:** usuários precisam de `lastName`, `emailVerified: true` e `requiredActions: []`, e o client `ui-financial` precisa de `directAccessGrantsEnabled: true` (password grant) — senão o token falha com "Account is not fully set up".
+4. **Seed:** roda via `ts-node --transpile-only -P apps/api-financial/tsconfig.app.json`; vínculo fixo↔transação é por label (4 casam). Contribuições de meta criadas com `await` (não `void`).
+5. **TenantContext / multi-tenancy (mudança estrutural — replicar nas próximas tasks):**
+   - `PrismaService` e `TenantContext` são providos **uma vez** em módulos `@Global` (`PrismaModule` e `AuthModule`), **não** redeclarados por módulo de domínio (redeclarar quebraria o compartilhamento da instância request-scoped).
+   - **Não há `TenantInterceptor`.** Em vez disso: `JwtStrategy.validate()` injeta `PrismaService`, chama `resolveMember` e enriquece `req.user` com `{ memberId, householdId, role }` durante a fase de guard. `member-resolver.ts` contém `resolveMember` (casa por `sub` OU `preferred_username`).
+   - `TenantContext` é request-scoped e injeta `REQUEST`, lendo `req.user` **lazy via getters** (`householdId`, `memberId`, `role`). Isso é obrigatório porque providers request-scoped são construídos **antes** do guard rodar — popular no construtor/factory pega `req.user` indefinido e escoparia queries para `householdId=undefined` silenciosamente.
+   - Repositórios estendem `TenantRepository` e **declaram construtor explícito** `constructor(prisma, tenant){ super(prisma, tenant); }` — sem isso o Nest não reflete os tipos do construtor herdado e a DI falha.
+   - Módulos de domínio: só declaram controllers + use-cases + binding do repo (`{ provide: XRepository, useClass: XPrismaRepository }`). Não declaram `PrismaService`/`TenantContext`.
+
+---
+
 ## File Structure
 
 ```
@@ -87,7 +108,7 @@ Expected: cria `apps/api-financial` com `main.ts`, `app/app.module.ts`, `project
 Run: `npx nx build api-financial`
 Expected: `Successfully ran target build for project api-financial`.
 
-- [ ] **Step 3: Configurar ValidationPipe e prefixo global**
+- [X] **Step 3: Configurar ValidationPipe e prefixo global**
 
 Editar `apps/api-financial/src/main.ts` para conter:
 
@@ -110,12 +131,12 @@ async function bootstrap() {
 bootstrap();
 ```
 
-- [ ] **Step 4: Verificar build novamente**
+- [X] **Step 4: Verificar build novamente**
 
 Run: `npx nx build api-financial`
 Expected: build verde.
 
-- [ ] **Step 5: Commit**
+- [X] **Step 5: Commit**
 
 ```bash
 git add apps/api-financial
@@ -131,7 +152,7 @@ git commit -m "feat(api-financial): scaffold NestJS application"
 - Create: `.env.example`
 - Create: `keycloak/realm-export.json`
 
-- [ ] **Step 1: Criar `docker-compose.yml`**
+- [X] **Step 1: Criar `docker-compose.yml`**
 
 ```yaml
 services:
@@ -180,7 +201,7 @@ volumes:
   cf-kc-pg:
 ```
 
-- [ ] **Step 2: Criar `.env.example`**
+- [X] **Step 2: Criar `.env.example`**
 
 ```bash
 PORT=3000
@@ -191,7 +212,7 @@ KEYCLOAK_REALM=caixa-familia
 KEYCLOAK_CLIENT_ID=api-financial
 ```
 
-- [ ] **Step 3: Criar `keycloak/realm-export.json`** (realm com 2 clients, 2 roles, 2 usuários)
+- [X] **Step 3: Criar `keycloak/realm-export.json`** (realm com 2 clients, 2 roles, 2 usuários)
 
 ```json
 {
@@ -231,13 +252,13 @@ KEYCLOAK_CLIENT_ID=api-financial
 }
 ```
 
-- [ ] **Step 4: Subir e verificar**
+- [X] **Step 4: Subir e verificar**
 
 Run: `docker compose up -d`
 Then: `docker compose ps`
 Expected: `cf-postgres`, `cf-keycloak`, `cf-keycloak-db` em estado `running`. Keycloak acessível em `http://localhost:8080` (admin/admin) com realm `caixa-familia` importado.
 
-- [ ] **Step 5: Commit**
+- [X] **Step 5: Commit**
 
 ```bash
 git add docker-compose.yml .env.example keycloak/realm-export.json
@@ -253,12 +274,12 @@ git commit -m "feat(api-financial): docker compose with postgres and keycloak"
 - Create: `apps/api-financial/src/infrastructure/config/config.module.ts`
 - Test: `apps/api-financial/src/infrastructure/config/config.schema.spec.ts`
 
-- [ ] **Step 1: Instalar deps**
+- [X] **Step 1: Instalar deps**
 
 Run: `npm i @nestjs/config zod && npm i -D @types/node`
 Expected: dependências adicionadas.
 
-- [ ] **Step 2: Escrever teste que falha**
+- [X] **Step 2: Escrever teste que falha**
 
 `config.schema.spec.ts`:
 ```ts
@@ -282,12 +303,12 @@ describe('parseEnv', () => {
 });
 ```
 
-- [ ] **Step 3: Rodar o teste e ver falhar**
+- [X] **Step 3: Rodar o teste e ver falhar**
 
 Run: `npx nx test api-financial --testFile=config.schema.spec.ts`
 Expected: FAIL (`parseEnv` não existe).
 
-- [ ] **Step 4: Implementar `config.schema.ts`**
+- [X] **Step 4: Implementar `config.schema.ts`**
 
 ```ts
 import { z } from 'zod';
@@ -308,7 +329,7 @@ export function parseEnv(env: Record<string, unknown>): AppConfig {
 }
 ```
 
-- [ ] **Step 5: Implementar `config.module.ts`**
+- [X] **Step 5: Implementar `config.module.ts`**
 
 ```ts
 import { Global, Module } from '@nestjs/common';
@@ -322,12 +343,12 @@ import { parseEnv } from './config.schema';
 export class AppConfigModule {}
 ```
 
-- [ ] **Step 6: Rodar teste e ver passar**
+- [X] **Step 6: Rodar teste e ver passar**
 
 Run: `npx nx test api-financial --testFile=config.schema.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [X] **Step 7: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/config
@@ -343,12 +364,12 @@ git commit -m "feat(api-financial): zod-validated config module"
 - Create: `apps/api-financial/src/infrastructure/prisma/prisma.service.ts`
 - Modify: `package.json` (script `prisma`)
 
-- [ ] **Step 1: Instalar Prisma**
+- [X] **Step 1: Instalar Prisma**
 
 Run: `npm i @prisma/client && npm i -D prisma`
 Expected: deps adicionadas.
 
-- [ ] **Step 2: Criar `schema.prisma`** (modelo completo do spec)
+- [X] **Step 2: Criar `schema.prisma`** (modelo completo do spec)
 
 ```prisma
 generator client {
@@ -573,7 +594,7 @@ model InvoiceHistory {
 }
 ```
 
-- [ ] **Step 3: Implementar `prisma.service.ts`**
+- [X] **Step 3: Implementar `prisma.service.ts`**
 
 ```ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
@@ -586,7 +607,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 }
 ```
 
-- [ ] **Step 4: Adicionar config do Prisma ao `package.json`**
+- [X] **Step 4: Adicionar config do Prisma ao `package.json`**
 
 Adicionar no `package.json` raiz:
 ```json
@@ -596,7 +617,7 @@ Adicionar no `package.json` raiz:
 }
 ```
 
-- [ ] **Step 5: Gerar client e validar schema**
+- [X] **Step 5: Gerar client e validar schema**
 
 Run:
 ```bash
@@ -605,7 +626,7 @@ npx prisma validate
 ```
 Expected: `The schema is valid` e client gerado.
 
-- [ ] **Step 6: Commit**
+- [X] **Step 6: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/prisma package.json package-lock.json
@@ -619,23 +640,23 @@ git commit -m "feat(api-financial): prisma schema and service"
 **Files:**
 - Create: `apps/api-financial/src/infrastructure/prisma/migrations/**` (gerado)
 
-- [ ] **Step 1: Garantir Postgres no ar**
+- [X] **Step 1: Garantir Postgres no ar**
 
 Run: `docker compose up -d postgres`
 Expected: `cf-postgres` running.
 
-- [ ] **Step 2: Criar a migração**
+- [X] **Step 2: Criar a migração**
 
 Run: `npx dotenv -e .env -- npx prisma migrate dev --name init`
 (Se `dotenv-cli` não estiver instalado: `npm i -D dotenv-cli`.)
 Expected: cria `migrations/<ts>_init/migration.sql` e aplica no banco; `Your database is now in sync with your schema`.
 
-- [ ] **Step 3: Conferir tabelas**
+- [X] **Step 3: Conferir tabelas**
 
 Run: `npx prisma db pull --print`
 Expected: lista todas as tabelas (Household, Member, Category, Card, ...).
 
-- [ ] **Step 4: Commit**
+- [X] **Step 4: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/prisma/migrations
@@ -649,7 +670,7 @@ git commit -m "feat(api-financial): initial database migration"
 **Files:**
 - Create: `apps/api-financial/src/infrastructure/prisma/seed.ts`
 
-- [ ] **Step 1: Escrever `seed.ts`**
+- [X] **Step 1: Escrever `seed.ts`**
 
 Traduz `libs/shared-mocks`. Cria 1 household, 2 members (slug→keycloakSub previsível `mateus`/`thais` casando com o realm), categorias, cartões, incomes, fixos, transações (com installments e vínculos), goals + contribuições, e os 12 `MonthlySummary`.
 
@@ -801,12 +822,12 @@ main().finally(() => prisma.$disconnect());
 
 > Nota de implementação: trocar o `void prisma.goalContribution.create` por `await` (usar `for...of` em vez de `forEach`) para garantir persistência antes do disconnect.
 
-- [ ] **Step 2: Rodar o seed**
+- [X] **Step 2: Rodar o seed**
 
 Run: `npx dotenv -e .env -- npx prisma db seed`
 Expected: `Seed concluído.` sem erros.
 
-- [ ] **Step 3: Conferir contagem**
+- [X] **Step 3: Conferir contagem**
 
 Run:
 ```bash
@@ -814,7 +835,7 @@ npx dotenv -e .env -- npx prisma studio
 ```
 Expected (visual): 33 transactions, 7 cards, 11 categories, 2 goals, 12 monthly summaries.
 
-- [ ] **Step 4: Commit**
+- [X] **Step 4: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/prisma/seed.ts package.json
@@ -831,7 +852,7 @@ git commit -m "feat(api-financial): seed database from shared mocks"
 - Test: `apps/api-financial/src/shared-kernel/money.vo.spec.ts`
 - Test: `apps/api-financial/src/shared-kernel/billing-cycle.spec.ts`
 
-- [ ] **Step 1: Teste de `Money` que falha**
+- [X] **Step 1: Teste de `Money` que falha**
 
 `money.vo.spec.ts`:
 ```ts
@@ -847,12 +868,12 @@ describe('Money', () => {
 });
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [X] **Step 2: Rodar e ver falhar**
 
 Run: `npx nx test api-financial --testFile=money.vo.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 3: Implementar `money.vo.ts`**
+- [X] **Step 3: Implementar `money.vo.ts`**
 
 ```ts
 export class Money {
@@ -867,7 +888,7 @@ export class Money {
 }
 ```
 
-- [ ] **Step 4: Teste de `billingCycle` que falha**
+- [X] **Step 4: Teste de `billingCycle` que falha**
 
 `billing-cycle.spec.ts`:
 ```ts
@@ -888,12 +909,12 @@ describe('billingCycleFor', () => {
 });
 ```
 
-- [ ] **Step 5: Rodar e ver falhar**
+- [X] **Step 5: Rodar e ver falhar**
 
 Run: `npx nx test api-financial --testFile=billing-cycle.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 6: Implementar `billing-cycle.ts`**
+- [X] **Step 6: Implementar `billing-cycle.ts`**
 
 ```ts
 export interface BillingCycle { start: Date; end: Date; }
@@ -908,12 +929,12 @@ export function billingCycleFor(closingDay: number, ref: Date = new Date()): Bil
 }
 ```
 
-- [ ] **Step 7: Rodar testes e ver passar**
+- [X] **Step 7: Rodar testes e ver passar**
 
 Run: `npx nx test api-financial --testFile=money.vo.spec.ts && npx nx test api-financial --testFile=billing-cycle.spec.ts`
 Expected: PASS nos dois.
 
-- [ ] **Step 8: Commit**
+- [X] **Step 8: Commit**
 
 ```bash
 git add apps/api-financial/src/shared-kernel
@@ -932,12 +953,12 @@ git commit -m "feat(api-financial): shared-kernel money and billing-cycle value 
 - Create: `apps/api-financial/src/infrastructure/auth/auth.module.ts`
 - Test: `apps/api-financial/src/infrastructure/auth/roles.guard.spec.ts`
 
-- [ ] **Step 1: Instalar deps**
+- [X] **Step 1: Instalar deps**
 
 Run: `npm i @nestjs/passport passport passport-jwt jwks-rsa @nestjs/jwt && npm i -D @types/passport-jwt`
 Expected: deps adicionadas.
 
-- [ ] **Step 2: Implementar `jwt.strategy.ts`** (valida assinatura via JWKS do realm)
+- [X] **Step 2: Implementar `jwt.strategy.ts`** (valida assinatura via JWKS do realm)
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -971,7 +992,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 }
 ```
 
-- [ ] **Step 3: Implementar `jwt-auth.guard.ts` e `roles.decorator.ts`**
+- [X] **Step 3: Implementar `jwt-auth.guard.ts` e `roles.decorator.ts`**
 
 `jwt-auth.guard.ts`:
 ```ts
@@ -989,7 +1010,7 @@ export const ROLES_KEY = 'roles';
 export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
 ```
 
-- [ ] **Step 4: Teste de `roles.guard` que falha**
+- [X] **Step 4: Teste de `roles.guard` que falha**
 
 `roles.guard.spec.ts`:
 ```ts
@@ -1020,12 +1041,12 @@ describe('RolesGuard', () => {
 });
 ```
 
-- [ ] **Step 5: Rodar e ver falhar**
+- [X] **Step 5: Rodar e ver falhar**
 
 Run: `npx nx test api-financial --testFile=roles.guard.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 6: Implementar `roles.guard.ts`**
+- [X] **Step 6: Implementar `roles.guard.ts`**
 
 ```ts
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
@@ -1047,7 +1068,7 @@ export class RolesGuard implements CanActivate {
 }
 ```
 
-- [ ] **Step 7: Implementar `auth.module.ts`** (registra strategy + guards globais)
+- [X] **Step 7: Implementar `auth.module.ts`** (registra strategy + guards globais)
 
 ```ts
 import { Module } from '@nestjs/common';
@@ -1068,12 +1089,12 @@ import { RolesGuard } from './roles.guard';
 export class AuthModule {}
 ```
 
-- [ ] **Step 8: Rodar testes e ver passar**
+- [X] **Step 8: Rodar testes e ver passar**
 
 Run: `npx nx test api-financial --testFile=roles.guard.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 9: Commit**
+- [X] **Step 9: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/auth
@@ -1090,7 +1111,7 @@ git commit -m "feat(api-financial): keycloak jwt auth and roles guards"
 - Create: `apps/api-financial/src/infrastructure/auth/tenant-repository.base.ts`
 - Test: `apps/api-financial/src/infrastructure/auth/tenant.interceptor.spec.ts`
 
-- [ ] **Step 1: Implementar `tenant-context.ts`** (request-scoped)
+- [X] **Step 1: Implementar `tenant-context.ts`** (request-scoped)
 
 ```ts
 import { Injectable, Scope } from '@nestjs/common';
@@ -1104,7 +1125,7 @@ export class TenantContext {
 }
 ```
 
-- [ ] **Step 2: Teste do interceptor (JIT provisioning) que falha**
+- [X] **Step 2: Teste do interceptor (JIT provisioning) que falha**
 
 `tenant.interceptor.spec.ts`:
 ```ts
@@ -1131,12 +1152,12 @@ describe('resolveMember', () => {
 });
 ```
 
-- [ ] **Step 3: Rodar e ver falhar**
+- [X] **Step 3: Rodar e ver falhar**
 
 Run: `npx nx test api-financial --testFile=tenant.interceptor.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 4: Implementar `tenant.interceptor.ts`**
+- [X] **Step 4: Implementar `tenant.interceptor.ts`**
 
 ```ts
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
@@ -1175,7 +1196,7 @@ export class TenantInterceptor implements NestInterceptor {
 
 > Nota: members do household principal já existem (seed com `keycloakSub` = `mateus`/`thais`). Em produção o `sub` real do Keycloak difere do username; ajustar o seed para o `sub` real ou mapear por `preferred_username` numa migração futura. Para o POC, basta que os 2 usuários do realm existam como members.
 
-- [ ] **Step 5: Implementar `tenant-repository.base.ts`** (helper que injeta householdId)
+- [X] **Step 5: Implementar `tenant-repository.base.ts`** (helper que injeta householdId)
 
 ```ts
 import { TenantContext } from './tenant-context';
@@ -1190,12 +1211,12 @@ export abstract class TenantRepository {
 }
 ```
 
-- [ ] **Step 6: Rodar testes e ver passar**
+- [X] **Step 6: Rodar testes e ver passar**
 
 Run: `npx nx test api-financial --testFile=tenant.interceptor.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [X] **Step 7: Commit**
 
 ```bash
 git add apps/api-financial/src/infrastructure/auth
@@ -1209,7 +1230,7 @@ git commit -m "feat(api-financial): tenant context with member JIT provisioning"
 **Files:**
 - Modify: `apps/api-financial/src/app/app.module.ts`
 
-- [ ] **Step 1: Montar o AppModule**
+- [X] **Step 1: Montar o AppModule**
 
 ```ts
 import { Module } from '@nestjs/common';
@@ -1239,7 +1260,7 @@ export class AppModule {}
 
 > Os imports dos módulos de domínio só compilam após as Tasks 11–16. Implemente-os antes de rodar o build desta task, ou comente os imports ainda não existentes e descomente conforme avança.
 
-- [ ] **Step 2: Commit (após módulos existirem)**
+- [X] **Step 2: Commit (após módulos existirem)**
 
 ```bash
 git add apps/api-financial/src/app/app.module.ts
@@ -1264,7 +1285,7 @@ Este é o **módulo de referência**: implementa todas as 4 camadas DDD. Os mód
 - Create: `apps/api-financial/src/modules/catalog/catalog.module.ts`
 - Test: `apps/api-financial/src/modules/catalog/category/application/create-category.usecase.spec.ts`
 
-- [ ] **Step 1: Domínio — entidade e porta**
+- [X] **Step 1: Domínio — entidade e porta**
 
 `category.entity.ts`:
 ```ts
@@ -1292,7 +1313,7 @@ export abstract class CategoryRepository {
 }
 ```
 
-- [ ] **Step 2: Teste do use-case que falha**
+- [X] **Step 2: Teste do use-case que falha**
 
 `create-category.usecase.spec.ts`:
 ```ts
@@ -1319,12 +1340,12 @@ describe('CreateCategoryUseCase', () => {
 });
 ```
 
-- [ ] **Step 3: Rodar e ver falhar**
+- [X] **Step 3: Rodar e ver falhar**
 
 Run: `npx nx test api-financial --testFile=create-category.usecase.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 4: Application — use-cases**
+- [X] **Step 4: Application — use-cases**
 
 `list-categories.usecase.ts`:
 ```ts
@@ -1350,7 +1371,7 @@ export class CreateCategoryUseCase {
 }
 ```
 
-- [ ] **Step 5: Infrastructure — mapper e repo Prisma**
+- [X] **Step 5: Infrastructure — mapper e repo Prisma**
 
 `category.mapper.ts`:
 ```ts
@@ -1381,7 +1402,7 @@ export class CategoryPrismaRepository extends TenantRepository implements Catego
 }
 ```
 
-- [ ] **Step 6: Interface — DTO e controller**
+- [X] **Step 6: Interface — DTO e controller**
 
 `dto/create-category.dto.ts`:
 ```ts
@@ -1420,7 +1441,7 @@ export class CategoryController {
 }
 ```
 
-- [ ] **Step 7: Módulo**
+- [X] **Step 7: Módulo**
 
 `catalog.module.ts`:
 ```ts
@@ -1444,17 +1465,17 @@ import { CategoryPrismaRepository } from './category/infrastructure/category.pri
 export class CatalogModule {}
 ```
 
-- [ ] **Step 8: Rodar teste e ver passar**
+- [X] **Step 8: Rodar teste e ver passar**
 
 Run: `npx nx test api-financial --testFile=create-category.usecase.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 9: Build**
+- [X] **Step 9: Build**
 
 Run: `npx nx build api-financial`
 Expected: build verde (descomente `CatalogModule` no AppModule).
 
-- [ ] **Step 10: Commit**
+- [X] **Step 10: Commit**
 
 ```bash
 git add apps/api-financial/src/modules/catalog apps/api-financial/src/app/app.module.ts
