@@ -6,7 +6,7 @@
   "private": true,
   "prisma": {
     "schema": "apps/api-financial/src/infrastructure/prisma/schema.prisma",
-    "seed": "ts-node -P apps/api-financial/tsconfig.app.json apps/api-financial/src/infrastructure/prisma/seed.ts"
+    "seed": "ts-node --transpile-only -P apps/api-financial/tsconfig.app.json apps/api-financial/src/infrastructure/prisma/seed.ts"
   },
   "devDependencies": {
     "@angular-devkit/core": "~21.2.0",
