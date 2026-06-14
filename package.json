@@ -4,6 +4,10 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
+  "prisma": {
+    "schema": "apps/api-financial/src/infrastructure/prisma/schema.prisma",
+    "seed": "ts-node -P apps/api-financial/tsconfig.app.json apps/api-financial/src/infrastructure/prisma/seed.ts"
+  },
   "devDependencies": {
     "@angular-devkit/core": "~21.2.0",
     "@angular-devkit/schematics": "~21.2.0",
@@ -41,6 +45,7 @@
     "jest-util": "~30.3.0",
     "nx": "22.7.3",
     "prettier": "~3.6.2",
+    "prisma": "^6.19.3",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
@@ -60,6 +65,7 @@
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@prisma/client": "^6.19.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
     "zod": "^4.4.3"
