@@ -1,10 +1,13 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { TenantContext } from './tenant-context';
 import type { JwtPayload } from './jwt.strategy';
 
-export async function resolveMember(prisma: PrismaService, payload: JwtPayload) {
+export interface ResolvedTenant {
+  memberId: string;
+  householdId: string;
+  role: string;
+}
+
+export async function resolveMember(prisma: PrismaService, payload: JwtPayload): Promise<ResolvedTenant> {
   // O seed grava keycloakSub = preferred_username; tokens reais trazem sub UUID.
   // Casamos por qualquer um dos dois para alcançar o household seedado no POC.
   const existing = await prisma.member.findFirst({
@@ -27,14 +30,4 @@ export async function resolveMember(prisma: PrismaService, payload: JwtPayload) 
     },
   });
   return { memberId: member.id, householdId: member.householdId, role: member.role.toLowerCase() };
-}
-
-@Injectable()
-export class TenantInterceptor implements NestInterceptor {
-  constructor(private prisma: PrismaService, private tenant: TenantContext) {}
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-    const req = context.switchToHttp().getRequest();
-    this.tenant.set(await resolveMember(this.prisma, req.user));
-    return next.handle();
-  }
 }

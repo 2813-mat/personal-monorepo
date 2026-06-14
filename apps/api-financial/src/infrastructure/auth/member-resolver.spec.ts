@@ -1,4 +1,4 @@
-import { resolveMember } from './tenant.interceptor';
+import { resolveMember } from './member-resolver';
 
 describe('resolveMember', () => {
   const payload = { sub: 'kc-123', preferred_username: 'mateus', name: 'Mateus', realm_access: { roles: ['admin'] } };
