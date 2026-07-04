@@ -10,6 +10,7 @@ import {
   TxFilter,
 } from '../domain/transaction.repository';
 import { toView } from './transaction.mapper';
+import { normalizeMethodFilter } from './method-filter';
 
 const INCLUDE = { category: true, installment: { include: { plan: true } } } as const;
 
@@ -28,7 +29,8 @@ export class TransactionPrismaRepository extends TenantRepository implements Tra
       };
     }
     if (filter.categorySlug) where.category = { slug: filter.categorySlug };
-    if (filter.method) where.method = filter.method as Prisma.EnumPaymentMethodFilter['equals'];
+    const method = normalizeMethodFilter(filter.method);
+    if (method) where.method = method;
     if (filter.holder && filter.holder !== 'todos') {
       if (filter.holder === 'shared') where.memberId = null;
       else where.member = { name: filter.holder };

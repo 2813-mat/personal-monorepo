@@ -60,6 +60,14 @@ describe('api-financial e2e (smoke)', () => {
     expect(typeof cards[0].current).toBe('number');
   });
 
+  it('GET /cards/:id/invoice com cartão inexistente retorna 404', async () => {
+    const token = await getToken();
+    const res = await fetch(`${API}/cards/nao-existe/invoice`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(res.status).toBe(404);
+  });
+
   it('GET /goals retorna metas com balance e history derivados', async () => {
     const token = await getToken();
     const res = await fetch(`${API}/goals`, {

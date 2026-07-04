@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
@@ -27,7 +27,8 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
   }
 
   async openInvoice(cardId: string): Promise<OpenInvoice> {
-    const card = await this.prisma.card.findFirstOrThrow({ where: this.scoped({ id: cardId }) });
+    const card = await this.prisma.card.findFirst({ where: this.scoped({ id: cardId }) });
+    if (!card) throw new NotFoundException(`Cartão ${cardId} não encontrado`);
     const { start, end } = billingCycleFor(card.closingDay);
     const items = await this.prisma.transaction.findMany({
       where: { householdId: this.householdId, cardId, date: { gt: start, lte: end } },

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
@@ -25,7 +25,8 @@ export class InvoiceHistoryPrismaRepository
   }
 
   async closeInvoice(cardId: string, year: number, month: number): Promise<InvoiceHistoryView> {
-    const card = await this.prisma.card.findFirstOrThrow({ where: this.scoped({ id: cardId }) });
+    const card = await this.prisma.card.findFirst({ where: this.scoped({ id: cardId }) });
+    if (!card) throw new NotFoundException(`Cartão ${cardId} não encontrado`);
 
     // Ciclo que fecha no mês alvo: ancoramos a referência no dia de fechamento desse mês.
     const { start, end } = billingCycleFor(card.closingDay, new Date(year, month - 1, card.closingDay));
