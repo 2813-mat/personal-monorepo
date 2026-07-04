@@ -29,6 +29,15 @@
   <button class="topbar-btn" (click)="drawerOpen.set(true)">
     <cf-icon name="plus" [size]="11" /> Lançar gasto
   </button>
+
+  @if (auth.isAuthenticated()) {
+    <div class="topbar-user">
+      <span class="topbar-user-name">{{ auth.userName() }}</span>
+      <button class="topbar-btn ghost" (click)="auth.logout()" aria-label="Sair">
+        <cf-icon name="upload" [size]="11" /> Sair
+      </button>
+    </div>
+  }
 </header>
 
 @if (drawerOpen()) {

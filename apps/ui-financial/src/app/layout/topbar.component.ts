@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import type { HolderFilter } from '@caixa-familia/shared-types';
 import { AppDataService } from './app-data.service';
+import { AuthService } from '../core/auth/auth.service';
 import { IconComponent } from '../ui/icon/icon.component';
 import { AvatarComponent } from '../ui/avatar/avatar.component';
 import { ExpenseDrawerComponent } from '../features/expense-drawer/expense-drawer.component';
@@ -14,6 +15,7 @@ import { ExpenseDrawerComponent } from '../features/expense-drawer/expense-drawe
 })
 export class TopBarComponent {
   protected data = inject(AppDataService);
+  protected auth = inject(AuthService);
 
   protected drawerOpen = signal(false);
 
