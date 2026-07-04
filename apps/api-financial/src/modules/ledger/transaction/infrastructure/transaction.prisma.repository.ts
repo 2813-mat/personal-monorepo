@@ -48,6 +48,13 @@ export class TransactionPrismaRepository extends TenantRepository implements Tra
       const category = await tx.category.findFirstOrThrow({
         where: { householdId: this.householdId, slug: data.categorySlug },
       });
+      let memberId: string | undefined;
+      if (data.holder && data.holder !== 'shared') {
+        const member = await tx.member.findFirst({
+          where: { householdId: this.householdId, name: data.holder },
+        });
+        memberId = member?.id;
+      }
       let installmentId: string | undefined;
       if (data.installments) {
         const plan = await tx.installmentPlan.create({
@@ -77,7 +84,7 @@ export class TransactionPrismaRepository extends TenantRepository implements Tra
           label: data.label,
           value: data.value,
           categoryId: category.id,
-          memberId: data.memberId ?? undefined,
+          memberId,
           method: data.method,
           cardId: data.cardId ?? undefined,
           note: data.note,
