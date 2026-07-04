@@ -6,6 +6,49 @@
 
 [Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
+## Rodando localmente (UI + API)
+
+A API (`api-financial`) é protegida por JWT do Keycloak e a UI (`ui-financial`) faz login
+via OIDC (Authorization Code + PKCE). Para rodar o stack completo:
+
+1. **Suba a infra** (Postgres + Keycloak, com o realm `caixa-familia` importado):
+
+   ```sh
+   docker-compose up -d
+   ```
+
+2. **Prepare o banco** (migrações + seed a partir dos mocks):
+
+   ```sh
+   npx prisma migrate deploy
+   npx prisma db seed
+   ```
+
+3. **Suba a API e a UI** (em terminais separados):
+
+   ```sh
+   npx nx serve api-financial   # http://localhost:3000/api
+   npx nx serve ui-financial     # http://localhost:4200
+   ```
+
+4. **Acesse** `http://localhost:4200` — você será redirecionado ao Keycloak. Faça login com:
+
+   | Usuário  | Senha    | Papel   |
+   | -------- | -------- | ------- |
+   | `mateus` | `mateus` | admin   |
+   | `thais`  | `thais`  | editor  |
+
+### Keycloak
+
+- **Admin console:** `http://localhost:8080/admin` (login `admin` / `admin`), realm
+  `caixa-familia`.
+- **Account console do usuário:** `http://localhost:8080/realms/caixa-familia/account`.
+
+### Configuração
+
+URLs e IDs de client ficam em `apps/ui-financial/src/environments/environment.ts`
+(front) e nas variáveis de `.env` / `docker-compose.yml` (API/Keycloak).
+
 ## Run tasks
 
 To run tasks with Nx use:
