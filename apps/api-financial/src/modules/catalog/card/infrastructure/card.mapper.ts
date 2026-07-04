@@ -1,7 +1,9 @@
 import { Card as PrismaCard } from '@prisma/client';
 import { Card } from '../domain/card.entity';
 
-export const toDomain = (r: PrismaCard, current: number): Card =>
+type CardRow = PrismaCard & { owner?: { name: string } | null };
+
+export const toDomain = (r: CardRow, current: number): Card =>
   new Card({
     id: r.id,
     name: r.name,
@@ -13,4 +15,5 @@ export const toDomain = (r: PrismaCard, current: number): Card =>
     last4: r.last4,
     ownerMemberId: r.ownerMemberId,
     current,
+    holder: r.owner?.name ?? null,
   });

@@ -9,7 +9,7 @@ describe('ListTransactionsUseCase', () => {
       label: 'Mercado',
       value: 100,
       categorySlug: 'mercado',
-      memberId: null,
+      holder: 'shared',
       method: 'PIX',
       cardId: null,
       recurring: false,

@@ -21,7 +21,7 @@ export class CreateTransactionDto {
   @IsString() label!: string;
   @IsNumber() value!: number;
   @IsString() categorySlug!: string;
-  @IsOptional() @IsString() memberId?: string;
+  @IsOptional() @IsString() holder?: string;
   @IsIn(['PIX', 'CARD']) method!: 'PIX' | 'CARD';
   @IsOptional() @IsString() cardId?: string;
   @IsOptional() @IsString() note?: string;

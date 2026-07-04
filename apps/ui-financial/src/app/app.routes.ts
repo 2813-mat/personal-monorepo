@@ -1,10 +1,12 @@
 import { Route } from '@angular/router';
+import { autoLoginPartialRoutesGuard } from 'angular-auth-oidc-client';
 import { AppShellComponent } from './layout/app-shell.component';
 
 export const appRoutes: Route[] = [
   {
     path: '',
     component: AppShellComponent,
+    canActivate: [autoLoginPartialRoutesGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {

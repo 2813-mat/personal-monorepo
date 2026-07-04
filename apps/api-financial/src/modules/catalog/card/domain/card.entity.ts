@@ -9,6 +9,7 @@ export interface CardProps {
   last4: string;
   ownerMemberId: string | null;
   current: number;
+  holder?: string | null;
 }
 
 export class Card {

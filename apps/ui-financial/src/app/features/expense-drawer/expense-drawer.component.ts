@@ -72,7 +72,7 @@ export class ExpenseDrawerComponent {
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
     const tx: Transaction = {
-      id: 't' + Date.now(),
+      id: '', // server assigns
       date: v.date,
       label: v.label,
       value: Number(v.value),
@@ -82,7 +82,7 @@ export class ExpenseDrawerComponent {
       installments: v.installments.enabled ? { n: 1, of: Number(v.installments.total) } : null,
       recurring: v.recurring,
     };
-    this.data.transactions.update(prev => [tx, ...prev]);
+    this.data.createTransaction(tx);
     this.onClose();
   }
 }

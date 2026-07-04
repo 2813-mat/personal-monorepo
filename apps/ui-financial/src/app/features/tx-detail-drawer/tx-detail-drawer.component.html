@@ -150,8 +150,8 @@
   <!-- Footer actions -->
   <footer class="foot">
     <div class="foot-group">
-      <button type="button" class="btn ghost" (click)="duplicate()">Duplicar</button>
-      <button type="button" class="btn ghost btn-neg" (click)="remove()">Excluir</button>
+      <button type="button" class="btn ghost" (click)="duplicate()" [disabled]="!auth.canWrite()">Duplicar</button>
+      <button type="button" class="btn ghost btn-neg" (click)="remove()" [disabled]="!auth.canWrite()">Excluir</button>
     </div>
     <div class="foot-group">
       <button type="button" class="btn ghost" disabled>Editar</button>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48" role="img" aria-label="Planejador Financeiro">
+  <rect x="0" y="8" width="32" height="32" rx="8" fill="#FFFFFF"/>
+  <path d="M9 30V18h6a4 4 0 0 1 0 8h-3v4z" fill="#0F2D4F"/>
+  <text x="44" y="30" font-family="'IBM Plex Sans', system-ui, sans-serif" font-size="18" font-weight="600" fill="#FFFFFF">Planejador Financeiro</text>
+</svg>
