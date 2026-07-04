@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --ink-1: #0A0E1A;
+  --ink-2: #3F4654;
+  --ink-3: #6B7280;
+  --line: #E5E7EB;
+  --brand: #0F2D4F;
+  --brand-soft: #E5EAF1;
+  --brand-hover: #0B2540;
+  --neg: #B91C1C;
+  --neg-soft: #FBE8E8;
+  --shadow-sm: 0 1px 0 rgba(15, 45, 79, .04), 0 1px 2px rgba(15, 45, 79, .04);
+}
+
+html { font-size: 13px; }
+
+body.login-pf, .login-pf body, body {
+  background: var(--bg) !important;
+  font-family: 'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+  color: var(--ink-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Card */
+.login-pf-page .card-pf,
+#kc-form-wrapper,
+.pf-c-login__main {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Header: replace the realm name with the logo lockup */
+#kc-header-wrapper,
+.pf-c-login__main-header,
+.login-pf-header h1 {
+  font-size: 0;
+  color: transparent;
+}
+#kc-header-wrapper,
+.login-pf-header {
+  height: 56px;
+  background: url('../img/logo.svg') left center no-repeat;
+  background-size: auto 40px;
+}
+
+/* Labels + inputs */
+label, .pf-c-form__label { color: var(--ink-2); font-weight: 500; }
+input[type="text"], input[type="password"], input[type="email"],
+.pf-c-form-control {
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-1);
+}
+input:focus, .pf-c-form-control:focus {
+  border-color: var(--brand);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+/* Primary button */
+input[type="submit"], button[type="submit"],
+.pf-c-button.pf-m-primary, #kc-login {
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 6px;
+  width: 100%;
+}
+input[type="submit"]:hover, button[type="submit"]:hover,
+.pf-c-button.pf-m-primary:hover, #kc-login:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+
+/* Links */
+a { color: var(--brand); }
+a:hover { text-decoration: underline; }
+
+/* Error alerts */
+.alert-error, .pf-c-alert.pf-m-danger, .kc-feedback-text {
+  background: var(--neg-soft);
+  color: var(--neg);
+  border: 1px solid var(--neg);
+  border-radius: 6px;
+}

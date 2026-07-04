@@ -1,6 +1,7 @@
 {
   "realm": "caixa-familia",
   "enabled": true,
+  "loginTheme": "caixa-familia",
   "roles": { "realm": [{ "name": "admin" }, { "name": "editor" }] },
   "clients": [
     {
