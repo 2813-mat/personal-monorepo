@@ -1,5 +1,6 @@
 import { Component, inject, input, output, computed } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -25,6 +26,7 @@ import type { Transaction } from '@caixa-familia/shared-types';
 })
 export class TxDetailDrawerComponent {
   private data = inject(AppDataService);
+  protected auth = inject(AuthService);
 
   tx = input.required<Transaction>();
   closed = output<void>();
@@ -51,14 +53,12 @@ export class TxDetailDrawerComponent {
   });
 
   duplicate() {
-    const copy = { ...this.tx(), id: 't' + Date.now() };
-    this.data.transactions.update(prev => [copy, ...prev]);
+    this.data.createTransaction({ ...this.tx(), id: '' });
     this.onClose();
   }
 
   remove() {
-    const id = this.tx().id;
-    this.data.transactions.update(prev => prev.filter(t => t.id !== id));
+    this.data.removeTransaction(this.tx().id);
     this.onClose();
   }
 
