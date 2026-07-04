@@ -9,7 +9,7 @@ export interface TransactionView {
   label: string;
   value: number;
   categorySlug: string;
-  memberId: string | null;
+  holder: string;
   method: 'PIX' | 'CARD';
   cardId: string | null;
   note?: string;

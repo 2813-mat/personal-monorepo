@@ -12,7 +12,7 @@ import {
 import { toView } from './transaction.mapper';
 import { normalizeMethodFilter } from './method-filter';
 
-const INCLUDE = { category: true, installment: { include: { plan: true } } } as const;
+const INCLUDE = { category: true, member: true, installment: { include: { plan: true } } } as const;
 
 @Injectable()
 export class TransactionPrismaRepository extends TenantRepository implements TransactionRepository {
