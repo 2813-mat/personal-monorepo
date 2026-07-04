@@ -5,7 +5,7 @@ import { AuthModule } from '../infrastructure/auth/auth.module';
 import { CatalogModule } from '../modules/catalog/catalog.module';
 import { LedgerModule } from '../modules/ledger/ledger.module';
 import { BudgetingModule } from '../modules/budgeting/budgeting.module';
-// import { GoalsModule } from '../modules/goals/goals.module';
+import { GoalsModule } from '../modules/goals/goals.module';
 // import { ReportingModule } from '../modules/reporting/reporting.module';
 
 @Module({
@@ -16,7 +16,7 @@ import { BudgetingModule } from '../modules/budgeting/budgeting.module';
     CatalogModule,
     LedgerModule,
     BudgetingModule,
-    // GoalsModule,
+    GoalsModule,
     // ReportingModule,
   ],
 })
