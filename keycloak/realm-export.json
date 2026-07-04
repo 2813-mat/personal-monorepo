@@ -1,0 +1,43 @@
+{
+  "realm": "caixa-familia",
+  "enabled": true,
+  "roles": { "realm": [{ "name": "admin" }, { "name": "editor" }] },
+  "clients": [
+    {
+      "clientId": "ui-financial",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:4200/*"],
+      "webOrigins": ["http://localhost:4200"]
+    },
+    {
+      "clientId": "api-financial",
+      "bearerOnly": true
+    }
+  ],
+  "users": [
+    {
+      "username": "mateus",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "mateushas.advir@gmail.com",
+      "firstName": "Mateus",
+      "lastName": "Bispo",
+      "requiredActions": [],
+      "credentials": [{ "type": "password", "value": "mateus", "temporary": false }],
+      "realmRoles": ["admin"]
+    },
+    {
+      "username": "thais",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "thais@caixa-familia.local",
+      "firstName": "Thais",
+      "lastName": "Fontes",
+      "requiredActions": [],
+      "credentials": [{ "type": "password", "value": "thais", "temporary": false }],
+      "realmRoles": ["editor"]
+    }
+  ]
+}
