@@ -43,6 +43,13 @@ via OIDC (Authorization Code + PKCE). Para rodar o stack completo:
 - **Admin console:** `http://localhost:8080/admin` (login `admin` / `admin`), realm
   `caixa-familia`.
 - **Account console do usuário:** `http://localhost:8080/realms/caixa-familia/account`.
+- **Tema de login:** a tela de login usa o tema custom `caixa-familia`
+  (`keycloak/themes/caixa-familia/login`), montado no container via volume do
+  `docker-compose` e selecionado pelo `"loginTheme"` no `realm-export.json`. Em
+  `start-dev` o Keycloak não cacheia temas — edite o CSS e recarregue a página. Aplicar
+  uma mudança de `loginTheme` a um realm já importado exige reimportar (recriar o
+  `keycloak`/`keycloak-db` + remover o volume `cf-kc-pg`) ou selecionar o tema uma vez em
+  Realm settings → Themes no admin console.
 
 ### Configuração
 
