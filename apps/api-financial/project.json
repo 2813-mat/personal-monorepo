@@ -68,6 +68,13 @@
         "jestConfig": "apps/api-financial/jest.config.cts",
         "passWithNoTests": true
       }
+    },
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "apps/api-financial/jest.e2e.config.cts",
+        "passWithNoTests": true
+      }
     }
   }
 }
