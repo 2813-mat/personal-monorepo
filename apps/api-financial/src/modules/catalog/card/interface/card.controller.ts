@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ListCardsUseCase } from '../application/list-cards.usecase';
 import { GetOpenInvoiceUseCase } from '../application/get-open-invoice.usecase';
+import { toCardView } from './card.view';
 
 @Controller('cards')
 export class CardController {
@@ -11,7 +12,7 @@ export class CardController {
 
   @Get()
   async findAll() {
-    return (await this.list.execute()).map((c) => c.toJSON());
+    return (await this.list.execute()).map((c) => toCardView(c.toJSON()));
   }
 
   @Get(':id/invoice')

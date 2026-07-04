@@ -13,7 +13,11 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
   }
 
   async findAll() {
-    const cards = await this.prisma.card.findMany({ where: this.scoped(), orderBy: { name: 'asc' } });
+    const cards = await this.prisma.card.findMany({
+      where: this.scoped(),
+      include: { owner: true },
+      orderBy: { name: 'asc' },
+    });
     return Promise.all(
       cards.map(async (c) => {
         const { start, end } = billingCycleFor(c.closingDay);
