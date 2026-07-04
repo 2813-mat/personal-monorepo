@@ -6,7 +6,7 @@ import { CatalogModule } from '../modules/catalog/catalog.module';
 import { LedgerModule } from '../modules/ledger/ledger.module';
 import { BudgetingModule } from '../modules/budgeting/budgeting.module';
 import { GoalsModule } from '../modules/goals/goals.module';
-// import { ReportingModule } from '../modules/reporting/reporting.module';
+import { ReportingModule } from '../modules/reporting/reporting.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { GoalsModule } from '../modules/goals/goals.module';
     LedgerModule,
     BudgetingModule,
     GoalsModule,
-    // ReportingModule,
+    ReportingModule,
   ],
 })
 export class AppModule {}
