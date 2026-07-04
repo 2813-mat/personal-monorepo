@@ -12,11 +12,18 @@ import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory } from '../core/api/catalog.mapper';
+import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppDataService {
   private txApi = inject(TransactionApiService);
   private catApi = inject(CatalogApiService);
+  private toast = inject(ToastService);
+
+  private fail(message: string): void {
+    this.transactionsError.set(message);
+    this.toast.show(message, 'neg');
+  }
 
   readonly cards = signal<Card[]>([]);
   readonly transactions = signal<Transaction[]>([]);
@@ -58,7 +65,7 @@ export class AppDataService {
         this.transactionsLoading.set(false);
       },
       error: () => {
-        this.transactionsError.set('Falha ao carregar transações');
+        this.fail('Falha ao carregar transações');
         this.transactionsLoading.set(false);
       },
     });
@@ -67,14 +74,14 @@ export class AppDataService {
   createTransaction(t: Transaction): void {
     this.txApi.create(transactionToCreateWire(t)).subscribe({
       next: () => this.loadTransactions(),
-      error: () => this.transactionsError.set('Falha ao criar transação'),
+      error: () => this.fail('Falha ao criar transação'),
     });
   }
 
   removeTransaction(id: string): void {
     this.txApi.remove(id).subscribe({
       next: () => this.loadTransactions(),
-      error: () => this.transactionsError.set('Falha ao remover transação'),
+      error: () => this.fail('Falha ao remover transação'),
     });
   }
 }
