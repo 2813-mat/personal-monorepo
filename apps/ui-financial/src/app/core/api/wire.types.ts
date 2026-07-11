@@ -33,3 +33,20 @@ export interface CategoryWire {
   color: string;
   budget: number;
 }
+
+export interface IncomeWire {
+  id: string;
+  label: string;
+  holder: string;
+  value: number;
+  date: string;
+  recurring: boolean;
+}
+
+export interface CreateIncomeWire {
+  label: string;
+  holder: string;
+  value: number;
+  date: string;
+  recurring: boolean;
+}
