@@ -20,9 +20,12 @@ export class AppShellComponent {
   constructor() {
     this.auth.init();
 
-    // Load the catalog once the user is authenticated.
+    // Load the catalog and incomes once the user is authenticated.
     effect(() => {
-      if (this.auth.isAuthenticated()) this.data.loadCatalog();
+      if (this.auth.isAuthenticated()) {
+        this.data.loadCatalog();
+        this.data.loadIncomes();
+      }
     });
 
     // (Re)load transactions when authenticated and whenever the month changes.
