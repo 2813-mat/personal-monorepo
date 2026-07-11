@@ -1,8 +1,7 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import type { Card, Category, HolderFilter, MonthContext, Transaction } from '@caixa-familia/shared-types';
+import { Injectable, signal, computed, inject, type WritableSignal } from '@angular/core';
+import type { Card, Category, HolderFilter, Income, MonthContext, Transaction } from '@caixa-familia/shared-types';
 import {
   MOCK_GOALS,
-  MOCK_INCOMES,
   MOCK_FIXED,
   MOCK_HISTORY,
   MOCK_INCOME_HISTORY,
@@ -10,18 +9,21 @@ import {
 } from '@caixa-familia/shared-mocks';
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
+import { IncomeApiService } from '../core/api/income-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory } from '../core/api/catalog.mapper';
+import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppDataService {
   private txApi = inject(TransactionApiService);
   private catApi = inject(CatalogApiService);
+  private incApi = inject(IncomeApiService);
   private toast = inject(ToastService);
 
-  private fail(message: string): void {
-    this.transactionsError.set(message);
+  private fail(message: string, errorSignal: WritableSignal<string | null>): void {
+    errorSignal.set(message);
     this.toast.show(message, 'neg');
   }
 
@@ -29,9 +31,10 @@ export class AppDataService {
   readonly transactions = signal<Transaction[]>([]);
   readonly categories = signal<Category[]>([]);
 
+  readonly incomes = signal<Income[]>([]);
+
   // still-mock resources (out of scope for this slice)
   readonly goals = signal(MOCK_GOALS);
-  readonly incomes = signal(MOCK_INCOMES);
   readonly fixed = signal(MOCK_FIXED);
   readonly history = signal(MOCK_HISTORY);
   readonly incomeHistory = signal(MOCK_INCOME_HISTORY);
@@ -50,6 +53,9 @@ export class AppDataService {
   readonly transactionsLoading = signal(false);
   readonly transactionsError = signal<string | null>(null);
 
+  readonly incomesLoading = signal(false);
+  readonly incomesError = signal<string | null>(null);
+
   loadCatalog(): void {
     this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
     this.catApi.listCards().subscribe((rows) => this.cards.set(rows));
@@ -65,7 +71,7 @@ export class AppDataService {
         this.transactionsLoading.set(false);
       },
       error: () => {
-        this.fail('Falha ao carregar transações');
+        this.fail('Falha ao carregar transações', this.transactionsError);
         this.transactionsLoading.set(false);
       },
     });
@@ -74,14 +80,36 @@ export class AppDataService {
   createTransaction(t: Transaction): void {
     this.txApi.create(transactionToCreateWire(t)).subscribe({
       next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao criar transação'),
+      error: () => this.fail('Falha ao criar transação', this.transactionsError),
     });
   }
 
   removeTransaction(id: string): void {
     this.txApi.remove(id).subscribe({
       next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao remover transação'),
+      error: () => this.fail('Falha ao remover transação', this.transactionsError),
+    });
+  }
+
+  loadIncomes(): void {
+    this.incomesLoading.set(true);
+    this.incomesError.set(null);
+    this.incApi.list().subscribe({
+      next: (rows) => {
+        this.incomes.set(rows.map(wireToIncome));
+        this.incomesLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar receitas', this.incomesError);
+        this.incomesLoading.set(false);
+      },
+    });
+  }
+
+  createIncome(i: Income): void {
+    this.incApi.create(incomeToCreateWire(i)).subscribe({
+      next: () => this.loadIncomes(),
+      error: () => this.fail('Falha ao criar receita', this.incomesError),
     });
   }
 }

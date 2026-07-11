@@ -5,7 +5,7 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import type { Holder, Transaction } from '@caixa-familia/shared-types';
+import type { Holder, Income, Transaction } from '@caixa-familia/shared-types';
 import { AppDataService } from '../../layout/app-data.service';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
@@ -58,6 +58,18 @@ export class ExpenseDrawerComponent {
     recurring: new FormControl(false, { nonNullable: true }),
   });
 
+  constructor() {
+    this.form.controls.type.valueChanges.subscribe((type) => {
+      const cat = this.form.controls.cat;
+      if (type === 'income') {
+        cat.clearValidators();
+      } else {
+        cat.setValidators([Validators.required]);
+      }
+      cat.updateValueAndValidity();
+    });
+  }
+
   stepInstallments(delta: number) {
     const ctrl = this.form.controls.installments.controls.total;
     const next = Math.max(1, ctrl.value + delta);
@@ -71,6 +83,21 @@ export class ExpenseDrawerComponent {
   save() {
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
+
+    if (v.type === 'income') {
+      const income: Income = {
+        id: '', // server assigns
+        label: v.label,
+        holder: v.holder,
+        value: Number(v.value),
+        date: v.date,
+        recurring: v.recurring,
+      };
+      this.data.createIncome(income);
+      this.onClose();
+      return;
+    }
+
     const tx: Transaction = {
       id: '', // server assigns
       date: v.date,

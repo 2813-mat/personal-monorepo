@@ -1,7 +1,7 @@
 export interface IncomeProps {
   id: string;
   label: string;
-  memberId: string | null;
+  holder: string;
   value: number;
   date: string;
   recurring: boolean;

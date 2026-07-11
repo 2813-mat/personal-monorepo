@@ -5,6 +5,8 @@ import { TenantRepository } from '../../../../infrastructure/auth/tenant-reposit
 import { CreateIncomeData, IncomeRepository } from '../domain/income.repository';
 import { toDomain } from './income.mapper';
 
+const INCLUDE = { member: true } as const;
+
 @Injectable()
 export class IncomePrismaRepository extends TenantRepository implements IncomeRepository {
   constructor(prisma: PrismaService, tenant: TenantContext) {
@@ -12,20 +14,32 @@ export class IncomePrismaRepository extends TenantRepository implements IncomeRe
   }
 
   async findAll() {
-    const rows = await this.prisma.income.findMany({ where: this.scoped(), orderBy: { date: 'desc' } });
+    const rows = await this.prisma.income.findMany({
+      where: this.scoped(),
+      include: INCLUDE,
+      orderBy: { date: 'desc' },
+    });
     return rows.map(toDomain);
   }
 
   async create(data: CreateIncomeData) {
+    let memberId: string | undefined;
+    if (data.holder && data.holder !== 'shared') {
+      const member = await this.prisma.member.findFirst({
+        where: { householdId: this.householdId, name: data.holder },
+      });
+      memberId = member?.id;
+    }
     const row = await this.prisma.income.create({
       data: {
         householdId: this.householdId,
         label: data.label,
-        memberId: data.memberId ?? undefined,
+        memberId,
         value: data.value,
         date: new Date(data.date),
         recurring: data.recurring,
       },
+      include: INCLUDE,
     });
     return toDomain(row);
   }
