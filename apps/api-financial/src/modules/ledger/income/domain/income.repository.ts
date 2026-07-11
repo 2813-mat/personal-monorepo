@@ -2,7 +2,7 @@ import { Income } from './income.entity';
 
 export interface CreateIncomeData {
   label: string;
-  memberId?: string | null;
+  holder: string;
   value: number;
   date: string;
   recurring: boolean;

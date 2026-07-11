@@ -1,8 +1,8 @@
-import { IsBoolean, IsDateString, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreateIncomeDto {
   @IsString() label!: string;
-  @IsOptional() @IsString() memberId?: string;
+  @IsString() holder!: string;
   @IsNumber() @Min(0) value!: number;
   @IsDateString() date!: string;
   @IsBoolean() recurring!: boolean;
