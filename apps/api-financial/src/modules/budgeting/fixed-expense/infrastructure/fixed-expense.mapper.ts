@@ -1,7 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { FixedExpenseView } from '../domain/fixed-expense.repository';
 
-export type FixedExpenseRow = Prisma.FixedExpenseGetPayload<{ include: { category: true } }>;
+export type FixedExpenseRow = Prisma.FixedExpenseGetPayload<{
+  include: { category: true; member: true };
+}>;
 
 export const toView = (r: FixedExpenseRow, paidThisMonth: boolean): FixedExpenseView => ({
   id: r.id,
@@ -9,6 +11,6 @@ export const toView = (r: FixedExpenseRow, paidThisMonth: boolean): FixedExpense
   value: Number(r.value),
   dueDay: r.dueDay,
   categorySlug: r.category.slug,
-  memberId: r.memberId,
+  holder: r.member?.name ?? 'shared',
   paidThisMonth,
 });

@@ -4,7 +4,7 @@ export interface FixedExpenseView {
   value: number;
   dueDay: number;
   categorySlug: string;
-  memberId: string | null;
+  holder: string;
   paidThisMonth: boolean;
 }
 
@@ -13,7 +13,7 @@ export interface CreateFixedExpenseData {
   value: number;
   dueDay: number;
   categorySlug: string;
-  memberId?: string | null;
+  holder: string;
 }
 
 export abstract class FixedExpenseRepository {

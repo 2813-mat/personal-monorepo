@@ -9,6 +9,8 @@ import {
 } from '../domain/fixed-expense.repository';
 import { toView } from './fixed-expense.mapper';
 
+const INCLUDE = { category: true, member: true } as const;
+
 @Injectable()
 export class FixedExpensePrismaRepository extends TenantRepository implements FixedExpenseRepository {
   constructor(prisma: PrismaService, tenant: TenantContext) {
@@ -18,7 +20,7 @@ export class FixedExpensePrismaRepository extends TenantRepository implements Fi
   async findAllWithStatus(year: number, month: number): Promise<FixedExpenseView[]> {
     const rows = await this.prisma.fixedExpense.findMany({
       where: this.scoped(),
-      include: { category: true },
+      include: INCLUDE,
       orderBy: { dueDay: 'asc' },
     });
     const start = new Date(year, month - 1, 1);
@@ -37,16 +39,23 @@ export class FixedExpensePrismaRepository extends TenantRepository implements Fi
     const category = await this.prisma.category.findFirstOrThrow({
       where: { householdId: this.householdId, slug: data.categorySlug },
     });
+    let memberId: string | undefined;
+    if (data.holder && data.holder !== 'shared') {
+      const member = await this.prisma.member.findFirst({
+        where: { householdId: this.householdId, name: data.holder },
+      });
+      memberId = member?.id;
+    }
     const row = await this.prisma.fixedExpense.create({
       data: {
         householdId: this.householdId,
         categoryId: category.id,
-        memberId: data.memberId ?? undefined,
+        memberId,
         label: data.label,
         value: data.value,
         dueDay: data.dueDay,
       },
-      include: { category: true },
+      include: INCLUDE,
     });
     return toView(row, false);
   }
