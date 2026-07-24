@@ -43,6 +43,24 @@ export interface IncomeWire {
   recurring: boolean;
 }
 
+export interface GoalWire {
+  id: string;
+  slug: string;
+  label: string;
+  target: number;
+  monthly: number;
+  color: string;
+  subtitle: string;
+  type: 'SONHO' | 'EMERGENCIA';
+  balance: number;
+  history: number[];
+}
+
+export interface CreateContributionWire {
+  amount: number;
+  date: string;
+}
+
 export interface FixedExpenseWire {
   id: string;
   label: string;
