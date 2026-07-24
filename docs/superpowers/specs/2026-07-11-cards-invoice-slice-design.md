@@ -29,6 +29,20 @@ se não for, marcar a fatia como concluída por verificação.
 - **D2 — read-only:** sem ação de fechar fatura.
 - **D3 — histórico condicional:** só implementar o read de histórico se houver (ou for
   adicionada) uma view de histórico na tela de fatura.
+- **D4 — a condição de D3 se confirmou: a fatia tem código (2026-07-24).** A tela de fatura
+  **já tem** o painel "Histórico desta fatura" — e ele é alimentado por **dado fabricado**:
+  `invoice.component.ts:86-93` gera 9 valores a partir de um seed dos char codes do `cardId`
+  (`card.current ±20%`), e a UI exibe média/maior/menor calculados em cima disso. É esse painel
+  que passa a ler `GET /cards/:id/invoices`.
+- **D5 — a tabela de cartões fica fora (decisão do usuário).** `cards.component.ts:15-21`
+  fabrica outra série ("Hist. 6m") pelo mesmo truque de seed. Como o endpoint é **por cartão**,
+  alimentá-la custaria uma requisição por cartão no load. Fica como está nesta fatia, mas o
+  `cardHistory()` recebe um comentário explícito de que o dado é fictício.
+- **D6 — barra aberta destacada, estatísticas só do fechado.** O painel mostra as faturas
+  **fechadas** (reais) e, como última barra destacada, a fatura **aberta** do mês
+  (client-derived), preservando a intenção visual do código antigo (`highlightIndex` = última).
+  Média/maior/menor passam a considerar **apenas as fechadas** — misturar um mês parcial na
+  média é o tipo de distorção que o dado fabricado já causava.
 
 ## 3. Backend (`api-financial`)
 Nenhuma mudança — `GET /cards/:id/invoices` já existe (`InvoiceHistoryView { id, cardId, year,
@@ -53,7 +67,11 @@ month, closingDate, dueDate, total, perCategory, status }`).
   encerrar sem código novo.
 
 ## 6. Riscos
-- **Escopo real incerto** — depende de a UI ter/necessitar histórico. É a fatia mais provável de
-  virar "verificação". Decidir cedo no plano para não construir UI não pedida (YAGNI).
+- ~~**Escopo real incerto**~~ — resolvido em D4: o painel existe e exibe dado fabricado, então
+  a fatia tem entrega concreta e não é só verificação.
+- **Base vazia.** Num ambiente sem faturas fechadas, o histórico volta vazio. O painel precisa
+  de estado vazio explícito — hoje ele nunca ficava vazio porque o dado era inventado.
+- **Contagem variável.** O template fixa "9 meses" e `highlightIndex = 8`; com dado real a série
+  tem o tamanho que tiver, então ambos passam a derivar do array.
 - A fatura aberta client-derived filtra por `method === cardId` dentro do mês corrente, não por
   ciclo de fechamento real; manter essa simplificação (fora de escopo mudá-la).
