@@ -18,5 +18,5 @@ export interface AddContributionData {
 
 export abstract class GoalRepository {
   abstract findAll(): Promise<GoalView[]>;
-  abstract addContribution(goalId: string, data: AddContributionData): Promise<void>;
+  abstract addContribution(slug: string, data: AddContributionData): Promise<void>;
 }

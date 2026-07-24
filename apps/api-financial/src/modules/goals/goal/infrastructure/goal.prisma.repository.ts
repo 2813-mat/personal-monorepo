@@ -20,12 +20,12 @@ export class GoalPrismaRepository extends TenantRepository implements GoalReposi
     return goals.map((g) => toView(g));
   }
 
-  async addContribution(goalId: string, data: AddContributionData): Promise<void> {
-    await this.prisma.goal.findFirstOrThrow({ where: this.scoped({ id: goalId }) });
+  async addContribution(slug: string, data: AddContributionData): Promise<void> {
+    const goal = await this.prisma.goal.findFirstOrThrow({ where: this.scoped({ slug }) });
     await this.prisma.goalContribution.create({
       data: {
         householdId: this.householdId,
-        goalId,
+        goalId: goal.id,
         amount: data.amount,
         date: new Date(data.date),
       },
