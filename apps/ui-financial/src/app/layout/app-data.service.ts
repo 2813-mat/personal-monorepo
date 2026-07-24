@@ -3,13 +3,13 @@ import type {
   Card,
   Category,
   FixedExpense,
+  Goal,
   HolderFilter,
   Income,
   MonthContext,
   Transaction,
 } from '@caixa-familia/shared-types';
 import {
-  MOCK_GOALS,
   MOCK_HISTORY,
   MOCK_INCOME_HISTORY,
   CURRENT_MONTH,
@@ -18,10 +18,12 @@ import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
+import { GoalApiService } from '../core/api/goal-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
+import { wireToGoal } from '../core/api/goal.mapper';
 import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +32,7 @@ export class AppDataService {
   private catApi = inject(CatalogApiService);
   private incApi = inject(IncomeApiService);
   private fixApi = inject(FixedApiService);
+  private goalApi = inject(GoalApiService);
   private toast = inject(ToastService);
 
   private fail(message: string, errorSignal: WritableSignal<string | null>): void {
@@ -43,9 +46,9 @@ export class AppDataService {
 
   readonly incomes = signal<Income[]>([]);
   readonly fixed = signal<FixedExpense[]>([]);
+  readonly goals = signal<Goal[]>([]);
 
   // still-mock resources (out of scope for this slice)
-  readonly goals = signal(MOCK_GOALS);
   readonly history = signal(MOCK_HISTORY);
   readonly incomeHistory = signal(MOCK_INCOME_HISTORY);
 
@@ -68,6 +71,9 @@ export class AppDataService {
 
   readonly fixedLoading = signal(false);
   readonly fixedError = signal<string | null>(null);
+
+  readonly goalsLoading = signal(false);
+  readonly goalsError = signal<string | null>(null);
 
   loadCatalog(): void {
     this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
@@ -146,6 +152,28 @@ export class AppDataService {
     this.fixApi.create(fixedToCreateWire(f)).subscribe({
       next: () => this.loadFixed(),
       error: () => this.fail('Falha ao criar gasto fixo', this.fixedError),
+    });
+  }
+
+  loadGoals(): void {
+    this.goalsLoading.set(true);
+    this.goalsError.set(null);
+    this.goalApi.list().subscribe({
+      next: (rows) => {
+        this.goals.set(rows.map(wireToGoal));
+        this.goalsLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar metas', this.goalsError);
+        this.goalsLoading.set(false);
+      },
+    });
+  }
+
+  addContribution(slug: string, amount: number, date: string): void {
+    this.goalApi.addContribution(slug, { amount, date }).subscribe({
+      next: () => this.loadGoals(),
+      error: () => this.fail('Falha ao registrar aporte', this.goalsError),
     });
   }
 }

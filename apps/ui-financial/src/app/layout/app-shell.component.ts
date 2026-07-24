@@ -20,11 +20,12 @@ export class AppShellComponent {
   constructor() {
     this.auth.init();
 
-    // Load the catalog and incomes once the user is authenticated.
+    // Load the month-independent resources once the user is authenticated.
     effect(() => {
       if (this.auth.isAuthenticated()) {
         this.data.loadCatalog();
         this.data.loadIncomes();
+        this.data.loadGoals();
       }
     });
 

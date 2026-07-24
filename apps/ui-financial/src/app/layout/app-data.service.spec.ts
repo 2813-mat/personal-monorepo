@@ -5,7 +5,13 @@ import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
-import type { TransactionWire, IncomeWire, FixedExpenseWire } from '../core/api/wire.types';
+import { GoalApiService } from '../core/api/goal-api.service';
+import type {
+  TransactionWire,
+  IncomeWire,
+  FixedExpenseWire,
+  GoalWire,
+} from '../core/api/wire.types';
 
 const wire: TransactionWire = {
   id: 't1',
@@ -39,11 +45,30 @@ const fixedWire: FixedExpenseWire = {
   paidThisMonth: true,
 };
 
-function setup(overrides: { txList?: jest.Mock; incList?: jest.Mock; fixList?: jest.Mock } = {}) {
+const goalWire: GoalWire = {
+  id: 'cuid-1',
+  slug: 'sos',
+  label: 'Reserva de emergência',
+  target: 30000,
+  monthly: 800,
+  color: '#A16207',
+  subtitle: 'colchão · 6 meses',
+  type: 'EMERGENCIA',
+  balance: 18420,
+  history: [500, 500, 500, 600, 600, 700, 700, 800, 800, 800, 800, 800],
+};
+
+function setup(
+  overrides: { txList?: jest.Mock; incList?: jest.Mock; fixList?: jest.Mock; goalList?: jest.Mock } = {},
+) {
   const txApi = { list: overrides.txList ?? jest.fn(() => of([wire])), create: jest.fn(), remove: jest.fn() };
   const catApi = { listCategories: jest.fn(() => of([])), listCards: jest.fn(() => of([])) };
   const incApi = { list: overrides.incList ?? jest.fn(() => of([incomeWire])), create: jest.fn(() => of(incomeWire)) };
   const fixApi = { list: overrides.fixList ?? jest.fn(() => of([fixedWire])), create: jest.fn(() => of(fixedWire)) };
+  const goalApi = {
+    list: overrides.goalList ?? jest.fn(() => of([goalWire])),
+    addContribution: jest.fn(() => of(undefined)),
+  };
   TestBed.configureTestingModule({
     providers: [
       AppDataService,
@@ -51,9 +76,10 @@ function setup(overrides: { txList?: jest.Mock; incList?: jest.Mock; fixList?: j
       { provide: CatalogApiService, useValue: catApi },
       { provide: IncomeApiService, useValue: incApi },
       { provide: FixedApiService, useValue: fixApi },
+      { provide: GoalApiService, useValue: goalApi },
     ],
   });
-  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi };
+  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi };
 }
 
 describe('AppDataService.loadTransactions', () => {
@@ -135,5 +161,29 @@ describe('AppDataService.createFixed', () => {
       }),
     );
     expect(fixApi.list).toHaveBeenCalled();
+  });
+});
+
+describe('AppDataService.loadGoals', () => {
+  it('fills the goals signal with mapped domain objects', () => {
+    const { svc, goalApi } = setup();
+    svc.loadGoals();
+    expect(goalApi.list).toHaveBeenCalled();
+    expect(svc.goals()[0]).toMatchObject({ id: 'sos', type: 'emergencia', balance: 18420 });
+    expect(svc.goalsLoading()).toBe(false);
+  });
+
+  it('starts empty instead of serving mock data', () => {
+    const { svc } = setup();
+    expect(svc.goals()).toEqual([]);
+  });
+});
+
+describe('AppDataService.addContribution', () => {
+  it('posts to the goal slug and reloads goals', () => {
+    const { svc, goalApi } = setup();
+    svc.addContribution('sos', 500, '2026-05-22');
+    expect(goalApi.addContribution).toHaveBeenCalledWith('sos', { amount: 500, date: '2026-05-22' });
+    expect(goalApi.list).toHaveBeenCalled();
   });
 });
