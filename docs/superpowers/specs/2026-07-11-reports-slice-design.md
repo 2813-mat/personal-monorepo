@@ -27,6 +27,19 @@ Conectar o recurso **Reports (monthly summaries)** API↔front.
   tipo `'Mai/26'`). O mapper transforma cada summary em `{ m, total }` usando `expenseTotal` e
   `incomeTotal`.
 - **D3 — sem dimensão de mês no load:** carrega a série inteira uma vez no login.
+- **D4 — o gráfico precisa aguentar N ≠ 12 (2026-07-24):** `reports.component.ts:195` fixa
+  `groupW = W / 12`. Com menos de 12 meses as barras ocupam só a fração esquerda da largura;
+  com mais, vazam para fora do SVG. Passa a ser `W / Math.max(n, 12)`: até 12 meses o visual
+  atual é preservado, acima disso as barras encolhem para caber. Dividir por `n` puro faria
+  uma série de 1 mês virar uma barra gigante.
+- **D5 — série vazia (2026-07-24):** `reports.component.ts:194` faz
+  `Math.max(...incomes, ...expenses) * 1.15 || 1`. Com arrays vazios isso é
+  `Math.max()` = `-Infinity`, e `-Infinity` é **truthy** — o `|| 1` não protege. Era inalcançável
+  com mock de 12 meses; com dado real é alcançável. O cálculo passa a tratar a série vazia
+  explicitamente, e a tela ganha estado vazio.
+- **D6 — verificação por identidade:** o seed cria os `MonthlySummary` a partir do próprio
+  `MOCK_HISTORY`/`MOCK_INCOME_HISTORY` (`seed.ts:130-139`). Num banco semeado, a tela deve
+  renderizar **exatamente os mesmos números** depois da migração — é esse o critério de smoke.
 
 ## 3. Backend (`api-financial`)
 Nenhuma mudança — `GET /reports/monthly` já retorna
@@ -55,7 +68,11 @@ ordenado por `year,month` asc.
 - `nx build` das duas apps + smoke: login → tela de Reports com séries reais.
 
 ## 6. Riscos
-- **Meses vazios / série curta:** com poucos summaries fechados, os gráficos da tela (que hoje
-  assumem ~12 meses) podem ficar ralos. Confirmar no plano se a tela lida bem com N < 12.
+- ~~**Meses vazios / série curta**~~ — confirmado e endereçado em D4 e D5: a tela **não** lidava
+  bem com N ≠ 12 nem com N = 0.
 - **Rótulo de mês:** garantir consistência da abreviação com o que a tela já usa
   (`MOCK_HISTORY` usa `'Mai/26'`).
+- **Anos fixos no código (fora de escopo).** `sum2026` filtra `'/26'` e `vs2025` filtra `'/25'`
+  por sufixo de string (`reports.component.ts:69-109`), e os rótulos dos KPIs dizem "2026 YTD"
+  e "vs. 2025". Com dado real de outros anos esses KPIs zeram silenciosamente. É problema
+  preexistente e independente da migração — anotar para depois, não corrigir aqui.
