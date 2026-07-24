@@ -178,6 +178,9 @@ export class ReportsComponent {
     return { m: exp[bestIdx]?.m ?? '', total: s[bestIdx] ?? 0 };
   });
 
+  monthCount = computed(() => this.data.history().length);
+  hasHistory = computed(() => this.monthCount() > 0);
+
   chartModel = computed((): ChartModel => {
     const incomes = this.data.incomeHistory().map(e => e.total);
     const expenses = this.data.history().map(e => e.total);
@@ -191,8 +194,12 @@ export class ReportsComponent {
     const padTop = 10;
     const padBottom = 22;
     const chartH = H - padTop - padBottom;
-    const max = Math.max(...incomes, ...expenses) * 1.15 || 1;
-    const groupW = W / 12;
+    // Série vazia: Math.max() é -Infinity, que passa por `|| 1` justamente por
+    // ser truthy — daí o teste explícito de n.
+    const peak = n > 0 ? Math.max(...incomes, ...expenses) : 0;
+    const max = peak > 0 ? peak * 1.15 : 1;
+    // Até 12 meses preserva o espaçamento original; acima disso encolhe para caber.
+    const groupW = W / Math.max(n, 12);
     const barW = (groupW - 8) / 2 - 1;
 
     const bars: ChartBar[] = months.map((m, i) => {

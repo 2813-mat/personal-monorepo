@@ -21,20 +21,28 @@
 <!-- 2. Big chart card -->
 <div class="panel chart-panel">
   <div class="panel-head">
-    <span class="panel-title">Receita vs. Despesa · 12 meses</span>
+    <span class="panel-title">
+      Receita vs. Despesa · {{ monthCount() }} {{ monthCount() === 1 ? 'mês' : 'meses' }}
+    </span>
     <div class="legend">
       <span class="legend-item"><span class="legend-swatch" style="background:var(--pos)"></span>Receita</span>
       <span class="legend-item"><span class="legend-swatch" style="background:var(--neg)"></span>Despesa</span>
       <span class="legend-item"><span class="legend-line" style="background:var(--brand)"></span>Sobra</span>
     </div>
   </div>
-  <div class="chart-body">
-    <cf-report-chart [model]="chartModel()" />
-  </div>
-  <div class="panel-foot">
-    <span class="foot-stat">média de sobra: <cf-money [value]="avgSavings()" [color]="avgSavings() >= 0 ? 'var(--pos)' : 'var(--neg)'" size="sm" [cents]="false" /></span>
-    <span class="foot-stat">melhor mês: <strong>{{ bestSavingsMonth().m }}</strong> · <cf-money [value]="bestSavingsMonth().total" [color]="'var(--pos)'" size="sm" [cents]="false" /></span>
-  </div>
+  @if (hasHistory()) {
+    <div class="chart-body">
+      <cf-report-chart [model]="chartModel()" />
+    </div>
+    <div class="panel-foot">
+      <span class="foot-stat">média de sobra: <cf-money [value]="avgSavings()" [color]="avgSavings() >= 0 ? 'var(--pos)' : 'var(--neg)'" size="sm" [cents]="false" /></span>
+      <span class="foot-stat">melhor mês: <strong>{{ bestSavingsMonth().m }}</strong> · <cf-money [value]="bestSavingsMonth().total" [color]="'var(--pos)'" size="sm" [cents]="false" /></span>
+    </div>
+  } @else {
+    <p class="empty-note">
+      Nenhum mês fechado ainda. O histórico aparece aqui quando o primeiro mês for fechado.
+    </p>
+  }
 </div>
 
 <!-- 3 + 4. Bottom grid -->
