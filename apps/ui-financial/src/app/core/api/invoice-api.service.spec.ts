@@ -31,4 +31,12 @@ describe('InvoiceApiService', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ total: 0, items: [] });
   });
+
+  it('POSTs an invoice close with the cycle coordinates', () => {
+    service.closeInvoice('nu-t', 2026, 8).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cards/nu-t/invoices/close`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ year: 2026, month: 8 });
+    req.flush({});
+  });
 });

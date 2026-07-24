@@ -25,7 +25,7 @@ import {
   wireToInvoiceHistory,
   wireToOpenInvoiceItem,
   type InvoiceHistoryEntry,
-  type OpenInvoiceItem,
+  type OpenInvoiceState,
 } from '../core/api/invoice.mapper';
 import {
   wireToExpenseHistory,
@@ -93,9 +93,12 @@ export class AppDataService {
   readonly invoiceHistoryLoading = signal(false);
   readonly invoiceHistoryError = signal<string | null>(null);
 
-  readonly openInvoice = signal<{ total: number; items: OpenInvoiceItem[] }>({
+  readonly openInvoice = signal<OpenInvoiceState>({
     total: 0,
     items: [],
+    closingDate: '',
+    year: 0,
+    month: 0,
   });
   readonly openInvoiceLoading = signal(false);
   readonly openInvoiceError = signal<string | null>(null);
@@ -204,6 +207,31 @@ export class AppDataService {
   }
 
   /**
+   * Fecha o mês (admin). O backend faz upsert: refazer recalcula em vez de
+   * duplicar. Invalida a série de meses fechados.
+   */
+  closeMonth(year: number, month: number): void {
+    this.repApi.closeMonth(year, month).subscribe({
+      next: () => this.loadMonthlyHistory(),
+      error: () => this.fail('Falha ao fechar o mês', this.reportsError),
+    });
+  }
+
+  /**
+   * Fecha a fatura de um cartão (admin). `year`/`month` são as coordenadas do
+   * **fechamento** do ciclo, que vêm de `openInvoice()` — não use `currentMonth()`.
+   */
+  closeInvoice(cardId: string, year: number, month: number): void {
+    this.invApi.closeInvoice(cardId, year, month).subscribe({
+      next: () => {
+        this.loadInvoiceHistory(cardId);
+        this.loadOpenInvoice(cardId);
+      },
+      error: () => this.fail('Falha ao fechar a fatura', this.invoiceHistoryError),
+    });
+  }
+
+  /**
    * Série de meses fechados. Uma chamada alimenta as duas projeções — despesa e
    * receita saem do mesmo summary.
    */
@@ -236,6 +264,9 @@ export class AppDataService {
         this.openInvoice.set({
           total: wire.total,
           items: wire.items.map(wireToOpenInvoiceItem),
+          closingDate: wire.closingDate,
+          year: wire.year,
+          month: wire.month,
         });
         this.openInvoiceLoading.set(false);
       },

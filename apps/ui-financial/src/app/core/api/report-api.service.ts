@@ -12,4 +12,9 @@ export class ReportApiService {
   listMonthly(): Observable<MonthlySummaryWire[]> {
     return this.http.get<MonthlySummaryWire[]>(`${this.base}/monthly`);
   }
+
+  /** Admin-only no backend. */
+  closeMonth(year: number, month: number): Observable<MonthlySummaryWire> {
+    return this.http.post<MonthlySummaryWire>(`${this.base}/monthly/close`, { year, month });
+  }
 }

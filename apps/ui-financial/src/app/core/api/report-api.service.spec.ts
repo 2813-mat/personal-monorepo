@@ -24,4 +24,12 @@ describe('ReportApiService', () => {
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
+
+  it('POSTs a month close with its coordinates', () => {
+    service.closeMonth(2026, 6).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/reports/monthly/close`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ year: 2026, month: 6 });
+    req.flush({});
+  });
 });

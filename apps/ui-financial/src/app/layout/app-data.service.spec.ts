@@ -81,6 +81,9 @@ function setup(
     getOpen: jest.fn(() =>
       of({
         total: 150,
+        closingDate: '2026-08-05',
+        year: 2026,
+        month: 8,
         items: [
           {
             id: 't1',
@@ -94,6 +97,7 @@ function setup(
         ],
       }),
     ),
+    closeInvoice: jest.fn(() => of({})),
     listByCard: jest.fn(() =>
       of([
         {
@@ -111,6 +115,7 @@ function setup(
     ),
   };
   const repApi = {
+    closeMonth: jest.fn(() => of({})),
     listMonthly: jest.fn(() =>
       of([
         { id: 's1', year: 2026, month: 4, expenseTotal: 4791, incomeTotal: 7769, perCategory: {}, closed: true },
@@ -344,6 +349,37 @@ describe('AppDataService.loadOpenInvoice', () => {
 
   it('starts with an empty invoice', () => {
     const { svc } = setup();
-    expect(svc.openInvoice()).toEqual({ total: 0, items: [] });
+    expect(svc.openInvoice()).toEqual({
+      total: 0,
+      items: [],
+      closingDate: '',
+      year: 0,
+      month: 0,
+    });
+  });
+
+  it('keeps the cycle coordinates the close action needs', () => {
+    const { svc } = setup();
+    svc.loadOpenInvoice('nu-t');
+    expect(svc.openInvoice()).toMatchObject({ closingDate: '2026-08-05', year: 2026, month: 8 });
+  });
+});
+
+describe('AppDataService.closeMonth', () => {
+  it('posts the coordinates and reloads the monthly history', () => {
+    const { svc, repApi } = setup();
+    svc.closeMonth(2026, 6);
+    expect(repApi.closeMonth).toHaveBeenCalledWith(2026, 6);
+    expect(repApi.listMonthly).toHaveBeenCalled();
+  });
+});
+
+describe('AppDataService.closeInvoice', () => {
+  it('posts the cycle coordinates and refreshes both invoice views', () => {
+    const { svc, invApi } = setup();
+    svc.closeInvoice('nu-t', 2026, 8);
+    expect(invApi.closeInvoice).toHaveBeenCalledWith('nu-t', 2026, 8);
+    expect(invApi.listByCard).toHaveBeenCalledWith('nu-t');
+    expect(invApi.getOpen).toHaveBeenCalledWith('nu-t');
   });
 });

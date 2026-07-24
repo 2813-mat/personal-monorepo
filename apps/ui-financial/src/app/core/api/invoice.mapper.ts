@@ -33,6 +33,19 @@ export interface OpenInvoiceItem {
   installments: { n: number; of: number } | null;
 }
 
+/**
+ * Fatura aberta na forma que a tela consome. `year`/`month` são as coordenadas
+ * do **fechamento** do ciclo — é o que o endpoint de fechar espera, e **não** o
+ * mês navegado na topbar.
+ */
+export interface OpenInvoiceState {
+  total: number;
+  items: OpenInvoiceItem[];
+  closingDate: string;
+  year: number;
+  month: number;
+}
+
 export function wireToOpenInvoiceItem(w: OpenInvoiceItemWire): OpenInvoiceItem {
   return {
     id: w.id,

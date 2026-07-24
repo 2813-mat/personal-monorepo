@@ -16,4 +16,15 @@ export class InvoiceApiService {
   getOpen(cardId: string): Observable<OpenInvoiceWire> {
     return this.http.get<OpenInvoiceWire>(`${this.base}/cards/${cardId}/invoice`);
   }
+
+  /**
+   * Admin-only no backend. `year`/`month` são as coordenadas do **fechamento**
+   * do ciclo, que vêm de `getOpen` — não são o mês navegado na UI.
+   */
+  closeInvoice(cardId: string, year: number, month: number): Observable<InvoiceHistoryWire> {
+    return this.http.post<InvoiceHistoryWire>(`${this.base}/cards/${cardId}/invoices/close`, {
+      year,
+      month,
+    });
+  }
 }

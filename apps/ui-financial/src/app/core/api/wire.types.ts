@@ -63,6 +63,10 @@ export interface OpenInvoiceItemWire {
 export interface OpenInvoiceWire {
   total: number;
   items: OpenInvoiceItemWire[];
+  closingDate: string;
+  /** Coordenadas do fechamento do ciclo — o que o close espera. */
+  year: number;
+  month: number;
 }
 
 export interface MonthlySummaryWire {
