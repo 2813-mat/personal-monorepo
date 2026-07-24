@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import type { HolderFilter } from '@caixa-familia/shared-types';
+import { monthContextOf } from '@caixa-familia/shared-utils';
 import { AppDataService } from './app-data.service';
 import { AuthService } from '../core/auth/auth.service';
 import { IconComponent } from '../ui/icon/icon.component';
@@ -27,27 +28,14 @@ export class TopBarComponent {
     this.data.holderFilter.set(f);
   }
 
+  // `m.month` é 1-based: `m.month - 2` é o mês anterior e `m.month` o seguinte.
   prevMonth() {
     const m = this.data.currentMonth();
-    const date = new Date(m.year, m.month - 2);
-    this.data.currentMonth.set({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      label: date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-        .replace(/^./, s => s.toUpperCase()),
-      short: date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
-    });
+    this.data.currentMonth.set(monthContextOf(new Date(m.year, m.month - 2)));
   }
 
   nextMonth() {
     const m = this.data.currentMonth();
-    const date = new Date(m.year, m.month);
-    this.data.currentMonth.set({
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      label: date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-        .replace(/^./, s => s.toUpperCase()),
-      short: date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
-    });
+    this.data.currentMonth.set(monthContextOf(new Date(m.year, m.month)));
   }
 }
