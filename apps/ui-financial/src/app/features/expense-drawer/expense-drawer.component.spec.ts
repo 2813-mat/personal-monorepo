@@ -2,20 +2,36 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ExpenseDrawerComponent } from './expense-drawer.component';
 import { AppDataService } from '../../layout/app-data.service';
-import type { Category } from '@caixa-familia/shared-types';
+import type { Category, Goal } from '@caixa-familia/shared-types';
 
 const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#000', budget: 100 }];
+
+const GOALS: Goal[] = [
+  {
+    id: 'sos',
+    label: 'Reserva',
+    target: 30000,
+    balance: 1000,
+    monthly: 800,
+    color: '#A16207',
+    subtitle: '',
+    type: 'emergencia',
+    history: [],
+  },
+];
 
 function mockDataService() {
   return {
     categories: signal(CATEGORIES),
     cards: signal([]),
+    goals: signal(GOALS),
     catBy: signal({}),
     cardBy: signal({}),
     currentMonth: signal({ year: 2026, month: 5, label: 'Maio 2026', short: 'mai' }),
     createTransaction: jest.fn(),
     createIncome: jest.fn(),
     createFixed: jest.fn(),
+    addContribution: jest.fn(),
   };
 }
 
@@ -101,5 +117,62 @@ describe('ExpenseDrawerComponent — fixed type', () => {
     component.save();
     expect(data.createTransaction).toHaveBeenCalled();
     expect(data.createFixed).not.toHaveBeenCalled();
+  });
+});
+
+describe('ExpenseDrawerComponent — contribution type', () => {
+  let component: ExpenseDrawerComponent;
+  let data: ReturnType<typeof mockDataService>;
+
+  beforeEach(async () => {
+    data = mockDataService();
+    await TestBed.configureTestingModule({
+      imports: [ExpenseDrawerComponent],
+      providers: [{ provide: AppDataService, useValue: data }],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(ExpenseDrawerComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  function fillContribution(goal: string | null) {
+    component.form.patchValue({
+      type: 'contribution',
+      label: 'Aporte de maio',
+      value: 500,
+      date: '2026-05-22',
+      holder: 'shared',
+      goal,
+    });
+  }
+
+  it('requires a target goal', () => {
+    fillContribution(null);
+    expect(component.form.controls.goal.valid).toBe(false);
+    expect(component.form.invalid).toBe(true);
+  });
+
+  it('does not require a category', () => {
+    fillContribution('sos');
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('routes a valid contribution to addContribution', () => {
+    fillContribution('sos');
+    component.save();
+    expect(data.addContribution).toHaveBeenCalledWith('sos', 500, '2026-05-22');
+  });
+
+  it('no longer creates a transaction for a contribution', () => {
+    fillContribution('sos');
+    component.save();
+    expect(data.createTransaction).not.toHaveBeenCalled();
+  });
+
+  it('does not submit without a goal', () => {
+    fillContribution(null);
+    component.save();
+    expect(data.addContribution).not.toHaveBeenCalled();
   });
 });

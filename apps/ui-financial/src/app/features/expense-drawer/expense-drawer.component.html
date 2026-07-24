@@ -15,6 +15,9 @@
       @if (form.controls.type.value === 'fixed') {
         <div class="head-title">Novo gasto fixo</div>
         <span class="head-sub">Todo mês</span>
+      } @else if (form.controls.type.value === 'contribution') {
+        <div class="head-title">Novo aporte</div>
+        <span class="head-sub">{{ data.currentMonth().label }}</span>
       } @else {
         <div class="head-title">Novo lançamento</div>
         <span class="head-sub">{{ data.currentMonth().label }}</span>
@@ -87,21 +90,38 @@
       placeholder="Ex.: Mercado mensal Guanabara"
     />
 
-    <!-- Categoria -->
-    <div class="label mt">Categoria</div>
-    <div class="cat-grid">
-      @for (cat of data.categories(); track cat.id) {
-        <button
-          type="button"
-          class="cat-chip"
-          [class.active]="form.controls.cat.value === cat.id"
-          (click)="form.controls.cat.setValue(cat.id)"
-        >
-          <cf-cat-dot [catId]="cat.id" [size]="8" />
-          {{ cat.label }}
-        </button>
-      }
-    </div>
+    @if (form.controls.type.value === 'contribution') {
+      <!-- Meta -->
+      <div class="label mt">Meta</div>
+      <div class="cat-grid">
+        @for (g of data.goals(); track g.id) {
+          <button
+            type="button"
+            class="cat-chip"
+            [class.active]="form.controls.goal.value === g.id"
+            (click)="form.controls.goal.setValue(g.id)"
+          >
+            {{ g.label }}
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Categoria -->
+      <div class="label mt">Categoria</div>
+      <div class="cat-grid">
+        @for (cat of data.categories(); track cat.id) {
+          <button
+            type="button"
+            class="cat-chip"
+            [class.active]="form.controls.cat.value === cat.id"
+            (click)="form.controls.cat.setValue(cat.id)"
+          >
+            <cf-cat-dot [catId]="cat.id" [size]="8" />
+            {{ cat.label }}
+          </button>
+        }
+      </div>
+    }
 
     @if (form.controls.type.value === 'fixed') {
       <!-- Vencimento -->
@@ -120,7 +140,7 @@
       <input type="date" class="text-input num" formControlName="date" />
     }
 
-    @if (form.controls.type.value !== 'fixed') {
+    @if (form.controls.type.value !== 'fixed' && form.controls.type.value !== 'contribution') {
     <!-- Método -->
     <div class="label mt">Método de pagamento</div>
     <div class="method-list">
@@ -193,7 +213,7 @@
       </button>
     </div>
 
-    @if (form.controls.type.value !== 'fixed') {
+    @if (form.controls.type.value !== 'fixed' && form.controls.type.value !== 'contribution') {
     <!-- Toggles -->
     <div class="toggle-grid mt" formGroupName="installments">
       <label class="toggle-row">
@@ -231,7 +251,11 @@
     <span class="foot-hint">⌘/Ctrl + Enter para salvar</span>
     <button type="button" class="save-btn" [disabled]="form.invalid" (click)="save()">
       <cf-icon name="check" [size]="11" />
-      {{ form.controls.type.value === 'fixed' ? 'Salvar gasto fixo' : 'Salvar lançamento' }}
+      @switch (form.controls.type.value) {
+        @case ('fixed') { Salvar gasto fixo }
+        @case ('contribution') { Salvar aporte }
+        @default { Salvar lançamento }
+      }
     </button>
   </footer>
 </div>

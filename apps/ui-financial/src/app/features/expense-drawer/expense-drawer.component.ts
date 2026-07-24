@@ -50,6 +50,7 @@ export class ExpenseDrawerComponent {
     cat: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     date: new FormControl(todayIso(), { nonNullable: true, validators: [Validators.required] }),
     dueDay: new FormControl<number | null>(null),
+    goal: new FormControl<string | null>(null),
     method: new FormControl<string>('pix', { nonNullable: true, validators: [Validators.required] }),
     holder: new FormControl<Holder>('shared', { nonNullable: true, validators: [Validators.required] }),
     installments: new FormGroup({
@@ -62,12 +63,21 @@ export class ExpenseDrawerComponent {
   constructor() {
     this.form.controls.type.valueChanges.subscribe((type) => {
       const cat = this.form.controls.cat;
-      if (type === 'income') {
+      if (type === 'income' || type === 'contribution') {
         cat.clearValidators();
       } else {
         cat.setValidators([Validators.required]);
       }
       cat.updateValueAndValidity();
+
+      // A contribution targets a goal instead of a category.
+      const goal = this.form.controls.goal;
+      if (type === 'contribution') {
+        goal.setValidators([Validators.required]);
+      } else {
+        goal.clearValidators();
+      }
+      goal.updateValueAndValidity();
 
       // A fixed expense is a template with a due day, not a dated payment.
       const dueDay = this.form.controls.dueDay;
@@ -109,6 +119,12 @@ export class ExpenseDrawerComponent {
         paidThisMonth: false,
       };
       this.data.createFixed(fixed);
+      this.onClose();
+      return;
+    }
+
+    if (v.type === 'contribution') {
+      this.data.addContribution(String(v.goal), Number(v.value), v.date);
       this.onClose();
       return;
     }
