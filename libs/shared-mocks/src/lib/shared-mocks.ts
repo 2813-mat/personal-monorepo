@@ -37,16 +37,16 @@ export const MOCK_CATEGORIES: Category[] = [
 ];
 
 export const MOCK_FIXED: FixedExpense[] = [
-  { id: 'f-clube', label: 'Clubinho almoço',  value: 1300.00, due: 5,  cat: 'mercado', holder: 'shared' },
-  { id: 'f-luz',   label: 'Conta de Luz',     value:  550.91, due: 10, cat: 'casa',    holder: 'shared' },
-  { id: 'f-alug',  label: 'Aluguel + IPTU',   value:  150.00, due: 10, cat: 'casa',    holder: 'shared' },
-  { id: 'f-imp',   label: 'Imposto PJ',       value:  540.00, due: 20, cat: 'casa',    holder: 'Mateus' },
-  { id: 'f-hon',   label: 'Honorários',       value:  300.00, due: 20, cat: 'casa',    holder: 'Mateus' },
-  { id: 'f-net',   label: 'Internet',         value:  114.90, due: 15, cat: 'assin',   holder: 'shared' },
-  { id: 'f-corte', label: 'Corte (Mateus)',   value:   80.00, due: 25, cat: 'pessoal', holder: 'Mateus' },
-  { id: 'f-unha',  label: 'Unha (Thais)',     value:   50.00, due: 22, cat: 'pessoal', holder: 'Thais'  },
-  { id: 'f-facT',  label: 'Faculdade Thais',  value:  711.45, due: 12, cat: 'educ',    holder: 'Thais'  },
-  { id: 'f-facM',  label: 'Faculdade Mateus', value:  202.34, due: 12, cat: 'educ',    holder: 'Mateus' },
+  { id: 'f-clube', label: 'Clubinho almoço',  value: 1300.00, due: 5,  cat: 'mercado', holder: 'shared', paidThisMonth: true  },
+  { id: 'f-luz',   label: 'Conta de Luz',     value:  550.91, due: 10, cat: 'casa',    holder: 'shared', paidThisMonth: true  },
+  { id: 'f-alug',  label: 'Aluguel + IPTU',   value:  150.00, due: 10, cat: 'casa',    holder: 'shared', paidThisMonth: true  },
+  { id: 'f-imp',   label: 'Imposto PJ',       value:  540.00, due: 20, cat: 'casa',    holder: 'Mateus', paidThisMonth: false },
+  { id: 'f-hon',   label: 'Honorários',       value:  300.00, due: 20, cat: 'casa',    holder: 'Mateus', paidThisMonth: false },
+  { id: 'f-net',   label: 'Internet',         value:  114.90, due: 15, cat: 'assin',   holder: 'shared', paidThisMonth: false },
+  { id: 'f-corte', label: 'Corte (Mateus)',   value:   80.00, due: 25, cat: 'pessoal', holder: 'Mateus', paidThisMonth: false },
+  { id: 'f-unha',  label: 'Unha (Thais)',     value:   50.00, due: 22, cat: 'pessoal', holder: 'Thais',  paidThisMonth: false },
+  { id: 'f-facT',  label: 'Faculdade Thais',  value:  711.45, due: 12, cat: 'educ',    holder: 'Thais',  paidThisMonth: false },
+  { id: 'f-facM',  label: 'Faculdade Mateus', value:  202.34, due: 12, cat: 'educ',    holder: 'Mateus', paidThisMonth: false },
 ];
 
 export const MOCK_GOALS: Goal[] = [

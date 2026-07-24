@@ -42,6 +42,7 @@ export interface FixedExpense {
   due: number;
   cat: Id;
   holder: Holder;
+  paidThisMonth: boolean;
 }
 
 export interface Goal {
