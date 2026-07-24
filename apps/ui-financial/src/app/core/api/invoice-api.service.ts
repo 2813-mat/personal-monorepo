@@ -9,6 +9,11 @@ export class InvoiceApiService {
   private http = inject(HttpClient);
   private base = environment.apiBaseUrl;
 
+  /** Todas as faturas fechadas do household, numa chamada só. */
+  listAll(): Observable<InvoiceHistoryWire[]> {
+    return this.http.get<InvoiceHistoryWire[]>(`${this.base}/cards/invoices`);
+  }
+
   listByCard(cardId: string): Observable<InvoiceHistoryWire[]> {
     return this.http.get<InvoiceHistoryWire[]>(`${this.base}/cards/${cardId}/invoices`);
   }

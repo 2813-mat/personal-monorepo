@@ -24,6 +24,7 @@ import { wireToGoal } from '../core/api/goal.mapper';
 import {
   wireToInvoiceHistory,
   wireToOpenInvoiceItem,
+  groupInvoiceHistoryByCard,
   type InvoiceHistoryEntry,
   type OpenInvoiceState,
 } from '../core/api/invoice.mapper';
@@ -88,6 +89,9 @@ export class AppDataService {
 
   readonly reportsLoading = signal(false);
   readonly reportsError = signal<string | null>(null);
+
+  /** Faturas fechadas de todos os cartões, por cartão — alimenta a tabela de cartões. */
+  readonly invoiceHistoryByCard = signal<Record<string, InvoiceHistoryEntry[]>>({});
 
   readonly invoiceHistory = signal<InvoiceHistoryEntry[]>([]);
   readonly invoiceHistoryLoading = signal(false);
@@ -274,6 +278,17 @@ export class AppDataService {
         this.fail('Falha ao carregar a fatura', this.openInvoiceError);
         this.openInvoiceLoading.set(false);
       },
+    });
+  }
+
+  /**
+   * Histórico de todos os cartões numa chamada. Sem dimensão de mês: carrega no
+   * login, junto do catálogo.
+   */
+  loadAllInvoiceHistory(): void {
+    this.invApi.listAll().subscribe({
+      next: (rows) => this.invoiceHistoryByCard.set(groupInvoiceHistoryByCard(rows)),
+      error: () => this.fail('Falha ao carregar o histórico de faturas', this.invoiceHistoryError),
     });
   }
 

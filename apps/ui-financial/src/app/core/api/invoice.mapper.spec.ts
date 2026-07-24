@@ -1,4 +1,8 @@
-import { wireToInvoiceHistory, wireToOpenInvoiceItem } from './invoice.mapper';
+import {
+  wireToInvoiceHistory,
+  wireToOpenInvoiceItem,
+  groupInvoiceHistoryByCard,
+} from './invoice.mapper';
 import type { InvoiceHistoryWire } from './wire.types';
 
 const wire: InvoiceHistoryWire = {
@@ -65,5 +69,46 @@ describe('wireToOpenInvoiceItem', () => {
 
   it('keeps the shared holder as-is', () => {
     expect(wireToOpenInvoiceItem({ ...item, holder: 'shared' }).holder).toBe('shared');
+  });
+});
+
+describe('groupInvoiceHistoryByCard', () => {
+  const row = (cardId: string, year: number, month: number, total: number) => ({
+    id: `${cardId}-${month}`,
+    cardId,
+    year,
+    month,
+    closingDate: '2026-01-05',
+    dueDate: '2026-01-12',
+    total,
+    perCategory: {},
+    status: 'CLOSED' as const,
+  });
+
+  it('groups the flat list by card', () => {
+    const grouped = groupInvoiceHistoryByCard([
+      row('nu-t', 2026, 1, 100),
+      row('it-m', 2026, 1, 200),
+      row('nu-t', 2026, 2, 150),
+    ]);
+    expect(Object.keys(grouped).sort()).toEqual(['it-m', 'nu-t']);
+    expect(grouped['nu-t'].map((e) => e.total)).toEqual([100, 150]);
+  });
+
+  it('keeps each card chronological', () => {
+    const grouped = groupInvoiceHistoryByCard([
+      row('nu-t', 2026, 3, 300),
+      row('nu-t', 2025, 12, 50),
+      row('nu-t', 2026, 1, 100),
+    ]);
+    expect(grouped['nu-t'].map((e) => e.total)).toEqual([50, 100, 300]);
+  });
+
+  it('omits cards with no closed invoice instead of inventing an entry', () => {
+    expect(groupInvoiceHistoryByCard([row('nu-t', 2026, 1, 100)])['it-m']).toBeUndefined();
+  });
+
+  it('maps an empty list to an empty map', () => {
+    expect(groupInvoiceHistoryByCard([])).toEqual({});
   });
 });

@@ -34,6 +34,23 @@ export interface OpenInvoiceItem {
 }
 
 /**
+ * Agrupa a lista achatada do endpoint em lote por cartão, mantendo cada série
+ * cronológica. Cartão sem fatura fechada simplesmente não aparece no mapa.
+ */
+export function groupInvoiceHistoryByCard(
+  rows: InvoiceHistoryWire[],
+): Record<string, InvoiceHistoryEntry[]> {
+  const out: Record<string, InvoiceHistoryEntry[]> = {};
+  for (const r of rows) {
+    (out[r.cardId] ??= []).push(wireToInvoiceHistory(r));
+  }
+  for (const cardId of Object.keys(out)) {
+    out[cardId].sort((a, b) => a.year - b.year || a.month - b.month);
+  }
+  return out;
+}
+
+/**
  * Fatura aberta na forma que a tela consome. `year`/`month` são as coordenadas
  * do **fechamento** do ciclo — é o que o endpoint de fechar espera, e **não** o
  * mês navegado na topbar.

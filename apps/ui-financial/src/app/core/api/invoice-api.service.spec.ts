@@ -25,6 +25,13 @@ describe('InvoiceApiService', () => {
     req.flush([]);
   });
 
+  it('GETs every closed invoice in one call', () => {
+    service.listAll().subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/cards/invoices`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
   it('GETs the open invoice for a card', () => {
     service.getOpen('nu-t').subscribe();
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/cards/nu-t/invoice`);

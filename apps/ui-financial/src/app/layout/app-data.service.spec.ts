@@ -98,6 +98,12 @@ function setup(
       }),
     ),
     closeInvoice: jest.fn(() => of({})),
+    listAll: jest.fn(() =>
+      of([
+        { id: 'a', cardId: 'nu-t', year: 2026, month: 1, closingDate: '2026-01-05', dueDate: '2026-01-12', total: 100, perCategory: {}, status: 'CLOSED' as const },
+        { id: 'b', cardId: 'it-m', year: 2026, month: 1, closingDate: '2026-01-18', dueDate: '2026-01-25', total: 200, perCategory: {}, status: 'CLOSED' as const },
+      ]),
+    ),
     listByCard: jest.fn(() =>
       of([
         {
@@ -381,5 +387,20 @@ describe('AppDataService.closeInvoice', () => {
     expect(invApi.closeInvoice).toHaveBeenCalledWith('nu-t', 2026, 8);
     expect(invApi.listByCard).toHaveBeenCalledWith('nu-t');
     expect(invApi.getOpen).toHaveBeenCalledWith('nu-t');
+  });
+});
+
+describe('AppDataService.loadAllInvoiceHistory', () => {
+  it('fetches every card in a single call and groups the result', () => {
+    const { svc, invApi } = setup();
+    svc.loadAllInvoiceHistory();
+    expect(invApi.listAll).toHaveBeenCalledTimes(1);
+    expect(Object.keys(svc.invoiceHistoryByCard()).sort()).toEqual(['it-m', 'nu-t']);
+    expect(svc.invoiceHistoryByCard()['nu-t'][0].total).toBe(100);
+  });
+
+  it('starts with an empty map', () => {
+    const { svc } = setup();
+    expect(svc.invoiceHistoryByCard()).toEqual({});
   });
 });
