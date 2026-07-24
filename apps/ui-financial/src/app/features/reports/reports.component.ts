@@ -5,6 +5,7 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import type { Category } from '@caixa-familia/shared-types';
+import type { MonthEntry } from '../../core/api/report.mapper';
 import { ReportChartComponent, ChartBar, ChartModel } from './report-chart.component';
 
 function fmtNum(v: number): string {
@@ -66,12 +67,15 @@ export class ReportsComponent {
 
   // ── Year-bucket helpers ─────────────────────────────────────────────────────
 
-  private sum2026 = (entries: { m: string; total: number }[]) =>
-    entries.filter(e => e.m.endsWith('/26')).reduce((s, e) => s + e.total, 0);
+  /** O ano em foco sai do contexto de mês, não do calendário nem de um literal. */
+  currentYear = computed(() => this.data.currentMonth().year);
 
-  private receita2026 = computed(() => this.sum2026(this.data.incomeHistory()));
-  private despesa2026 = computed(() => this.sum2026(this.data.history()));
-  private sobra2026 = computed(() => this.receita2026() - this.despesa2026());
+  private sumYear = (entries: MonthEntry[], year: number) =>
+    entries.filter(e => e.year === year).reduce((s, e) => s + e.total, 0);
+
+  private receitaAno = computed(() => this.sumYear(this.data.incomeHistory(), this.currentYear()));
+  private despesaAno = computed(() => this.sumYear(this.data.history(), this.currentYear()));
+  private sobraAno = computed(() => this.receitaAno() - this.despesaAno());
 
   // Largest category by summed transaction value (current-month tx).
   private topCategory = computed(() => {
@@ -97,40 +101,44 @@ export class ReportsComponent {
     };
   });
 
-  // Avg monthly expense 2025 vs 2026, signed delta %.
-  private vs2025 = computed(() => {
+  // Despesa média mensal do ano em foco vs. a do ano anterior, delta % com sinal.
+  private vsPreviousYear = computed(() => {
     const hist = this.data.history();
-    const y25 = hist.filter(e => e.m.endsWith('/25'));
-    const y26 = hist.filter(e => e.m.endsWith('/26'));
-    const avg25 = y25.length ? y25.reduce((s, e) => s + e.total, 0) / y25.length : 0;
-    const avg26 = y26.length ? y26.reduce((s, e) => s + e.total, 0) / y26.length : 0;
-    const delta = avg25 > 0 ? ((avg26 - avg25) / avg25) * 100 : 0;
+    const year = this.currentYear();
+    const avgOf = (y: number) => {
+      const rows = hist.filter(e => e.year === y);
+      return rows.length ? rows.reduce((s, e) => s + e.total, 0) / rows.length : 0;
+    };
+    const previous = avgOf(year - 1);
+    const current = avgOf(year);
+    const delta = previous > 0 ? ((current - previous) / previous) * 100 : 0;
     return { delta, lower: delta <= 0 };
   });
 
   kpis = computed((): KpiCard[] => {
-    const receita = this.receita2026();
-    const sobra = this.sobra2026();
+    const year = this.currentYear();
+    const receita = this.receitaAno();
+    const sobra = this.sobraAno();
     const taxa = receita > 0 ? (sobra / receita) * 100 : 0;
     const top = this.topCategory();
-    const v = this.vs2025();
+    const v = this.vsPreviousYear();
     return [
       {
-        label: 'Receita 2026 YTD',
+        label: `Receita ${year} YTD`,
         value: receita,
         display: null,
         color: 'var(--pos)',
         sub: 'acumulado YTD',
       },
       {
-        label: 'Despesa 2026 YTD',
-        value: this.despesa2026(),
+        label: `Despesa ${year} YTD`,
+        value: this.despesaAno(),
         display: null,
         color: 'var(--neg)',
         sub: 'acumulado YTD',
       },
       {
-        label: 'Sobra 2026',
+        label: `Sobra ${year}`,
         value: sobra,
         display: null,
         color: 'var(--brand)',
@@ -144,7 +152,7 @@ export class ReportsComponent {
         sub: `${top.pct.toFixed(0)}% do gasto total`,
       },
       {
-        label: 'vs. 2025',
+        label: `vs. ${year - 1}`,
         value: null,
         display: this.deltaLabel(v.delta),
         color: v.lower ? 'var(--pos)' : 'var(--neg)',

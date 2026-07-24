@@ -27,9 +27,14 @@ describe('monthLabel', () => {
 describe('wireToExpenseHistory', () => {
   it('projects the expense total per month', () => {
     expect(wireToExpenseHistory([row(2026, 4, 4791, 7769), row(2026, 5, 5234, 7493)])).toEqual([
-      { m: 'Abr/26', total: 4791 },
-      { m: 'Mai/26', total: 5234 },
+      { m: 'Abr/26', year: 2026, month: 4, total: 4791 },
+      { m: 'Mai/26', year: 2026, month: 5, total: 5234 },
     ]);
+  });
+
+  it('keeps the numeric coordinates so consumers do not parse the label', () => {
+    const [entry] = wireToExpenseHistory([row(2025, 12, 8596, 0)]);
+    expect(entry).toMatchObject({ year: 2025, month: 12 });
   });
 
   it('sorts chronologically regardless of input order', () => {
@@ -48,7 +53,9 @@ describe('wireToExpenseHistory', () => {
 
 describe('wireToIncomeHistory', () => {
   it('projects the income total per month', () => {
-    expect(wireToIncomeHistory([row(2026, 5, 5234, 7493)])).toEqual([{ m: 'Mai/26', total: 7493 }]);
+    expect(wireToIncomeHistory([row(2026, 5, 5234, 7493)])).toEqual([
+      { m: 'Mai/26', year: 2026, month: 5, total: 7493 },
+    ]);
   });
 
   it('stays index-aligned with the expense series', () => {

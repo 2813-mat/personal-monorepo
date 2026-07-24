@@ -1,9 +1,14 @@
 import { monthShort } from '@caixa-familia/shared-utils';
 import type { MonthlySummaryWire } from './wire.types';
 
-/** Ponto de uma série mensal, no formato que os gráficos consomem. */
+/**
+ * Ponto de uma série mensal. `m` é o rótulo de exibição; `year`/`month` são as
+ * coordenadas — quem precisa filtrar por período usa os números, nunca o rótulo.
+ */
 export interface MonthEntry {
   m: string;
+  year: number;
+  month: number;
   total: number;
 }
 
@@ -17,6 +22,8 @@ const chronological = (rows: MonthlySummaryWire[]): MonthlySummaryWire[] =>
 export function wireToExpenseHistory(rows: MonthlySummaryWire[]): MonthEntry[] {
   return chronological(rows).map((r) => ({
     m: monthLabel(r.year, r.month),
+    year: r.year,
+    month: r.month,
     total: r.expenseTotal,
   }));
 }
@@ -24,6 +31,8 @@ export function wireToExpenseHistory(rows: MonthlySummaryWire[]): MonthEntry[] {
 export function wireToIncomeHistory(rows: MonthlySummaryWire[]): MonthEntry[] {
   return chronological(rows).map((r) => ({
     m: monthLabel(r.year, r.month),
+    year: r.year,
+    month: r.month,
     total: r.incomeTotal,
   }));
 }
