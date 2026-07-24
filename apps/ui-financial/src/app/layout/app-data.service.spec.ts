@@ -78,6 +78,22 @@ function setup(
     addContribution: jest.fn(() => of(undefined)),
   };
   const invApi = {
+    getOpen: jest.fn(() =>
+      of({
+        total: 150,
+        items: [
+          {
+            id: 't1',
+            date: '2026-07-10',
+            label: 'Mercado',
+            value: 150,
+            categorySlug: 'mercado',
+            holder: 'Thais',
+            installments: null,
+          },
+        ],
+      }),
+    ),
     listByCard: jest.fn(() =>
       of([
         {
@@ -305,5 +321,29 @@ describe('AppDataService.loadCatalog', () => {
     catApi.listCards.mockReturnValueOnce(throwError(() => new Error('boom')));
     svc.loadCatalog();
     expect(svc.cardsError()).toBe('Falha ao carregar cartões');
+  });
+});
+
+describe('AppDataService.loadOpenInvoice', () => {
+  it('requests the open invoice for the given card', () => {
+    const { svc, invApi } = setup();
+    svc.loadOpenInvoice('nu-t');
+    expect(invApi.getOpen).toHaveBeenCalledWith('nu-t');
+    expect(svc.openInvoice().total).toBe(150);
+    expect(svc.openInvoice().items[0]).toEqual({
+      id: 't1',
+      date: '2026-07-10',
+      label: 'Mercado',
+      value: 150,
+      cat: 'mercado',
+      holder: 'Thais',
+      installments: null,
+    });
+    expect(svc.openInvoiceLoading()).toBe(false);
+  });
+
+  it('starts with an empty invoice', () => {
+    const { svc } = setup();
+    expect(svc.openInvoice()).toEqual({ total: 0, items: [] });
   });
 });

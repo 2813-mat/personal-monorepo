@@ -21,7 +21,12 @@ import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { wireToGoal } from '../core/api/goal.mapper';
-import { wireToInvoiceHistory, type InvoiceHistoryEntry } from '../core/api/invoice.mapper';
+import {
+  wireToInvoiceHistory,
+  wireToOpenInvoiceItem,
+  type InvoiceHistoryEntry,
+  type OpenInvoiceItem,
+} from '../core/api/invoice.mapper';
 import {
   wireToExpenseHistory,
   wireToIncomeHistory,
@@ -87,6 +92,13 @@ export class AppDataService {
   readonly invoiceHistory = signal<InvoiceHistoryEntry[]>([]);
   readonly invoiceHistoryLoading = signal(false);
   readonly invoiceHistoryError = signal<string | null>(null);
+
+  readonly openInvoice = signal<{ total: number; items: OpenInvoiceItem[] }>({
+    total: 0,
+    items: [],
+  });
+  readonly openInvoiceLoading = signal(false);
+  readonly openInvoiceError = signal<string | null>(null);
 
   loadCatalog(): void {
     this.categoriesError.set(null);
@@ -207,6 +219,29 @@ export class AppDataService {
       error: () => {
         this.fail('Falha ao carregar o histórico mensal', this.reportsError);
         this.reportsLoading.set(false);
+      },
+    });
+  }
+
+  /**
+   * Fatura aberta de um cartão, pelo ciclo de faturamento real. Não deriva de
+   * `transactions()`: um ciclo atravessa dois meses-calendário e a UI só carrega
+   * um mês por vez, então o client não teria os dados para acertar.
+   */
+  loadOpenInvoice(cardId: string): void {
+    this.openInvoiceLoading.set(true);
+    this.openInvoiceError.set(null);
+    this.invApi.getOpen(cardId).subscribe({
+      next: (wire) => {
+        this.openInvoice.set({
+          total: wire.total,
+          items: wire.items.map(wireToOpenInvoiceItem),
+        });
+        this.openInvoiceLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar a fatura', this.openInvoiceError);
+        this.openInvoiceLoading.set(false);
       },
     });
   }
