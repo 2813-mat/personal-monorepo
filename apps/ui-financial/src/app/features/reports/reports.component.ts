@@ -1,5 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
@@ -54,12 +56,20 @@ interface HolderBlock {
 @Component({
   selector: 'cf-reports',
   standalone: true,
-  imports: [MoneyComponent, CatDotComponent, ProgressBarComponent, IconComponent, ReportChartComponent],
+  imports: [
+    MoneyComponent,
+    CatDotComponent,
+    ProgressBarComponent,
+    IconComponent,
+    ReportChartComponent,
+    ConfirmModalComponent,
+  ],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',
 })
 export class ReportsComponent {
   protected data = inject(AppDataService);
+  protected auth = inject(AuthService);
 
   protected readonly fmt = fmtNum;
 
@@ -69,6 +79,37 @@ export class ReportsComponent {
 
   /** O ano em foco sai do contexto de mês, não do calendário nem de um literal. */
   currentYear = computed(() => this.data.currentMonth().year);
+
+  // ── Fechamento de mês (admin) ───────────────────────────────────────────────
+
+  /**
+   * Só meses **já encerrados** podem ser fechados: fechar o mês em curso grava
+   * um total parcial que passa a figurar como fechado nos Relatórios.
+   */
+  monthInProgress = computed(() => {
+    const { year, month } = this.data.currentMonth();
+    const now = new Date();
+    return year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1);
+  });
+
+  canCloseMonth = computed(() => this.auth.isAdmin() && !this.monthInProgress());
+
+  readonly confirmingClose = signal(false);
+
+  askCloseMonth(): void {
+    if (!this.canCloseMonth()) return;
+    this.confirmingClose.set(true);
+  }
+
+  confirmCloseMonth(): void {
+    const { year, month } = this.data.currentMonth();
+    this.data.closeMonth(year, month);
+    this.confirmingClose.set(false);
+  }
+
+  cancelCloseMonth(): void {
+    this.confirmingClose.set(false);
+  }
 
   private sumYear = (entries: MonthEntry[], year: number) =>
     entries.filter(e => e.year === year).reduce((s, e) => s + e.total, 0);

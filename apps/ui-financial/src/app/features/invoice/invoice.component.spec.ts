@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { InvoiceComponent } from './invoice.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
 import type { InvoiceHistoryEntry } from '../../core/api/invoice.mapper';
 import type { Card, Transaction } from '@caixa-familia/shared-types';
 
@@ -50,6 +51,10 @@ function mockDataService(history: InvoiceHistoryEntry[]) {
     loadInvoiceHistory: jest.fn(),
     openInvoice: signal({
       total: 450,
+      // ciclo já fechado — a guarda de "em curso" não bloqueia
+      closingDate: '2020-01-05',
+      year: 2020,
+      month: 1,
       items: [
         {
           id: 'a1',
@@ -73,15 +78,26 @@ function mockDataService(history: InvoiceHistoryEntry[]) {
     }),
     openInvoiceLoading: signal(false),
     loadOpenInvoice: jest.fn(),
+    closeInvoice: jest.fn(),
   };
 }
 
-function build(history: InvoiceHistoryEntry[]) {
+function build(history: InvoiceHistoryEntry[], admin = true, closingDate?: string) {
   const data = mockDataService(history);
+  if (closingDate) {
+    const d = new Date(closingDate);
+    data.openInvoice.update((inv) => ({
+      ...inv,
+      closingDate,
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
+    }));
+  }
   TestBed.configureTestingModule({
     imports: [InvoiceComponent],
     providers: [
       { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { isAdmin: signal(admin), canWrite: signal(true) } },
       { provide: ActivatedRoute, useValue: { snapshot: { params: { cardId: 'nu-t' } } } },
     ],
   });
@@ -160,5 +176,46 @@ describe('InvoiceComponent — open invoice', () => {
     const { component } = build(CLOSED);
     // a2 está em 2/6 → faltam 4 parcelas
     expect(component.futureInstallments()).toHaveLength(4);
+  });
+});
+
+describe('InvoiceComponent — close invoice', () => {
+  const future = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+
+  it('offers the action to an admin once the cycle has closed', () => {
+    expect(build(CLOSED).component.canCloseInvoice()).toBe(true);
+  });
+
+  it('hides the action from a non-admin', () => {
+    expect(build(CLOSED, false).component.canCloseInvoice()).toBe(false);
+  });
+
+  it('refuses while the cycle is still open', () => {
+    const { component } = build(CLOSED, true, future);
+    expect(component.cycleInProgress()).toBe(true);
+    expect(component.canCloseInvoice()).toBe(false);
+  });
+
+  it('asks for confirmation before closing', () => {
+    const { component, data } = build(CLOSED);
+    component.askCloseInvoice();
+    expect(component.confirmingClose()).toBe(true);
+    expect(data.closeInvoice).not.toHaveBeenCalled();
+  });
+
+  it('closes the cycle the API reported, not the navigated month', () => {
+    const { component, data } = build(CLOSED);
+    component.askCloseInvoice();
+    component.confirmCloseInvoice();
+    // currentMonth do mock é 2026-05; o ciclo é 2020-01
+    expect(data.closeInvoice).toHaveBeenCalledWith('nu-t', 2020, 1);
+    expect(component.confirmingClose()).toBe(false);
+  });
+
+  it('does nothing when dismissed', () => {
+    const { component, data } = build(CLOSED);
+    component.askCloseInvoice();
+    component.cancelCloseInvoice();
+    expect(data.closeInvoice).not.toHaveBeenCalled();
   });
 });

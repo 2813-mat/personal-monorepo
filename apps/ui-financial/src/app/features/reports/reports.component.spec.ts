@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ReportsComponent } from './reports.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
 import type { MonthEntry } from '../../core/api/report.mapper';
 
 function mockDataService(history: MonthEntry[], incomeHistory: MonthEntry[], year = 2026) {
@@ -12,19 +13,39 @@ function mockDataService(history: MonthEntry[], incomeHistory: MonthEntry[], yea
     categories: signal([]),
     catBy: signal({}),
     currentMonth: signal({ year, month: 5, label: `Maio ${year}`, short: 'mai' }),
+    closeMonth: jest.fn(),
   };
 }
 
-function build(history: MonthEntry[], incomeHistory: MonthEntry[], year = 2026) {
+function build(history: MonthEntry[], incomeHistory: MonthEntry[], year = 2026, admin = true) {
+  const data = mockDataService(history, incomeHistory, year);
   TestBed.configureTestingModule({
     imports: [ReportsComponent],
     providers: [
-      { provide: AppDataService, useValue: mockDataService(history, incomeHistory, year) },
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { isAdmin: signal(admin), canWrite: signal(true) } },
     ],
   });
   const fixture = TestBed.createComponent(ReportsComponent);
   fixture.detectChanges();
   return fixture.componentInstance;
+}
+
+/** Igual a `build`, mas devolve também o serviço mockado. */
+function buildWith(year: number, month: number, admin = true) {
+  const data = mockDataService([], [], year);
+  data.currentMonth.set({ year, month, label: `M ${year}`, short: 'm' });
+  data.closeMonth = jest.fn();
+  TestBed.configureTestingModule({
+    imports: [ReportsComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { isAdmin: signal(admin), canWrite: signal(true) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(ReportsComponent);
+  fixture.detectChanges();
+  return { component: fixture.componentInstance, data };
 }
 
 afterEach(() => TestBed.resetTestingModule());
@@ -141,5 +162,59 @@ describe('ReportsComponent — year-scoped KPIs', () => {
     const c = build([...expenses, ...yearOf(2027, 400)], [...incomes, ...yearOf(2027, 900)], 2027);
     expect(kpi(c, 'Receita')?.value).toBe(900 * 12);
     expect(kpi(c, 'Despesa')?.value).toBe(400 * 12);
+  });
+});
+
+describe('ReportsComponent — close month', () => {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth() + 1;
+
+  it('offers the action to an admin', () => {
+    expect(buildWith(2025, 6).component.canCloseMonth()).toBe(true);
+  });
+
+  it('hides the action from a non-admin', () => {
+    expect(buildWith(2025, 6, false).component.canCloseMonth()).toBe(false);
+  });
+
+  it('refuses to close the month still in progress', () => {
+    const { component } = buildWith(thisYear, thisMonth);
+    expect(component.monthInProgress()).toBe(true);
+    expect(component.canCloseMonth()).toBe(false);
+  });
+
+  it('allows closing a month already past', () => {
+    const { component } = buildWith(2025, 1);
+    expect(component.monthInProgress()).toBe(false);
+    expect(component.canCloseMonth()).toBe(true);
+  });
+
+  it('refuses a future month too', () => {
+    const { component } = buildWith(thisYear + 1, 3);
+    expect(component.canCloseMonth()).toBe(false);
+  });
+
+  it('asks for confirmation before closing', () => {
+    const { component, data } = buildWith(2025, 6);
+    component.askCloseMonth();
+    expect(component.confirmingClose()).toBe(true);
+    expect(data.closeMonth).not.toHaveBeenCalled();
+  });
+
+  it('closes the navigated month once confirmed', () => {
+    const { component, data } = buildWith(2025, 6);
+    component.askCloseMonth();
+    component.confirmCloseMonth();
+    expect(data.closeMonth).toHaveBeenCalledWith(2025, 6);
+    expect(component.confirmingClose()).toBe(false);
+  });
+
+  it('does nothing when the confirmation is dismissed', () => {
+    const { component, data } = buildWith(2025, 6);
+    component.askCloseMonth();
+    component.cancelCloseMonth();
+    expect(data.closeMonth).not.toHaveBeenCalled();
+    expect(component.confirmingClose()).toBe(false);
   });
 });

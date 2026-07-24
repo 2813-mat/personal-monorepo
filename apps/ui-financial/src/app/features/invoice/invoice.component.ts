@@ -1,6 +1,8 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -39,12 +41,14 @@ interface FutureInstallment {
     SparkbarsComponent,
     DonutComponent,
     IconComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './invoice.component.html',
   styleUrl: './invoice.component.scss',
 })
 export class InvoiceComponent {
   protected data = inject(AppDataService);
+  protected auth = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   private cardId = this.route.snapshot.params['cardId'] as string;
@@ -132,6 +136,39 @@ export class InvoiceComponent {
 
   catLabel(catId: string): string {
     return this.data.catBy()[catId]?.label ?? catId;
+  }
+
+  // ── Fechamento de fatura (admin) ────────────────────────────────────────────
+
+  /**
+   * Um ciclo só pode ser fechado depois de encerrado: fechar antes grava um
+   * total parcial que passa a figurar no histórico como fatura fechada.
+   */
+  cycleInProgress = computed(() => {
+    const closing = this.data.openInvoice().closingDate;
+    if (!closing) return true;
+    return new Date(closing + 'T23:59:59') > new Date();
+  });
+
+  canCloseInvoice = computed(() => this.auth.isAdmin() && !this.cycleInProgress());
+
+  readonly confirmingClose = signal(false);
+
+  askCloseInvoice(): void {
+    if (!this.canCloseInvoice()) return;
+    this.confirmingClose.set(true);
+  }
+
+  confirmCloseInvoice(): void {
+    // As coordenadas são as do ciclo que a API devolveu — NÃO use currentMonth():
+    // depois do dia de fechamento, o ciclo aberto fecha no mês seguinte.
+    const { year, month } = this.data.openInvoice();
+    this.data.closeInvoice(this.cardId, year, month);
+    this.confirmingClose.set(false);
+  }
+
+  cancelCloseInvoice(): void {
+    this.confirmingClose.set(false);
   }
 
   constructor() {

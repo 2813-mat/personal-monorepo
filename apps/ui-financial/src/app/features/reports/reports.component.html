@@ -24,6 +24,17 @@
     <span class="panel-title">
       Receita vs. Despesa · {{ monthCount() }} {{ monthCount() === 1 ? 'mês' : 'meses' }}
     </span>
+    @if (auth.isAdmin()) {
+      <button
+        type="button"
+        class="btn-primary close-btn"
+        [disabled]="!canCloseMonth()"
+        [title]="monthInProgress() ? 'O mês ainda está em curso' : 'Fechar o mês navegado'"
+        (click)="askCloseMonth()"
+      >
+        Fechar mês
+      </button>
+    }
     <div class="legend">
       <span class="legend-item"><span class="legend-swatch" style="background:var(--pos)"></span>Receita</span>
       <span class="legend-item"><span class="legend-swatch" style="background:var(--neg)"></span>Despesa</span>
@@ -125,3 +136,13 @@
     </div>
   </div>
 </div>
+
+@if (confirmingClose()) {
+  <cf-confirm-modal
+    [title]="'Fechar ' + data.currentMonth().label + '?'"
+    description="Grava um resumo do mês com os totais atuais. Ele passa a aparecer no histórico. Fechar de novo depois recalcula os valores."
+    confirmLabel="Fechar mês"
+    (confirmed)="confirmCloseMonth()"
+    (cancelled)="cancelCloseMonth()"
+  />
+}

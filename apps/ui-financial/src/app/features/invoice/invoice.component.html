@@ -64,6 +64,17 @@
         <button class="btn-primary" disabled>
           <cf-icon name="pix" [size]="11" /> Pagar agora
         </button>
+        @if (auth.isAdmin()) {
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="!canCloseInvoice()"
+            [title]="cycleInProgress() ? 'O ciclo ainda está aberto' : 'Fechar esta fatura'"
+            (click)="askCloseInvoice()"
+          >
+            <cf-icon name="check" [size]="11" /> Fechar fatura
+          </button>
+        }
       </div>
     </div>
   </div>
@@ -266,4 +277,18 @@
     <div class="nf-title">Cartão não encontrado</div>
     <div class="nf-note">O cartão solicitado não existe ou foi removido. Volte para a lista de cartões.</div>
   </div>
+}
+
+@if (confirmingClose()) {
+  <cf-confirm-modal
+    title="Fechar esta fatura?"
+    [description]="
+      'Grava a fatura do ciclo que fechou em ' +
+      data.openInvoice().closingDate +
+      ' no histórico do cartão. Fechar de novo depois recalcula os valores.'
+    "
+    confirmLabel="Fechar fatura"
+    (confirmed)="confirmCloseInvoice()"
+    (cancelled)="cancelCloseInvoice()"
+  />
 }
