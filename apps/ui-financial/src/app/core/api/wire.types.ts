@@ -50,6 +50,18 @@ export interface IncomeWire {
   recurring: boolean;
 }
 
+export interface InvoiceHistoryWire {
+  id: string;
+  cardId: string;
+  year: number;
+  month: number;
+  closingDate: string;
+  dueDate: string;
+  total: number;
+  perCategory: Record<string, number>;
+  status: 'CLOSED' | 'PAID';
+}
+
 export interface GoalWire {
   id: string;
   slug: string;
