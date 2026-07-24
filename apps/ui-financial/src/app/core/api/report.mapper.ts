@@ -1,3 +1,4 @@
+import { monthShort } from '@caixa-familia/shared-utils';
 import type { MonthlySummaryWire } from './wire.types';
 
 /** Ponto de uma série mensal, no formato que os gráficos consomem. */
@@ -6,15 +7,8 @@ export interface MonthEntry {
   total: number;
 }
 
-const MONTH_ABBR = [
-  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-  'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-];
-
-/** `2026, 5` → `'Mai/26'`. */
-export function monthLabel(year: number, month: number): string {
-  return `${MONTH_ABBR[month - 1]}/${String(year).slice(2)}`;
-}
+/** `2026, 5` → `'Mai/26'`. Alias local: o formato é o mesmo do resto do app. */
+export const monthLabel = monthShort;
 
 // O backend já devolve ordenado, mas depender disso deixaria a UI frágil.
 const chronological = (rows: MonthlySummaryWire[]): MonthlySummaryWire[] =>
