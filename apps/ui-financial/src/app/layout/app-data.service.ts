@@ -20,7 +20,7 @@ import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
-import { wireToCategory } from '../core/api/catalog.mapper';
+import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { wireToGoal } from '../core/api/goal.mapper';
@@ -74,6 +74,8 @@ export class AppDataService {
 
   readonly goalsLoading = signal(false);
   readonly goalsError = signal<string | null>(null);
+
+  readonly categoriesError = signal<string | null>(null);
 
   loadCatalog(): void {
     this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
@@ -167,6 +169,13 @@ export class AppDataService {
         this.fail('Falha ao carregar metas', this.goalsError);
         this.goalsLoading.set(false);
       },
+    });
+  }
+
+  createCategory(c: Category): void {
+    this.catApi.createCategory(categoryToCreateWire(c)).subscribe({
+      next: () => this.loadCatalog(),
+      error: () => this.fail('Falha ao criar categoria', this.categoriesError),
     });
   }
 

@@ -62,7 +62,13 @@ function setup(
   overrides: { txList?: jest.Mock; incList?: jest.Mock; fixList?: jest.Mock; goalList?: jest.Mock } = {},
 ) {
   const txApi = { list: overrides.txList ?? jest.fn(() => of([wire])), create: jest.fn(), remove: jest.fn() };
-  const catApi = { listCategories: jest.fn(() => of([])), listCards: jest.fn(() => of([])) };
+  const catApi = {
+    listCategories: jest.fn(() => of([])),
+    listCards: jest.fn(() => of([])),
+    createCategory: jest.fn(() =>
+      of({ id: 'c1', slug: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300 }),
+    ),
+  };
   const incApi = { list: overrides.incList ?? jest.fn(() => of([incomeWire])), create: jest.fn(() => of(incomeWire)) };
   const fixApi = { list: overrides.fixList ?? jest.fn(() => of([fixedWire])), create: jest.fn(() => of(fixedWire)) };
   const goalApi = {
@@ -79,7 +85,7 @@ function setup(
       { provide: GoalApiService, useValue: goalApi },
     ],
   });
-  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi };
+  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi, catApi };
 }
 
 describe('AppDataService.loadTransactions', () => {
@@ -185,5 +191,19 @@ describe('AppDataService.addContribution', () => {
     svc.addContribution('sos', 500, '2026-05-22');
     expect(goalApi.addContribution).toHaveBeenCalledWith('sos', { amount: 500, date: '2026-05-22' });
     expect(goalApi.list).toHaveBeenCalled();
+  });
+});
+
+describe('AppDataService.createCategory', () => {
+  it('posts the domain id as the slug and reloads the catalog', () => {
+    const { svc, catApi } = setup();
+    svc.createCategory({ id: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300 });
+    expect(catApi.createCategory).toHaveBeenCalledWith({
+      slug: 'farmacia',
+      label: 'Farmácia',
+      color: '#2E7D5B',
+      budget: 300,
+    });
+    expect(catApi.listCategories).toHaveBeenCalled();
   });
 });
