@@ -16,19 +16,15 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 export class FixedComponent {
   protected data = inject(AppDataService);
 
-  private paidValueSet = computed(() =>
-    new Set(this.data.transactions().filter(t => t.recurring).map(t => t.value))
-  );
-
   pendingItems = computed(() =>
     this.data.fixed()
-      .filter(f => !this.paidValueSet().has(f.value))
+      .filter(f => !f.paidThisMonth)
       .sort((a, b) => a.due - b.due)
   );
 
   paidItems = computed(() =>
     this.data.fixed()
-      .filter(f => this.paidValueSet().has(f.value))
+      .filter(f => f.paidThisMonth)
       .sort((a, b) => a.due - b.due)
   );
 

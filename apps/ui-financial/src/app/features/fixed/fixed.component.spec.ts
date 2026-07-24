@@ -5,9 +5,9 @@ import { AppDataService } from '../../layout/app-data.service';
 import type { FixedExpense, Transaction, Income, Category } from '@caixa-familia/shared-types';
 
 const FIXED: FixedExpense[] = [
-  { id: 'f1', label: 'Conta A', value: 100, due: 5,  cat: 'casa',  holder: 'shared' },
-  { id: 'f2', label: 'Conta B', value: 200, due: 15, cat: 'assin', holder: 'Mateus' },
-  { id: 'f3', label: 'Conta C', value: 300, due: 25, cat: 'educ',  holder: 'Thais'  },
+  { id: 'f1', label: 'Conta A', value: 100, due: 5,  cat: 'casa',  holder: 'shared', paidThisMonth: true  },
+  { id: 'f2', label: 'Conta B', value: 200, due: 15, cat: 'assin', holder: 'Mateus', paidThisMonth: false },
+  { id: 'f3', label: 'Conta C', value: 300, due: 25, cat: 'educ',  holder: 'Thais',  paidThisMonth: false },
 ];
 
 const TRANSACTIONS: Transaction[] = [
@@ -15,8 +15,8 @@ const TRANSACTIONS: Transaction[] = [
   { id: 't1', date: '2026-05-05', label: 'Conta A', value: 100, cat: 'casa',  holder: 'shared', method: 'pix', installments: null, recurring: true },
   // recurring, value does NOT match any fixed item
   { id: 't2', date: '2026-05-10', label: 'Spotify', value: 32,  cat: 'assin', holder: 'Mateus', method: 'pix', installments: null, recurring: true },
-  // non-recurring, value coincidentally matches f2 — must NOT count as paid
-  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null },
+  // recurring, value coincidentally matches f2 — must NOT make it paid
+  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null, recurring: true },
 ];
 
 const INCOMES: Income[] = [
@@ -53,20 +53,19 @@ describe('FixedComponent', () => {
   });
 
   describe('paidItems', () => {
-    it('includes fixed items whose value matches a recurring transaction', () => {
-      expect(component.paidItems().length).toBe(1);
-      expect(component.paidItems()[0].id).toBe('f1');
+    it('includes only fixed items flagged as paid this month', () => {
+      expect(component.paidItems().map(f => f.id)).toEqual(['f1']);
     });
 
-    it('excludes fixed items matched only by a non-recurring transaction', () => {
-      // t3 has value 200 = f2.value but recurring is falsy — f2 must stay pending
-      const ids = component.paidItems().map(f => f.id);
-      expect(ids).not.toContain('f2');
+    it('ignores transaction values entirely', () => {
+      // t3 is recurring with value 200 = f2.value; only paidThisMonth decides,
+      // so f2 must stay pending
+      expect(component.paidItems().map(f => f.id)).not.toContain('f2');
     });
   });
 
   describe('pendingItems', () => {
-    it('includes fixed items with no matching recurring transaction', () => {
+    it('includes fixed items not yet paid this month', () => {
       expect(component.pendingItems().length).toBe(2);
     });
 
