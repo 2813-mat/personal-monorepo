@@ -24,6 +24,14 @@ export class InvoiceHistoryPrismaRepository
     return rows.map(toView);
   }
 
+  async findAll(): Promise<InvoiceHistoryView[]> {
+    const rows = await this.prisma.invoiceHistory.findMany({
+      where: this.scoped(),
+      orderBy: [{ cardId: 'asc' }, { year: 'asc' }, { month: 'asc' }],
+    });
+    return rows.map(toView);
+  }
+
   async closeInvoice(cardId: string, year: number, month: number): Promise<InvoiceHistoryView> {
     const card = await this.prisma.card.findFirst({ where: this.scoped({ id: cardId }) });
     if (!card) throw new NotFoundException(`Cartão ${cardId} não encontrado`);

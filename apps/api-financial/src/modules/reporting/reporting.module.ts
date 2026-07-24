@@ -6,6 +6,7 @@ import { MonthlySummaryRepository } from './monthly-summary/domain/monthly-summa
 import { MonthlySummaryPrismaRepository } from './monthly-summary/infrastructure/monthly-summary.prisma.repository';
 import { InvoiceHistoryController } from './invoice-history/interface/invoice-history.controller';
 import { ListCardInvoicesUseCase } from './invoice-history/application/list-card-invoices.usecase';
+import { ListAllInvoicesUseCase } from './invoice-history/application/list-all-invoices.usecase';
 import { CloseInvoiceUseCase } from './invoice-history/application/close-invoice.usecase';
 import { InvoiceHistoryRepository } from './invoice-history/domain/invoice-history.repository';
 import { InvoiceHistoryPrismaRepository } from './invoice-history/infrastructure/invoice-history.prisma.repository';
@@ -17,6 +18,7 @@ import { InvoiceHistoryPrismaRepository } from './invoice-history/infrastructure
     CloseMonthUseCase,
     { provide: MonthlySummaryRepository, useClass: MonthlySummaryPrismaRepository },
     ListCardInvoicesUseCase,
+    ListAllInvoicesUseCase,
     CloseInvoiceUseCase,
     { provide: InvoiceHistoryRepository, useClass: InvoiceHistoryPrismaRepository },
   ],
