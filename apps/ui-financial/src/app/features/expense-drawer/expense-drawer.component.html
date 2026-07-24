@@ -12,8 +12,13 @@
   <!-- Header -->
   <header class="drawer-head">
     <div class="head-text">
-      <div class="head-title">Novo lançamento</div>
-      <span class="head-sub">{{ data.currentMonth().label }}</span>
+      @if (form.controls.type.value === 'fixed') {
+        <div class="head-title">Novo gasto fixo</div>
+        <span class="head-sub">Todo mês</span>
+      } @else {
+        <div class="head-title">Novo lançamento</div>
+        <span class="head-sub">{{ data.currentMonth().label }}</span>
+      }
     </div>
     <button type="button" class="close-btn" (click)="onClose()" aria-label="Fechar">
       <cf-icon name="x" [size]="12" />
@@ -48,6 +53,14 @@
         (click)="form.controls.type.setValue('contribution')"
       >
         <cf-icon name="target" [size]="11" /> Aporte
+      </button>
+      <button
+        type="button"
+        class="seg-btn"
+        [class.active]="form.controls.type.value === 'fixed'"
+        (click)="form.controls.type.setValue('fixed')"
+      >
+        <cf-icon name="repeat" [size]="11" /> Fixo
       </button>
     </div>
 
@@ -90,10 +103,24 @@
       }
     </div>
 
-    <!-- Data -->
-    <div class="label mt">Data</div>
-    <input type="date" class="text-input num" formControlName="date" />
+    @if (form.controls.type.value === 'fixed') {
+      <!-- Vencimento -->
+      <div class="label mt">Vence todo dia</div>
+      <input
+        type="number"
+        class="text-input num"
+        formControlName="dueDay"
+        min="1"
+        max="31"
+        placeholder="Ex.: 10"
+      />
+    } @else {
+      <!-- Data -->
+      <div class="label mt">Data</div>
+      <input type="date" class="text-input num" formControlName="date" />
+    }
 
+    @if (form.controls.type.value !== 'fixed') {
     <!-- Método -->
     <div class="label mt">Método de pagamento</div>
     <div class="method-list">
@@ -135,6 +162,7 @@
         </button>
       }
     </div>
+    }
 
     <!-- Quem fez o gasto -->
     <div class="label mt">Quem fez o gasto</div>
@@ -165,6 +193,7 @@
       </button>
     </div>
 
+    @if (form.controls.type.value !== 'fixed') {
     <!-- Toggles -->
     <div class="toggle-grid mt" formGroupName="installments">
       <label class="toggle-row">
@@ -194,13 +223,15 @@
         <input type="checkbox" class="toggle-check" formControlName="recurring" />
       </label>
     </div>
+    }
   </div>
 
   <!-- Footer -->
   <footer class="drawer-foot">
     <span class="foot-hint">⌘/Ctrl + Enter para salvar</span>
     <button type="button" class="save-btn" [disabled]="form.invalid" (click)="save()">
-      <cf-icon name="check" [size]="11" /> Salvar lançamento
+      <cf-icon name="check" [size]="11" />
+      {{ form.controls.type.value === 'fixed' ? 'Salvar gasto fixo' : 'Salvar lançamento' }}
     </button>
   </footer>
 </div>

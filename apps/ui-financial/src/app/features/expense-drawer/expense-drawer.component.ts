@@ -5,7 +5,7 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import type { Holder, Income, Transaction } from '@caixa-familia/shared-types';
+import type { FixedExpense, Holder, Income, Transaction } from '@caixa-familia/shared-types';
 import { AppDataService } from '../../layout/app-data.service';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
@@ -44,11 +44,12 @@ export class ExpenseDrawerComponent {
   closed = output<void>();
 
   form = new FormGroup({
-    type: new FormControl<'expense' | 'income' | 'contribution'>('expense', { nonNullable: true }),
+    type: new FormControl<'expense' | 'income' | 'contribution' | 'fixed'>('expense', { nonNullable: true }),
     value: new FormControl<number>(0, { nonNullable: true, validators: [Validators.required, Validators.min(0.01)] }),
     label: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     cat: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     date: new FormControl(todayIso(), { nonNullable: true, validators: [Validators.required] }),
+    dueDay: new FormControl<number | null>(null),
     method: new FormControl<string>('pix', { nonNullable: true, validators: [Validators.required] }),
     holder: new FormControl<Holder>('shared', { nonNullable: true, validators: [Validators.required] }),
     installments: new FormGroup({
@@ -67,6 +68,19 @@ export class ExpenseDrawerComponent {
         cat.setValidators([Validators.required]);
       }
       cat.updateValueAndValidity();
+
+      // A fixed expense is a template with a due day, not a dated payment.
+      const dueDay = this.form.controls.dueDay;
+      const date = this.form.controls.date;
+      if (type === 'fixed') {
+        dueDay.setValidators([Validators.required, Validators.min(1), Validators.max(31)]);
+        date.clearValidators();
+      } else {
+        dueDay.clearValidators();
+        date.setValidators([Validators.required]);
+      }
+      dueDay.updateValueAndValidity();
+      date.updateValueAndValidity();
     });
   }
 
@@ -83,6 +97,21 @@ export class ExpenseDrawerComponent {
   save() {
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
+
+    if (v.type === 'fixed') {
+      const fixed: FixedExpense = {
+        id: '', // server assigns
+        label: v.label,
+        value: Number(v.value),
+        due: Number(v.dueDay),
+        cat: v.cat,
+        holder: v.holder,
+        paidThisMonth: false,
+      };
+      this.data.createFixed(fixed);
+      this.onClose();
+      return;
+    }
 
     if (v.type === 'income') {
       const income: Income = {
