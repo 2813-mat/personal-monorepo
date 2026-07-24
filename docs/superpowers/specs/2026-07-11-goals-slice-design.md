@@ -29,6 +29,13 @@ Conectar o recurso **Goals** API↔front.
   `id = slug`.
 - **D3 — aporte no drawer:** o aporte usa `value` (→ `amount`) e `date`; a meta-alvo vem de um
   seletor de metas no drawer (novo controle, populado por `data.goals()`).
+- **D4 — layout do seletor (fecha o risco R1, 2026-07-24):** o seletor de meta reusa o padrão do
+  seletor de categoria — grid de chips (`cat-grid`/`cat-chip`), um por meta de `data.goals()`,
+  visível só no tipo `contribution`. Nada de `<select>`: o drawer não usa esse controle em lugar
+  nenhum.
+- **D5 — bug preexistente que esta fatia corrige:** hoje o `save()` do drawer **não tem ramo
+  para `'contribution'`** — o tipo Aporte cai no ramo final e cria uma **transação**. O ramo
+  novo elimina isso.
 
 ## 3. Backend (`api-financial`)
 
@@ -71,6 +78,9 @@ Wire de leitura (já produzido por `GoalView`):
 - `nx build` das duas apps + smoke: login → ver metas reais → aporte via drawer → saldo sobe.
 
 ## 6. Riscos
-- **Seletor de meta no drawer** é UI nova — validar o layout no plano.
-- Garantir que o `history[]` (agregado por mês pelo backend) casa com o formato que a tela de
-  metas espera (array de 12 números).
+- ~~**Seletor de meta no drawer**~~ — resolvido em D4 (grid de chips, igual ao de categoria).
+- ~~**Formato do `history[]`**~~ — verificado em 2026-07-24: `monthlyHistory` do
+  `goal.mapper` do backend devolve sempre um array de 12 números (do mais antigo ao mês
+  corrente), que é exatamente o `Goal.history: number[]` do shared-types. Mapeamento 1:1.
+- **Validators por tipo no drawer.** O tipo `contribution` tem obrigatórios próprios (meta sim,
+  `cat` não) e já convive com `income` e `fixed` no mesmo `valueChanges`. Coberto por teste.
