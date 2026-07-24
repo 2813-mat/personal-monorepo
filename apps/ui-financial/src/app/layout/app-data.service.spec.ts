@@ -7,6 +7,7 @@ import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
 import { InvoiceApiService } from '../core/api/invoice-api.service';
+import { ReportApiService } from '../core/api/report-api.service';
 import type {
   TransactionWire,
   IncomeWire,
@@ -93,6 +94,14 @@ function setup(
       ]),
     ),
   };
+  const repApi = {
+    listMonthly: jest.fn(() =>
+      of([
+        { id: 's1', year: 2026, month: 4, expenseTotal: 4791, incomeTotal: 7769, perCategory: {}, closed: true },
+        { id: 's2', year: 2026, month: 5, expenseTotal: 5234, incomeTotal: 7493, perCategory: {}, closed: true },
+      ]),
+    ),
+  };
   TestBed.configureTestingModule({
     providers: [
       AppDataService,
@@ -102,9 +111,10 @@ function setup(
       { provide: FixedApiService, useValue: fixApi },
       { provide: GoalApiService, useValue: goalApi },
       { provide: InvoiceApiService, useValue: invApi },
+      { provide: ReportApiService, useValue: repApi },
     ],
   });
-  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi, catApi, invApi };
+  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi, catApi, invApi, repApi };
 }
 
 describe('AppDataService.loadTransactions', () => {
@@ -239,5 +249,28 @@ describe('AppDataService.loadInvoiceHistory', () => {
   it('starts empty', () => {
     const { svc } = setup();
     expect(svc.invoiceHistory()).toEqual([]);
+  });
+});
+
+describe('AppDataService.loadMonthlyHistory', () => {
+  it('fills both series from a single call', () => {
+    const { svc, repApi } = setup();
+    svc.loadMonthlyHistory();
+    expect(repApi.listMonthly).toHaveBeenCalledTimes(1);
+    expect(svc.history()).toEqual([
+      { m: 'Abr/26', total: 4791 },
+      { m: 'Mai/26', total: 5234 },
+    ]);
+    expect(svc.incomeHistory()).toEqual([
+      { m: 'Abr/26', total: 7769 },
+      { m: 'Mai/26', total: 7493 },
+    ]);
+    expect(svc.reportsLoading()).toBe(false);
+  });
+
+  it('starts both series empty instead of serving mock data', () => {
+    const { svc } = setup();
+    expect(svc.history()).toEqual([]);
+    expect(svc.incomeHistory()).toEqual([]);
   });
 });

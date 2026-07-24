@@ -26,6 +26,7 @@ export class AppShellComponent {
         this.data.loadCatalog();
         this.data.loadIncomes();
         this.data.loadGoals();
+        this.data.loadMonthlyHistory();
       }
     });
 

@@ -9,23 +9,25 @@ import type {
   MonthContext,
   Transaction,
 } from '@caixa-familia/shared-types';
-import {
-  MOCK_HISTORY,
-  MOCK_INCOME_HISTORY,
-  CURRENT_MONTH,
-} from '@caixa-familia/shared-mocks';
+import { CURRENT_MONTH } from '@caixa-familia/shared-mocks';
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
 import { InvoiceApiService } from '../core/api/invoice-api.service';
+import { ReportApiService } from '../core/api/report-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { wireToGoal } from '../core/api/goal.mapper';
 import { wireToInvoiceHistory, type InvoiceHistoryEntry } from '../core/api/invoice.mapper';
+import {
+  wireToExpenseHistory,
+  wireToIncomeHistory,
+  type MonthEntry,
+} from '../core/api/report.mapper';
 import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +38,7 @@ export class AppDataService {
   private fixApi = inject(FixedApiService);
   private goalApi = inject(GoalApiService);
   private invApi = inject(InvoiceApiService);
+  private repApi = inject(ReportApiService);
   private toast = inject(ToastService);
 
   private fail(message: string, errorSignal: WritableSignal<string | null>): void {
@@ -50,10 +53,8 @@ export class AppDataService {
   readonly incomes = signal<Income[]>([]);
   readonly fixed = signal<FixedExpense[]>([]);
   readonly goals = signal<Goal[]>([]);
-
-  // still-mock resources (out of scope for this slice)
-  readonly history = signal(MOCK_HISTORY);
-  readonly incomeHistory = signal(MOCK_INCOME_HISTORY);
+  readonly history = signal<MonthEntry[]>([]);
+  readonly incomeHistory = signal<MonthEntry[]>([]);
 
   readonly catBy = computed<Record<string, Category>>(() =>
     Object.fromEntries(this.categories().map((c) => [c.id, c])),
@@ -79,6 +80,9 @@ export class AppDataService {
   readonly goalsError = signal<string | null>(null);
 
   readonly categoriesError = signal<string | null>(null);
+
+  readonly reportsLoading = signal(false);
+  readonly reportsError = signal<string | null>(null);
 
   readonly invoiceHistory = signal<InvoiceHistoryEntry[]>([]);
   readonly invoiceHistoryLoading = signal(false);
@@ -175,6 +179,26 @@ export class AppDataService {
       error: () => {
         this.fail('Falha ao carregar metas', this.goalsError);
         this.goalsLoading.set(false);
+      },
+    });
+  }
+
+  /**
+   * Série de meses fechados. Uma chamada alimenta as duas projeções — despesa e
+   * receita saem do mesmo summary.
+   */
+  loadMonthlyHistory(): void {
+    this.reportsLoading.set(true);
+    this.reportsError.set(null);
+    this.repApi.listMonthly().subscribe({
+      next: (rows) => {
+        this.history.set(wireToExpenseHistory(rows));
+        this.incomeHistory.set(wireToIncomeHistory(rows));
+        this.reportsLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar o histórico mensal', this.reportsError);
+        this.reportsLoading.set(false);
       },
     });
   }
