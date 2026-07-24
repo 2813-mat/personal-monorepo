@@ -50,6 +50,16 @@ export interface IncomeWire {
   recurring: boolean;
 }
 
+export interface MonthlySummaryWire {
+  id: string;
+  year: number;
+  month: number;
+  expenseTotal: number;
+  incomeTotal: number;
+  perCategory: Record<string, number>;
+  closed: boolean;
+}
+
 export interface InvoiceHistoryWire {
   id: string;
   cardId: string;
