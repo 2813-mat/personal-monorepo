@@ -43,6 +43,24 @@ export interface IncomeWire {
   recurring: boolean;
 }
 
+export interface FixedExpenseWire {
+  id: string;
+  label: string;
+  value: number;
+  dueDay: number;
+  categorySlug: string;
+  holder: string;
+  paidThisMonth: boolean;
+}
+
+export interface CreateFixedExpenseWire {
+  label: string;
+  value: number;
+  dueDay: number;
+  categorySlug: string;
+  holder: string;
+}
+
 export interface CreateIncomeWire {
   label: string;
   holder: string;
