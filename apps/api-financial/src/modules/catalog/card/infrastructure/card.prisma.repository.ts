@@ -42,6 +42,9 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
     const total = items.reduce((s, t) => s + Number(t.value), 0);
     return {
       total,
+      closingDate: end.toISOString().slice(0, 10),
+      year: end.getFullYear(),
+      month: end.getMonth() + 1,
       items: items.map((t) => ({
         id: t.id,
         date: t.date.toISOString().slice(0, 10),

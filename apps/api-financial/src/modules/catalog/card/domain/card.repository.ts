@@ -13,6 +13,14 @@ export interface InvoiceItem {
 export interface OpenInvoice {
   total: number;
   items: InvoiceItem[];
+  /** Dia em que este ciclo fecha (ISO `YYYY-MM-DD`). */
+  closingDate: string;
+  /**
+   * Coordenadas do **fechamento** do ciclo — o que `closeInvoice` espera.
+   * Pode ser o mês seguinte ao corrente quando o dia de fechamento já passou.
+   */
+  year: number;
+  month: number;
 }
 
 export abstract class CardRepository {

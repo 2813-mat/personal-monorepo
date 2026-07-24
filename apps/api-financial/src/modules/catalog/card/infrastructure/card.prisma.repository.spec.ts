@@ -61,3 +61,40 @@ describe('CardPrismaRepository.openInvoice', () => {
     expect((await repo.openInvoice('nu-t')).total).toBe(150);
   });
 });
+
+describe('CardPrismaRepository.openInvoice — cycle coordinates', () => {
+  // O (ano, mês) devolvido é o do FECHAMENTO do ciclo, que é o que
+  // closeInvoice espera — e que pode ser o mês seguinte ao de hoje.
+  afterEach(() => jest.useRealTimers());
+
+  function atDate(iso: string) {
+    jest.useFakeTimers().setSystemTime(new Date(iso));
+  }
+
+  it('points at this month when the closing day has not passed', async () => {
+    atDate('2026-07-03T12:00:00Z');
+    const { repo } = setup([]);
+    const inv = await repo.openInvoice('nu-t');
+    expect({ year: inv.year, month: inv.month }).toEqual({ year: 2026, month: 7 });
+  });
+
+  it('points at next month once the closing day has passed', async () => {
+    atDate('2026-07-24T12:00:00Z');
+    const { repo } = setup([]);
+    const inv = await repo.openInvoice('nu-t');
+    expect({ year: inv.year, month: inv.month }).toEqual({ year: 2026, month: 8 });
+  });
+
+  it('rolls into the next year in December', async () => {
+    atDate('2026-12-24T12:00:00Z');
+    const { repo } = setup([]);
+    const inv = await repo.openInvoice('nu-t');
+    expect({ year: inv.year, month: inv.month }).toEqual({ year: 2027, month: 1 });
+  });
+
+  it('exposes the closing date as an ISO day', async () => {
+    atDate('2026-07-24T12:00:00Z');
+    const { repo } = setup([]);
+    expect((await repo.openInvoice('nu-t')).closingDate).toBe('2026-08-05');
+  });
+});
