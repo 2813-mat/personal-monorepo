@@ -81,24 +81,29 @@ export class InvoiceComponent {
     this.breakdown().map(b => ({ value: b.total, color: b.color, label: b.label }))
   );
 
-  // Synthetic 9-month history (no per-card history stored): card.current ±20%,
-  // seeded from the card id char codes so it's stable; last entry == current.
-  history = computed((): number[] => {
-    const c = this.card();
-    if (!c) return [];
-    const seed = this.cardId.charCodeAt(0) + (this.cardId.charCodeAt(1) || 0);
-    return Array.from({ length: 9 }, (_, i) =>
-      i === 8 ? c.current : Math.round(c.current * (0.8 + ((seed + i * 13) % 40) / 100))
-    );
-  });
+  // Faturas fechadas do cartão, em ordem cronológica, vindas da API.
+  private closed = computed(() =>
+    [...this.data.invoiceHistory()].sort((a, b) => a.year - b.year || a.month - b.month)
+  );
+
+  closedCount = computed(() => this.closed().length);
+
+  /** Fechadas (reais) + a fatura aberta do mês como última barra. */
+  history = computed((): number[] => [...this.closed().map(i => i.total), this.total()]);
+
+  /** A fatura aberta é sempre a última barra. */
+  highlightIndex = computed(() => this.history().length - 1);
+
+  // Estatísticas consideram só faturas fechadas: incluir o mês aberto, que ainda
+  // está sendo formado, distorceria a média.
+  private closedTotals = computed(() => this.closed().map(i => i.total));
 
   histAvg = computed(() => {
-    const h = this.history();
-    if (h.length === 0) return 0;
-    return h.reduce((s, v) => s + v, 0) / h.length;
+    const t = this.closedTotals();
+    return t.length ? t.reduce((s, v) => s + v, 0) / t.length : 0;
   });
-  histMax = computed(() => (this.history().length ? Math.max(...this.history()) : 0));
-  histMin = computed(() => (this.history().length ? Math.min(...this.history()) : 0));
+  histMax = computed(() => (this.closedTotals().length ? Math.max(...this.closedTotals()) : 0));
+  histMin = computed(() => (this.closedTotals().length ? Math.min(...this.closedTotals()) : 0));
 
   // Remaining installments projected forward month-by-month from currentMonth().
   futureInstallments = computed((): FutureInstallment[] => {
@@ -128,5 +133,9 @@ export class InvoiceComponent {
 
   catLabel(catId: string): string {
     return this.data.catBy()[catId]?.label ?? catId;
+  }
+
+  constructor() {
+    this.data.loadInvoiceHistory(this.cardId);
   }
 }

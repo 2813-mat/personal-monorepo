@@ -189,7 +189,9 @@
       <div class="panel">
         <div class="panel-head">
           <span class="panel-title">Histórico desta fatura</span>
-          <span class="panel-meta">9 meses</span>
+          <span class="panel-meta">
+            {{ closedCount() }} {{ closedCount() === 1 ? 'fatura fechada' : 'faturas fechadas' }}
+          </span>
         </div>
         <div class="hist-body">
           <cf-sparkbars
@@ -198,23 +200,29 @@
             [height]="48"
             [baseColor]="c.color"
             [highlightColor]="c.color"
-            [highlightIndex]="8"
+            [highlightIndex]="highlightIndex()"
           />
           <hr class="hr" />
-          <div class="hist-stats">
-            <div class="stat-col">
-              <span class="stat-label">Média</span>
-              <cf-money [value]="histAvg()" [negColor]="false" size="sm" />
+          @if (closedCount() === 0) {
+            <p class="hist-empty">
+              Nenhuma fatura fechada ainda. A barra mostra a fatura aberta.
+            </p>
+          } @else {
+            <div class="hist-stats">
+              <div class="stat-col">
+                <span class="stat-label">Média</span>
+                <cf-money [value]="histAvg()" [negColor]="false" size="sm" />
+              </div>
+              <div class="stat-col">
+                <span class="stat-label">Maior</span>
+                <cf-money [value]="histMax()" [negColor]="false" size="sm" />
+              </div>
+              <div class="stat-col">
+                <span class="stat-label">Menor</span>
+                <cf-money [value]="histMin()" [negColor]="false" size="sm" />
+              </div>
             </div>
-            <div class="stat-col">
-              <span class="stat-label">Maior</span>
-              <cf-money [value]="histMax()" [negColor]="false" size="sm" />
-            </div>
-            <div class="stat-col">
-              <span class="stat-label">Menor</span>
-              <cf-money [value]="histMin()" [negColor]="false" size="sm" />
-            </div>
-          </div>
+          }
         </div>
       </div>
 
