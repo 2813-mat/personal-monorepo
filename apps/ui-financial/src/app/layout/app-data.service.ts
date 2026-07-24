@@ -6,10 +6,9 @@ import type {
   Goal,
   HolderFilter,
   Income,
-  MonthContext,
   Transaction,
 } from '@caixa-familia/shared-types';
-import { CURRENT_MONTH } from '@caixa-familia/shared-mocks';
+import { monthContextOf, type MonthView } from '@caixa-familia/shared-utils';
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
@@ -63,7 +62,7 @@ export class AppDataService {
     Object.fromEntries(this.cards().map((c) => [c.id, c])),
   );
 
-  readonly currentMonth = signal<MonthContext & { label: string; short: string }>(CURRENT_MONTH);
+  readonly currentMonth = signal<MonthView>(monthContextOf());
   readonly holderFilter = signal<HolderFilter>('todos');
   readonly monthLabel = computed(() => this.currentMonth().label);
 
@@ -80,6 +79,7 @@ export class AppDataService {
   readonly goalsError = signal<string | null>(null);
 
   readonly categoriesError = signal<string | null>(null);
+  readonly cardsError = signal<string | null>(null);
 
   readonly reportsLoading = signal(false);
   readonly reportsError = signal<string | null>(null);
@@ -89,8 +89,16 @@ export class AppDataService {
   readonly invoiceHistoryError = signal<string | null>(null);
 
   loadCatalog(): void {
-    this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
-    this.catApi.listCards().subscribe((rows) => this.cards.set(rows));
+    this.categoriesError.set(null);
+    this.cardsError.set(null);
+    this.catApi.listCategories().subscribe({
+      next: (rows) => this.categories.set(rows.map(wireToCategory)),
+      error: () => this.fail('Falha ao carregar categorias', this.categoriesError),
+    });
+    this.catApi.listCards().subscribe({
+      next: (rows) => this.cards.set(rows),
+      error: () => this.fail('Falha ao carregar cartões', this.cardsError),
+    });
   }
 
   loadTransactions(): void {

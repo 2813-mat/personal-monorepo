@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AppDataService } from './app-data.service';
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
@@ -272,5 +272,38 @@ describe('AppDataService.loadMonthlyHistory', () => {
     const { svc } = setup();
     expect(svc.history()).toEqual([]);
     expect(svc.incomeHistory()).toEqual([]);
+  });
+});
+
+describe('AppDataService.currentMonth', () => {
+  it('starts on the real current month, not a hardcoded one', () => {
+    const { svc } = setup();
+    const now = new Date();
+    expect(svc.currentMonth()).toMatchObject({
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+    });
+  });
+
+  it('exposes both labels', () => {
+    const { svc } = setup();
+    expect(svc.currentMonth().short).toMatch(/^[A-Z][a-z]{2}\/\d{2}$/);
+    expect(svc.currentMonth().label).toMatch(/^[A-ZÇ][a-zç]+ \d{4}$/);
+  });
+});
+
+describe('AppDataService.loadCatalog', () => {
+  it('surfaces a category failure instead of swallowing it', () => {
+    const { svc, catApi } = setup();
+    catApi.listCategories.mockReturnValueOnce(throwError(() => new Error('boom')));
+    svc.loadCatalog();
+    expect(svc.categoriesError()).toBe('Falha ao carregar categorias');
+  });
+
+  it('surfaces a card failure instead of swallowing it', () => {
+    const { svc, catApi } = setup();
+    catApi.listCards.mockReturnValueOnce(throwError(() => new Error('boom')));
+    svc.loadCatalog();
+    expect(svc.cardsError()).toBe('Falha ao carregar cartões');
   });
 });
