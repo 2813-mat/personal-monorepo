@@ -10,6 +10,8 @@ export interface MonthEntry {
   year: number;
   month: number;
   total: number;
+  /** Gasto por categoria naquele mês, chaveado pelo slug (= `Category.id`). */
+  perCategory: Record<string, number>;
 }
 
 /** `2026, 5` → `'Mai/26'`. Alias local: o formato é o mesmo do resto do app. */
@@ -25,6 +27,7 @@ export function wireToExpenseHistory(rows: MonthlySummaryWire[]): MonthEntry[] {
     year: r.year,
     month: r.month,
     total: r.expenseTotal,
+    perCategory: r.perCategory ?? {},
   }));
 }
 
@@ -34,5 +37,6 @@ export function wireToIncomeHistory(rows: MonthlySummaryWire[]): MonthEntry[] {
     year: r.year,
     month: r.month,
     total: r.incomeTotal,
+    perCategory: r.perCategory ?? {},
   }));
 }

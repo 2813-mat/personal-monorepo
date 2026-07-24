@@ -6,6 +6,9 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
 import type { BudgetStatus, Category } from '@caixa-familia/shared-types';
 
+/** Quantos meses fechados a sparkline de cada categoria mostra. */
+const HISTORY_POINTS = 6;
+
 interface CatRow {
   cat: Category;
   spent: number;
@@ -35,8 +38,12 @@ export class BudgetsComponent {
       const status: BudgetStatus =
         pct < 0.7 ? 'folga' : pct < 0.9 ? 'no-ritmo' : pct < 1 ? 'atencao' : 'estourou';
       const remaining = cat.budget - spent;
-      const history = this.catHistory(cat.id, cat.budget);
-      const histAvg = history.reduce((s, v) => s + v, 0) / history.length;
+      const history = this.historyOf(cat.id);
+      // Série vazia é possível com dado real (nenhum mês fechado); dividir por
+      // zero aqui colocaria NaN na tela.
+      const histAvg = history.length
+        ? history.reduce((s, v) => s + v, 0) / history.length
+        : 0;
       return { cat, spent, remaining, pct, status, history, histAvg };
     })
   );
@@ -75,11 +82,15 @@ export class BudgetsComponent {
     }).format(Math.round(value));
   }
 
-  private catHistory(catId: string, budget: number): number[] {
-    const seed = catId.charCodeAt(0) + (catId.charCodeAt(1) || 0);
-    return Array.from({ length: 6 }, (_, i) => {
-      const v = budget * (0.6 + ((seed + i * 7) % 90) / 100);
-      return Math.round(v * 100) / 100;
-    });
+  /**
+   * Gasto da categoria nos até seis meses fechados mais recentes. Mês fechado em
+   * que a categoria não teve gasto é um **zero**, não um buraco — a série
+   * precisa ficar alinhada no tempo.
+   */
+  private historyOf(catId: string): number[] {
+    return this.data
+      .history()
+      .slice(-HISTORY_POINTS)
+      .map((entry) => entry.perCategory[catId] ?? 0);
   }
 }

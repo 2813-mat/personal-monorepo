@@ -285,12 +285,12 @@ describe('AppDataService.loadMonthlyHistory', () => {
     svc.loadMonthlyHistory();
     expect(repApi.listMonthly).toHaveBeenCalledTimes(1);
     expect(svc.history()).toEqual([
-      { m: 'Abr/26', year: 2026, month: 4, total: 4791 },
-      { m: 'Mai/26', year: 2026, month: 5, total: 5234 },
+      { m: 'Abr/26', year: 2026, month: 4, total: 4791, perCategory: {} },
+      { m: 'Mai/26', year: 2026, month: 5, total: 5234, perCategory: {} },
     ]);
     expect(svc.incomeHistory()).toEqual([
-      { m: 'Abr/26', year: 2026, month: 4, total: 7769 },
-      { m: 'Mai/26', year: 2026, month: 5, total: 7493 },
+      { m: 'Abr/26', year: 2026, month: 4, total: 7769, perCategory: {} },
+      { m: 'Mai/26', year: 2026, month: 5, total: 7493, perCategory: {} },
     ]);
     expect(svc.reportsLoading()).toBe(false);
   });

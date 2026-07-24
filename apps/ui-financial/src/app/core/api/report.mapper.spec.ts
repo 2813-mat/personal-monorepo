@@ -6,13 +6,14 @@ const row = (
   month: number,
   expenseTotal: number,
   incomeTotal: number,
+  perCategory: Record<string, number> = {},
 ): MonthlySummaryWire => ({
   id: `s-${year}-${month}`,
   year,
   month,
   expenseTotal,
   incomeTotal,
-  perCategory: {},
+  perCategory,
   closed: true,
 });
 
@@ -27,8 +28,8 @@ describe('monthLabel', () => {
 describe('wireToExpenseHistory', () => {
   it('projects the expense total per month', () => {
     expect(wireToExpenseHistory([row(2026, 4, 4791, 7769), row(2026, 5, 5234, 7493)])).toEqual([
-      { m: 'Abr/26', year: 2026, month: 4, total: 4791 },
-      { m: 'Mai/26', year: 2026, month: 5, total: 5234 },
+      { m: 'Abr/26', year: 2026, month: 4, total: 4791, perCategory: {} },
+      { m: 'Mai/26', year: 2026, month: 5, total: 5234, perCategory: {} },
     ]);
   });
 
@@ -54,7 +55,7 @@ describe('wireToExpenseHistory', () => {
 describe('wireToIncomeHistory', () => {
   it('projects the income total per month', () => {
     expect(wireToIncomeHistory([row(2026, 5, 5234, 7493)])).toEqual([
-      { m: 'Mai/26', year: 2026, month: 5, total: 7493 },
+      { m: 'Mai/26', year: 2026, month: 5, total: 7493, perCategory: {} },
     ]);
   });
 
@@ -63,5 +64,24 @@ describe('wireToIncomeHistory', () => {
     expect(wireToIncomeHistory(rows).map((e) => e.m)).toEqual(
       wireToExpenseHistory(rows).map((e) => e.m),
     );
+  });
+});
+
+describe('MonthEntry.perCategory', () => {
+  it('keeps the per-category breakdown the wire carries', () => {
+    const [entry] = wireToExpenseHistory([row(2026, 5, 500, 0, { mercado: 300, casa: 200 })]);
+    expect(entry.perCategory).toEqual({ mercado: 300, casa: 200 });
+  });
+
+  it('defaults a missing breakdown to an empty object', () => {
+    const [entry] = wireToExpenseHistory([
+      { ...row(2026, 5, 500, 0), perCategory: undefined as never },
+    ]);
+    expect(entry.perCategory).toEqual({});
+  });
+
+  it('carries the breakdown on the income projection too', () => {
+    const [entry] = wireToIncomeHistory([row(2026, 5, 500, 900, { mercado: 300 })]);
+    expect(entry.perCategory).toEqual({ mercado: 300 });
   });
 });
