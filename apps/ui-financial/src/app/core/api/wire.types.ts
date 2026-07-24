@@ -50,6 +50,21 @@ export interface IncomeWire {
   recurring: boolean;
 }
 
+export interface OpenInvoiceItemWire {
+  id: string;
+  date: string;
+  label: string;
+  value: number;
+  categorySlug: string;
+  holder: string;
+  installments: { n: number; of: number } | null;
+}
+
+export interface OpenInvoiceWire {
+  total: number;
+  items: OpenInvoiceItemWire[];
+}
+
 export interface MonthlySummaryWire {
   id: string;
   year: number;

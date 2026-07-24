@@ -1,4 +1,4 @@
-import { wireToInvoiceHistory } from './invoice.mapper';
+import { wireToInvoiceHistory, wireToOpenInvoiceItem } from './invoice.mapper';
 import type { InvoiceHistoryWire } from './wire.types';
 
 const wire: InvoiceHistoryWire = {
@@ -33,5 +33,37 @@ describe('wireToInvoiceHistory', () => {
   it('defaults a missing breakdown to an empty object', () => {
     const entry = wireToInvoiceHistory({ ...wire, perCategory: undefined as never });
     expect(entry.perCategory).toEqual({});
+  });
+});
+
+describe('wireToOpenInvoiceItem', () => {
+  const item = {
+    id: 't1',
+    date: '2026-07-10',
+    label: 'Mercado',
+    value: 100,
+    categorySlug: 'mercado',
+    holder: 'Thais',
+    installments: { n: 2, of: 6 },
+  };
+
+  it('renames categorySlug to cat and keeps the rest', () => {
+    expect(wireToOpenInvoiceItem(item)).toEqual({
+      id: 't1',
+      date: '2026-07-10',
+      label: 'Mercado',
+      value: 100,
+      cat: 'mercado',
+      holder: 'Thais',
+      installments: { n: 2, of: 6 },
+    });
+  });
+
+  it('carries a null instalment through', () => {
+    expect(wireToOpenInvoiceItem({ ...item, installments: null }).installments).toBeNull();
+  });
+
+  it('keeps the shared holder as-is', () => {
+    expect(wireToOpenInvoiceItem({ ...item, holder: 'shared' }).holder).toBe('shared');
   });
 });
