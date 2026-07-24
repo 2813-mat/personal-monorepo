@@ -4,7 +4,8 @@ import { AppDataService } from './app-data.service';
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
-import type { TransactionWire, IncomeWire } from '../core/api/wire.types';
+import { FixedApiService } from '../core/api/fixed-api.service';
+import type { TransactionWire, IncomeWire, FixedExpenseWire } from '../core/api/wire.types';
 
 const wire: TransactionWire = {
   id: 't1',
@@ -28,19 +29,31 @@ const incomeWire: IncomeWire = {
   recurring: true,
 };
 
-function setup(overrides: { txList?: jest.Mock; incList?: jest.Mock } = {}) {
+const fixedWire: FixedExpenseWire = {
+  id: 'f1',
+  label: 'Aluguel',
+  value: 2000,
+  dueDay: 5,
+  categorySlug: 'casa',
+  holder: 'Mateus',
+  paidThisMonth: true,
+};
+
+function setup(overrides: { txList?: jest.Mock; incList?: jest.Mock; fixList?: jest.Mock } = {}) {
   const txApi = { list: overrides.txList ?? jest.fn(() => of([wire])), create: jest.fn(), remove: jest.fn() };
   const catApi = { listCategories: jest.fn(() => of([])), listCards: jest.fn(() => of([])) };
   const incApi = { list: overrides.incList ?? jest.fn(() => of([incomeWire])), create: jest.fn(() => of(incomeWire)) };
+  const fixApi = { list: overrides.fixList ?? jest.fn(() => of([fixedWire])), create: jest.fn(() => of(fixedWire)) };
   TestBed.configureTestingModule({
     providers: [
       AppDataService,
       { provide: TransactionApiService, useValue: txApi },
       { provide: CatalogApiService, useValue: catApi },
       { provide: IncomeApiService, useValue: incApi },
+      { provide: FixedApiService, useValue: fixApi },
     ],
   });
-  return { svc: TestBed.inject(AppDataService), txApi, incApi };
+  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi };
 }
 
 describe('AppDataService.loadTransactions', () => {
@@ -73,5 +86,54 @@ describe('AppDataService.createIncome', () => {
       expect.objectContaining({ label: 'Bônus', holder: 'Mateus', value: 200 }),
     );
     expect(incApi.list).toHaveBeenCalled();
+  });
+});
+
+describe('AppDataService.loadFixed', () => {
+  it('requests the current month and fills the fixed signal with mapped domain objects', () => {
+    const { svc, fixApi } = setup();
+    svc.loadFixed();
+    expect(fixApi.list).toHaveBeenCalledWith({
+      year: svc.currentMonth().year,
+      month: svc.currentMonth().month,
+    });
+    expect(svc.fixed()[0]).toMatchObject({
+      id: 'f1',
+      due: 5,
+      cat: 'casa',
+      holder: 'Mateus',
+      paidThisMonth: true,
+    });
+    expect(svc.fixedLoading()).toBe(false);
+  });
+
+  it('starts empty instead of serving mock data', () => {
+    const { svc } = setup();
+    expect(svc.fixed()).toEqual([]);
+  });
+});
+
+describe('AppDataService.createFixed', () => {
+  it('reloads fixed expenses after a successful create', () => {
+    const { svc, fixApi } = setup();
+    svc.createFixed({
+      id: '',
+      label: 'Internet',
+      value: 100,
+      due: 15,
+      cat: 'assin',
+      holder: 'shared',
+      paidThisMonth: false,
+    });
+    expect(fixApi.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: 'Internet',
+        value: 100,
+        dueDay: 15,
+        categorySlug: 'assin',
+        holder: 'shared',
+      }),
+    );
+    expect(fixApi.list).toHaveBeenCalled();
   });
 });

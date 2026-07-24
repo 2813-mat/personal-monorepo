@@ -1,8 +1,15 @@
 import { Injectable, signal, computed, inject, type WritableSignal } from '@angular/core';
-import type { Card, Category, HolderFilter, Income, MonthContext, Transaction } from '@caixa-familia/shared-types';
+import type {
+  Card,
+  Category,
+  FixedExpense,
+  HolderFilter,
+  Income,
+  MonthContext,
+  Transaction,
+} from '@caixa-familia/shared-types';
 import {
   MOCK_GOALS,
-  MOCK_FIXED,
   MOCK_HISTORY,
   MOCK_INCOME_HISTORY,
   CURRENT_MONTH,
@@ -10,9 +17,11 @@ import {
 import { TransactionApiService } from '../core/api/transaction-api.service';
 import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
+import { FixedApiService } from '../core/api/fixed-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
+import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +29,7 @@ export class AppDataService {
   private txApi = inject(TransactionApiService);
   private catApi = inject(CatalogApiService);
   private incApi = inject(IncomeApiService);
+  private fixApi = inject(FixedApiService);
   private toast = inject(ToastService);
 
   private fail(message: string, errorSignal: WritableSignal<string | null>): void {
@@ -32,10 +42,10 @@ export class AppDataService {
   readonly categories = signal<Category[]>([]);
 
   readonly incomes = signal<Income[]>([]);
+  readonly fixed = signal<FixedExpense[]>([]);
 
   // still-mock resources (out of scope for this slice)
   readonly goals = signal(MOCK_GOALS);
-  readonly fixed = signal(MOCK_FIXED);
   readonly history = signal(MOCK_HISTORY);
   readonly incomeHistory = signal(MOCK_INCOME_HISTORY);
 
@@ -55,6 +65,9 @@ export class AppDataService {
 
   readonly incomesLoading = signal(false);
   readonly incomesError = signal<string | null>(null);
+
+  readonly fixedLoading = signal(false);
+  readonly fixedError = signal<string | null>(null);
 
   loadCatalog(): void {
     this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
@@ -110,6 +123,29 @@ export class AppDataService {
     this.incApi.create(incomeToCreateWire(i)).subscribe({
       next: () => this.loadIncomes(),
       error: () => this.fail('Falha ao criar receita', this.incomesError),
+    });
+  }
+
+  loadFixed(): void {
+    const { year, month } = this.currentMonth();
+    this.fixedLoading.set(true);
+    this.fixedError.set(null);
+    this.fixApi.list({ year, month }).subscribe({
+      next: (rows) => {
+        this.fixed.set(rows.map(wireToFixed));
+        this.fixedLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar gastos fixos', this.fixedError);
+        this.fixedLoading.set(false);
+      },
+    });
+  }
+
+  createFixed(f: FixedExpense): void {
+    this.fixApi.create(fixedToCreateWire(f)).subscribe({
+      next: () => this.loadFixed(),
+      error: () => this.fail('Falha ao criar gasto fixo', this.fixedError),
     });
   }
 }

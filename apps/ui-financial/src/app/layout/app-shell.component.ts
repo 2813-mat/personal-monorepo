@@ -28,11 +28,14 @@ export class AppShellComponent {
       }
     });
 
-    // (Re)load transactions when authenticated and whenever the month changes.
+    // (Re)load month-scoped resources when authenticated and whenever the month
+    // changes. Fixed expenses belong here because paidThisMonth is relative to
+    // the month being viewed.
     effect(() => {
       if (!this.auth.isAuthenticated()) return;
       this.data.currentMonth();
       this.data.loadTransactions();
+      this.data.loadFixed();
     });
   }
 }
