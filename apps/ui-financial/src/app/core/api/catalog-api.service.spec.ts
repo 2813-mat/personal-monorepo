@@ -31,4 +31,13 @@ describe('CatalogApiService', () => {
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
+
+  it('POSTs a new category', () => {
+    const body = { slug: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300 };
+    service.createCategory(body).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/categories`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(body);
+    req.flush({ id: 'cuid-1', ...body });
+  });
 });

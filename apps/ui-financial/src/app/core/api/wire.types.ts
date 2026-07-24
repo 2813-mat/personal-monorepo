@@ -34,6 +34,13 @@ export interface CategoryWire {
   budget: number;
 }
 
+export interface CreateCategoryWire {
+  slug: string;
+  label: string;
+  color: string;
+  budget: number;
+}
+
 export interface IncomeWire {
   id: string;
   label: string;

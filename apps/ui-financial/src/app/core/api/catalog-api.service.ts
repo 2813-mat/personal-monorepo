@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type { Card } from '@caixa-familia/shared-types';
 import { environment } from '../../../environments/environment';
-import type { CategoryWire } from './wire.types';
+import type { CategoryWire, CreateCategoryWire } from './wire.types';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogApiService {
@@ -16,5 +16,9 @@ export class CatalogApiService {
 
   listCards(): Observable<Card[]> {
     return this.http.get<Card[]>(`${this.base}/cards`);
+  }
+
+  createCategory(body: CreateCategoryWire): Observable<CategoryWire> {
+    return this.http.post<CategoryWire>(`${this.base}/categories`, body);
   }
 }
