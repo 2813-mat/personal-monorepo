@@ -29,6 +29,15 @@ Conectar o recurso **Fixed expenses** API↔front.
   `paidThisMonth` é relativo ao mês.
 - **D3 — holder:** alinhamento idêntico a Income (view inclui `member`, emite nome;
   `create` resolve `holder → memberId`).
+- **D4 — criação via chip dedicado (fecha a decisão aberta de §5, 2026-07-24):** o drawer ganha
+  um **quarto tipo `'fixed'`** no seletor (`[Despesa | Receita | Aporte | Fixo]`), com um campo
+  novo **`dueDay`** (1–31). Cadastrar um gasto fixo é ato distinto de lançar um pagamento — que
+  é o que o backend modela (`paidThisMonth` deriva de transação com `fixedExpenseId`, vínculo
+  fora do escopo desta fatia). O checkbox **"Recorrente (gasto fixo)"** permanece como está:
+  flag da transação, sem criar `FixedExpense`.
+- **D5 — status real na tela:** `features/fixed` hoje deriva pago/pendente comparando *valores*
+  de transações recorrentes (`paidValueSet`). Essa heurística sai; `pendingItems`/`paidItems`
+  passam a filtrar por `f.paidThisMonth`.
 
 ## 3. Backend (`api-financial`)
 
@@ -69,19 +78,28 @@ paidThisMonth: boolean;
   (usa `currentMonth()`), `createFixed()`; signals `fixedLoading`/`fixedError`.
 - **`layout/app-shell.component.ts`**: incluir `loadFixed()` no `effect` que reage a auth **e**
   `currentMonth()` (junto de `loadTransactions`).
-- **Componentes:** `features/fixed` lê real (já usa `data.fixed()` para totais/listagem);
-  exibir `paidThisMonth`. Criação de gasto fixo: reaproveitar o drawer (despesa recorrente)
-  roteando para `createFixed` quando aplicável — **decisão aberta**: manter o gasto fixo como
-  um `FixedExpense` dedicado (recomendado) vs. tratar `recurring` só como flag de transação.
-  Resolver no plano da fatia observando o fluxo real do drawer.
+- **Componentes:**
+  - `features/fixed` lê real (já usa `data.fixed()` para totais/listagem) e exibe
+    `paidThisMonth`: remover o `paidValueSet` e filtrar `pendingItems`/`paidItems` por
+    `f.paidThisMonth` (D5).
+  - `features/expense-drawer`: novo tipo `'fixed'` no `FormControl` de `type` e novo controle
+    `dueDay` (1–31). Validators condicionais por tipo, estendendo o `valueChanges` de `type`
+    que já existe (hoje só liga/desliga o `required` de `cat`): em `'fixed'`, `dueDay` é
+    obrigatório e `date`/`method`/`installments` não se aplicam. `save()` monta um
+    `FixedExpense` e chama `data.createFixed()` (D4).
 
 ## 6. Testes e gate
 - Backend: mapper (`holder`/`shared`), usecase/repo (`holder`, `paidThisMonth`).
 - UI: `fixed.mapper.spec`, `fixed-api.service.spec` (query params + POST), `app-data.service.spec`
-  (`loadFixed` por mês; `createFixed` recarrega).
+  (`loadFixed` por mês; `createFixed` recarrega), `expense-drawer.component.spec` (tipo `fixed`
+  exige `dueDay` e roteia para `createFixed`), `fixed.component.spec` (split por `paidThisMonth`).
 - `nx build` das duas apps + smoke: login → ver fixos do mês com status → criar → conferir.
 
 ## 7. Riscos
-- **Fluxo de criação no drawer** (decisão aberta em §5) é o ponto de maior incerteza — validar
-  no plano.
+- ~~**Fluxo de criação no drawer**~~ — resolvido em D4 (chip dedicado `Fixo` + campo `dueDay`).
+- **Validators condicionais no drawer.** O form ganha um tipo cujos campos obrigatórios diferem
+  dos outros três; errar o `updateValueAndValidity` deixa o botão salvar travado. Coberto por
+  teste de componente.
 - `due`/`cat` já são 1:1; o único mapeamento não-trivial é `holder` e `paidThisMonth`.
+- `paidThisMonth` **já existe** no `FixedExpenseView` do backend — a mudança de backend se
+  reduz a `memberId → holder`.
