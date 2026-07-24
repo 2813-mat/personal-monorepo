@@ -1,4 +1,5 @@
-import { Component, signal, effect } from '@angular/core';
+import { Component, signal, effect, computed, inject } from '@angular/core';
+import { AppDataService } from '../../layout/app-data.service';
 import { DashboardAComponent } from './dashboard-a.component';
 import { DashboardBComponent } from './dashboard-b.component';
 import { DashboardCComponent } from './dashboard-c.component';
@@ -21,7 +22,30 @@ const TABS: { id: DashTab; label: string; desc: string }[] = [
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
+  private data = inject(AppDataService);
+
   tabs = TABS;
+
+  /** Qualquer recurso do mês ainda em voo. */
+  loading = computed(
+    () =>
+      this.data.transactionsLoading() ||
+      this.data.incomesLoading() ||
+      this.data.fixedLoading() ||
+      this.data.goalsLoading(),
+  );
+
+  /** Nada carregado e nada mais por vir — household sem dados no mês. */
+  isEmpty = computed(
+    () =>
+      !this.loading() &&
+      this.data.transactions().length === 0 &&
+      this.data.incomes().length === 0 &&
+      this.data.fixed().length === 0 &&
+      this.data.goals().length === 0,
+  );
+
+  monthLabel = computed(() => this.data.currentMonth().label);
 
   activeTab = signal<DashTab>(
     (localStorage.getItem(LS_KEY) as DashTab | null) ?? 'c'

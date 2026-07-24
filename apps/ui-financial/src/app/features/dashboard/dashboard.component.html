@@ -11,6 +11,14 @@
   }
 </div>
 
+@if (loading()) {
+  <p class="dash-state">Carregando os dados de {{ monthLabel() }}…</p>
+} @else if (isEmpty()) {
+  <p class="dash-state">
+    Nenhum lançamento em {{ monthLabel() }}. Use o botão de novo lançamento para começar.
+  </p>
+}
+
 @switch (activeTab()) {
   @case ('a') { <cf-dashboard-a /> }
   @case ('b') { <cf-dashboard-b /> }
