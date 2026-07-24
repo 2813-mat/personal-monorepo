@@ -6,6 +6,8 @@ export interface InvoiceItem {
   label: string;
   value: number;
   categorySlug: string;
+  holder: string;
+  installments: { n: number; of: number } | null;
 }
 
 export interface OpenInvoice {

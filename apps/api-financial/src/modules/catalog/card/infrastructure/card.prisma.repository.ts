@@ -36,7 +36,7 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
     const { start, end } = billingCycleFor(card.closingDay);
     const items = await this.prisma.transaction.findMany({
       where: { householdId: this.householdId, cardId, date: { gt: start, lte: end } },
-      include: { category: true },
+      include: { category: true, member: true, installment: { include: { plan: true } } },
       orderBy: { date: 'desc' },
     });
     const total = items.reduce((s, t) => s + Number(t.value), 0);
@@ -48,6 +48,10 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
         label: t.label,
         value: Number(t.value),
         categorySlug: t.category.slug,
+        holder: t.member?.name ?? 'shared',
+        installments: t.installment
+          ? { n: t.installment.number, of: t.installment.plan.totalCount }
+          : null,
       })),
     };
   }
