@@ -1,3 +1,4 @@
+import type { Holder } from '@caixa-familia/shared-types';
 import type { InvoiceHistoryWire, OpenInvoiceItemWire } from './wire.types';
 
 /** Fatura fechada, na forma que o painel de histórico consome. */
@@ -28,7 +29,7 @@ export interface OpenInvoiceItem {
   label: string;
   value: number;
   cat: string;
-  holder: string;
+  holder: Holder;
   installments: { n: number; of: number } | null;
 }
 
@@ -39,7 +40,7 @@ export function wireToOpenInvoiceItem(w: OpenInvoiceItemWire): OpenInvoiceItem {
     label: w.label,
     value: w.value,
     cat: w.categorySlug,
-    holder: w.holder,
+    holder: w.holder as Holder,
     installments: w.installments,
   };
 }

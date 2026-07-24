@@ -48,6 +48,31 @@ function mockDataService(history: InvoiceHistoryEntry[]) {
     invoiceHistory: signal(history),
     invoiceHistoryLoading: signal(false),
     loadInvoiceHistory: jest.fn(),
+    openInvoice: signal({
+      total: 450,
+      items: [
+        {
+          id: 'a1',
+          date: '2026-07-10',
+          label: 'Mercado',
+          value: 300,
+          cat: 'mercado',
+          holder: 'Thais',
+          installments: null,
+        },
+        {
+          id: 'a2',
+          date: '2026-06-28',
+          label: 'Curso',
+          value: 150,
+          cat: 'educ',
+          holder: 'Mateus',
+          installments: { n: 2, of: 6 },
+        },
+      ],
+    }),
+    openInvoiceLoading: signal(false),
+    loadOpenInvoice: jest.fn(),
   };
 }
 
@@ -75,7 +100,8 @@ describe('InvoiceComponent — history panel', () => {
 
   it('plots closed invoices followed by the open one', () => {
     const { component } = build(CLOSED);
-    expect(component.history()).toEqual([1000, 2000, 1500, 300]);
+    // 450 é o total da fatura aberta que a API devolveu
+    expect(component.history()).toEqual([1000, 2000, 1500, 450]);
   });
 
   it('highlights the open invoice as the last bar', () => {
@@ -105,6 +131,34 @@ describe('InvoiceComponent — history panel', () => {
 
   it('still plots the open invoice when there is no closed history', () => {
     const { component } = build([]);
-    expect(component.history()).toEqual([300]);
+    expect(component.history()).toEqual([450]);
+  });
+});
+
+describe('InvoiceComponent — open invoice', () => {
+  it('asks for the open invoice of the routed card', () => {
+    const { data } = build(CLOSED);
+    expect(data.loadOpenInvoice).toHaveBeenCalledWith('nu-t');
+  });
+
+  it('lists the items the API returned, not the month transactions', () => {
+    const { component } = build(CLOSED);
+    expect(component.items().map((i) => i.id)).toEqual(['a1', 'a2']);
+  });
+
+  it('takes the total from the API', () => {
+    const { component } = build(CLOSED);
+    expect(component.total()).toBe(450);
+  });
+
+  it('breaks down the API items by category', () => {
+    const { component } = build(CLOSED);
+    expect(component.breakdown().map((b) => b.catId)).toEqual(['mercado', 'educ']);
+  });
+
+  it('projects upcoming instalments from the API items', () => {
+    const { component } = build(CLOSED);
+    // a2 está em 2/6 → faltam 4 parcelas
+    expect(component.futureInstallments()).toHaveLength(4);
   });
 });

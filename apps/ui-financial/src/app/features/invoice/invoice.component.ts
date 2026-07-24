@@ -8,7 +8,7 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
 import { DonutComponent, type DonutSegment } from '../../ui/donut/donut.component';
 import { IconComponent } from '../../ui/icon/icon.component';
-import type { Transaction } from '@caixa-familia/shared-types';
+import type { OpenInvoiceItem } from '../../core/api/invoice.mapper';
 
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
@@ -51,14 +51,13 @@ export class InvoiceComponent {
 
   card = computed(() => this.data.cardBy()[this.cardId]);
 
-  // Purchases on this invoice, newest first.
-  items = computed((): Transaction[] =>
-    this.data.transactions()
-      .filter(t => t.method === this.cardId)
-      .sort((a, b) => b.date.localeCompare(a.date))
+  // Compras da fatura aberta, pelo ciclo de faturamento real (vem da API), mais
+  // recentes primeiro.
+  items = computed((): OpenInvoiceItem[] =>
+    [...this.data.openInvoice().items].sort((a, b) => b.date.localeCompare(a.date))
   );
 
-  total = computed(() => this.items().reduce((s, t) => s + t.value, 0));
+  total = computed(() => this.data.openInvoice().total);
 
   // Category breakdown, descending by total.
   breakdown = computed((): CatBreakdown[] => {
@@ -136,6 +135,7 @@ export class InvoiceComponent {
   }
 
   constructor() {
+    this.data.loadOpenInvoice(this.cardId);
     this.data.loadInvoiceHistory(this.cardId);
   }
 }
