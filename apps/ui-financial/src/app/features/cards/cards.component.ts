@@ -11,7 +11,11 @@ import type { Card } from '@caixa-familia/shared-types';
 
 type SortMode = 'closing' | 'value' | 'holder';
 
-// Gera histórico mock determinístico por cartão (6 meses)
+// ATENÇÃO: dado fictício exibido ao usuário. Gera uma série determinística por
+// cartão a partir de um seed do id — não é histórico real.
+// O histórico real existe em GET /cards/:id/invoices, mas é por cartão: alimentar
+// esta coluna custaria uma requisição por cartão no load da tela. Ver D5 em
+// docs/superpowers/specs/2026-07-11-cards-invoice-slice-design.md.
 function cardHistory(card: Card): number[] {
   const seed = card.id.charCodeAt(0) + card.id.charCodeAt(1);
   return Array.from({ length: 6 }, (_, i) => {
