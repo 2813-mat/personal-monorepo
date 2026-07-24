@@ -1,4 +1,4 @@
-import { rolesFromPayload, canWriteFromRoles } from './auth.service';
+import { rolesFromPayload, canWriteFromRoles, isAdminFromRoles } from './auth.service';
 
 describe('auth role helpers', () => {
   it('extracts realm roles from an access-token payload', () => {
@@ -14,5 +14,21 @@ describe('auth role helpers', () => {
     expect(canWriteFromRoles(['editor'])).toBe(true);
     expect(canWriteFromRoles(['admin'])).toBe(true);
     expect(canWriteFromRoles(['viewer'])).toBe(false);
+  });
+});
+
+describe('isAdminFromRoles', () => {
+  it('is true only for admin', () => {
+    expect(isAdminFromRoles(['admin'])).toBe(true);
+  });
+
+  it('is false for editor, who can write but not close periods', () => {
+    expect(isAdminFromRoles(['editor'])).toBe(false);
+    expect(canWriteFromRoles(['editor'])).toBe(true);
+  });
+
+  it('is false for viewer and for no roles at all', () => {
+    expect(isAdminFromRoles(['viewer'])).toBe(false);
+    expect(isAdminFromRoles([])).toBe(false);
   });
 });

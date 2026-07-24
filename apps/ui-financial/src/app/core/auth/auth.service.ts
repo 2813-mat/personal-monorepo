@@ -10,6 +10,11 @@ export function canWriteFromRoles(roles: string[]): boolean {
   return roles.includes('admin') || roles.includes('editor');
 }
 
+/** Ações de fechamento são admin-only — um editor escreve, mas não fecha período. */
+export function isAdminFromRoles(roles: string[]): boolean {
+  return roles.includes('admin');
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private oidc = inject(OidcSecurityService);
@@ -22,6 +27,7 @@ export class AuthService {
   readonly userName = this._userName.asReadonly();
   readonly roles = this._roles.asReadonly();
   readonly canWrite = computed(() => canWriteFromRoles(this._roles()));
+  readonly isAdmin = computed(() => isAdminFromRoles(this._roles()));
 
   // checkAuth runs at app init via withAppInitializerAuthCheck() in app.config,
   // so here we only mirror the resolved auth state into signals.
