@@ -19,11 +19,13 @@ import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
+import { InvoiceApiService } from '../core/api/invoice-api.service';
 import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
 import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { wireToGoal } from '../core/api/goal.mapper';
+import { wireToInvoiceHistory, type InvoiceHistoryEntry } from '../core/api/invoice.mapper';
 import { ToastService } from '../ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +35,7 @@ export class AppDataService {
   private incApi = inject(IncomeApiService);
   private fixApi = inject(FixedApiService);
   private goalApi = inject(GoalApiService);
+  private invApi = inject(InvoiceApiService);
   private toast = inject(ToastService);
 
   private fail(message: string, errorSignal: WritableSignal<string | null>): void {
@@ -76,6 +79,10 @@ export class AppDataService {
   readonly goalsError = signal<string | null>(null);
 
   readonly categoriesError = signal<string | null>(null);
+
+  readonly invoiceHistory = signal<InvoiceHistoryEntry[]>([]);
+  readonly invoiceHistoryLoading = signal(false);
+  readonly invoiceHistoryError = signal<string | null>(null);
 
   loadCatalog(): void {
     this.catApi.listCategories().subscribe((rows) => this.categories.set(rows.map(wireToCategory)));
@@ -168,6 +175,25 @@ export class AppDataService {
       error: () => {
         this.fail('Falha ao carregar metas', this.goalsError);
         this.goalsLoading.set(false);
+      },
+    });
+  }
+
+  /**
+   * Histórico de faturas fechadas de um cartão. Disparado pela tela de fatura,
+   * que é quem conhece o cartão da rota — não entra nos effects do shell.
+   */
+  loadInvoiceHistory(cardId: string): void {
+    this.invoiceHistoryLoading.set(true);
+    this.invoiceHistoryError.set(null);
+    this.invApi.listByCard(cardId).subscribe({
+      next: (rows) => {
+        this.invoiceHistory.set(rows.map(wireToInvoiceHistory));
+        this.invoiceHistoryLoading.set(false);
+      },
+      error: () => {
+        this.fail('Falha ao carregar o histórico de faturas', this.invoiceHistoryError);
+        this.invoiceHistoryLoading.set(false);
       },
     });
   }

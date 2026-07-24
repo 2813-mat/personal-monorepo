@@ -6,6 +6,7 @@ import { CatalogApiService } from '../core/api/catalog-api.service';
 import { IncomeApiService } from '../core/api/income-api.service';
 import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
+import { InvoiceApiService } from '../core/api/invoice-api.service';
 import type {
   TransactionWire,
   IncomeWire,
@@ -75,6 +76,23 @@ function setup(
     list: overrides.goalList ?? jest.fn(() => of([goalWire])),
     addContribution: jest.fn(() => of(undefined)),
   };
+  const invApi = {
+    listByCard: jest.fn(() =>
+      of([
+        {
+          id: 'inv-1',
+          cardId: 'nu-t',
+          year: 2026,
+          month: 3,
+          closingDate: '2026-03-05',
+          dueDate: '2026-03-12',
+          total: 1000,
+          perCategory: {},
+          status: 'CLOSED' as const,
+        },
+      ]),
+    ),
+  };
   TestBed.configureTestingModule({
     providers: [
       AppDataService,
@@ -83,9 +101,10 @@ function setup(
       { provide: IncomeApiService, useValue: incApi },
       { provide: FixedApiService, useValue: fixApi },
       { provide: GoalApiService, useValue: goalApi },
+      { provide: InvoiceApiService, useValue: invApi },
     ],
   });
-  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi, catApi };
+  return { svc: TestBed.inject(AppDataService), txApi, incApi, fixApi, goalApi, catApi, invApi };
 }
 
 describe('AppDataService.loadTransactions', () => {
@@ -205,5 +224,20 @@ describe('AppDataService.createCategory', () => {
       budget: 300,
     });
     expect(catApi.listCategories).toHaveBeenCalled();
+  });
+});
+
+describe('AppDataService.loadInvoiceHistory', () => {
+  it('requests the history for the given card', () => {
+    const { svc, invApi } = setup();
+    svc.loadInvoiceHistory('nu-t');
+    expect(invApi.listByCard).toHaveBeenCalledWith('nu-t');
+    expect(svc.invoiceHistory()[0]).toEqual({ year: 2026, month: 3, total: 1000, perCategory: {} });
+    expect(svc.invoiceHistoryLoading()).toBe(false);
+  });
+
+  it('starts empty', () => {
+    const { svc } = setup();
+    expect(svc.invoiceHistory()).toEqual([]);
   });
 });
