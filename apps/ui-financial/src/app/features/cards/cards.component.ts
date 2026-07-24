@@ -11,18 +11,8 @@ import type { Card } from '@caixa-familia/shared-types';
 
 type SortMode = 'closing' | 'value' | 'holder';
 
-// ATENÇÃO: dado fictício exibido ao usuário. Gera uma série determinística por
-// cartão a partir de um seed do id — não é histórico real.
-// O histórico real existe em GET /cards/:id/invoices, mas é por cartão: alimentar
-// esta coluna custaria uma requisição por cartão no load da tela. Ver D5 em
-// docs/superpowers/specs/2026-07-11-cards-invoice-slice-design.md.
-function cardHistory(card: Card): number[] {
-  const seed = card.id.charCodeAt(0) + card.id.charCodeAt(1);
-  return Array.from({ length: 6 }, (_, i) => {
-    const v = card.current * (0.55 + ((seed + i * 11) % 80) / 100);
-    return Math.round(v);
-  });
-}
+/** Quantos fechamentos a coluna "Hist. 6m" mostra. */
+const HISTORY_POINTS = 6;
 
 // Dias até o próximo vencimento (due date) a partir de hoje
 function daysUntilDue(card: Card, ref: Date): number {
@@ -165,8 +155,13 @@ export class CardsComponent {
   utilPct(card: Card) {
     return Math.round((card.current / card.limit) * 100);
   }
-  historyOf(card: Card) {
-    return cardHistory(card);
+  /**
+   * Os até seis fechamentos mais recentes do cartão. Cartão sem fatura fechada
+   * devolve série vazia — `cf-sparkbars` simplesmente não desenha barra.
+   */
+  historyOf(card: Card): number[] {
+    const closed = this.data.invoiceHistoryByCard()[card.id] ?? [];
+    return closed.slice(-HISTORY_POINTS).map((i) => i.total);
   }
   hasActivity(cardId: string) {
     return this.cardActivity().has(cardId);
