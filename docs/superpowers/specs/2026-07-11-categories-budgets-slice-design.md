@@ -25,6 +25,17 @@ A leitura de categorias (`GET /categories`) **já está conectada** (Transaction
 - **D1 — id = slug:** já mapeado (`wireToCategory`, `id = slug`). Sem mudança de leitura.
 - **D2 — create-only:** sem edição de orçamento nesta fatia (decisão do usuário).
 - **D3 — sem dimensão de mês:** categorias carregam no login (via `loadCatalog`).
+- **D4 — o form não existe, precisa ser construído (2026-07-24):** a spec original dizia
+  "ligar o form de nova categoria"; na verdade `settings.component.html:30` tem só um botão
+  `+ Nova categoria` **`disabled`** e nenhum formulário. O form é **inline no card de
+  Categorias dos Ajustes**, revelado por esse botão (que deixa de ser `disabled`), acima da
+  tabela que já lista as categorias.
+- **D5 — slug derivado, cor por paleta:** o usuário digita apenas **nome** e **orçamento**.
+  - `slug` sai do label via `slugify()` (nova função em `shared-utils`), sem aparecer na UI.
+    Colisão com categoria existente vira erro inline — o `id` do `Category` já é o slug, então
+    a checagem é contra `data.categories()`.
+  - `color` vem de uma paleta fixa de 8 swatches (as cores já usadas nas categorias semeadas),
+    o que satisfaz o `@IsHexColor()` do DTO sem input de cor nativo.
 
 ## 3. Backend (`api-financial`)
 
@@ -54,6 +65,8 @@ gated por `@Roles('admin','editor')`).
   seletor do drawer.
 
 ## 6. Riscos
-- **Geração de slug:** confirmar no plano de onde vem o `slug` ao criar (input do usuário vs.
-  slugify do label). O `CreateCategoryDto` exige `slug` explícito — a UI precisa fornecê-lo.
+- ~~**Geração de slug**~~ — resolvido em D5 (slugify do label em `shared-utils`, com checagem
+  de duplicata contra `data.categories()`).
+- **Cor obrigatória.** O `CreateCategoryDto` exige `@IsHexColor()`; a paleta de D5 garante um
+  valor válido, mas o form precisa iniciar com um swatch já selecionado para nunca postar vazio.
 - Budgets já é real; o valor desta fatia é sobretudo o create + verificação.
