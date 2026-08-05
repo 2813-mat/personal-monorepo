@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: financeiro-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: caixa_familia
+    volumes:
+      - financeiro-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: financeiro-keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+      POSTGRES_DB: keycloak
+    volumes:
+      - financeiro-kc-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${KC_DB_USERNAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: financeiro-keycloak
+    restart: unless-stopped
+    command: ['start', '--import-realm']
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL}
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: 'true'
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+      - ./keycloak/themes:/opt/keycloak/themes
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - default
+      - infra
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api-financial/Dockerfile
+    image: financeiro-api
+    container_name: financeiro-api
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/caixa_familia?schema=public
+      WEB_ORIGIN: ${WEB_ORIGIN}
+      KEYCLOAK_URL: ${KEYCLOAK_PUBLIC_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - default
+      - infra
+
+  ui:
+    build:
+      context: .
+      dockerfile: apps/ui-financial/Dockerfile
+    image: financeiro-ui
+    container_name: financeiro-ui
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: ${UI_API_BASE_URL}
+      AUTH_AUTHORITY: ${UI_AUTH_AUTHORITY}
+      AUTH_CLIENT_ID: ${UI_AUTH_CLIENT_ID}
+    networks:
+      - infra
+
+networks:
+  default:
+  infra:
+    external: true
+
+volumes:
+  financeiro-pg:
+  financeiro-kc-pg:

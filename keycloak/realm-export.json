@@ -9,8 +9,8 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
-      "redirectUris": ["http://localhost:4200/*"],
-      "webOrigins": ["http://localhost:4200"]
+      "redirectUris": ["http://localhost:4200/*", "https://financeiro.bispotech.com/*"],
+      "webOrigins": ["http://localhost:4200", "https://financeiro.bispotech.com"]
     },
     {
       "clientId": "api-financial",

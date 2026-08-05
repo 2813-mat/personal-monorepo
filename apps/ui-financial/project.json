@@ -36,7 +36,13 @@
               "maximumError": "8kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/ui-financial/src/environments/environment.ts",
+              "with": "apps/ui-financial/src/environments/environment.production.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
