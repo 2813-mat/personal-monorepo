@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 .backdrop {
@@ -12,19 +14,43 @@
   to { opacity: 1; }
 }
 
+/* Celular: tela cheia. Sem slide lateral — em tela cheia ele lê como troca
+   de página, não como painel. */
 .panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 480px;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
   background: var(--surface);
-  border-left: 1px solid var(--line);
-  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   z-index: 81;
-  animation: cf-slide 240ms cubic-bezier(.2, .7, .3, 1);
+}
+
+/* O backdrop é o único jeito de fechar no desktop; em tela cheia ele fica
+   coberto, daí o botão. Fica só no celular para não mexer no desktop. */
+.close-btn {
+  width: 44px; height: 44px;
+  flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+@include r.desktop {
+  .panel {
+    inset: 0 0 auto auto;
+    top: 0;
+    right: 0;
+    width: 480px;
+    height: 100dvh;
+    border-left: 1px solid var(--line);
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.15);
+    animation: cf-slide 240ms cubic-bezier(.2, .7, .3, 1);
+  }
+  .close-btn { display: none; }
 }
 @keyframes cf-slide {
   from { transform: translateX(100%); }

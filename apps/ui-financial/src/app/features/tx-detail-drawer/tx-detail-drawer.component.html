@@ -18,6 +18,12 @@
       </div>
       <span class="meta">{{ longDate() }}</span>
     </div>
+
+    <!-- Em tela cheia o backdrop fica coberto pelo painel; sem isto o drawer
+         não teria como fechar no celular. -->
+    <button class="close-btn" (click)="onClose()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
     <button type="button" class="icon-btn" (click)="onClose()" aria-label="Fechar">
       <cf-icon name="x" [size]="11" />
     </button>
