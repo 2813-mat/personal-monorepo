@@ -73,6 +73,7 @@ model Category {
   label       String
   color       String
   budget      Decimal @db.Decimal(12, 2)
+  order       Int     @default(0)
   fixedExpenses FixedExpense[]
   transactions  Transaction[]
   @@unique([householdId, slug])
@@ -167,6 +168,7 @@ model Transaction {
   card        Card? @relation(fields: [cardId], references: [id])
   note        String?
   recurring   Boolean @default(false)
+  reviewed    Boolean @default(false)
   fixedExpenseId String?
   fixedExpense   FixedExpense? @relation(fields: [fixedExpenseId], references: [id])
   installmentId  String? @unique

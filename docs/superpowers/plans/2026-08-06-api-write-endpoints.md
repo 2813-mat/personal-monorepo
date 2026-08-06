@@ -101,7 +101,7 @@ Expected: migração aplicada, client regenerado com os dois campos novos.
 Run:
 
 ```bash
-docker exec cf-postgres psql -U postgres -d caixa -c 'SELECT slug, label, "order" FROM "Category" ORDER BY "order";'
+docker exec cf-postgres psql -U cf -d caixa_familia -c 'SELECT slug, label, "order" FROM "Category" ORDER BY "order";'
 ```
 
 Expected: `order` de 1 em diante, e a ordem por `order` idêntica à ordem por `label`.
