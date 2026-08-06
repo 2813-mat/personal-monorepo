@@ -7,6 +7,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: caixa_familia
+    ports:
+      # Só no loopback do servidor — acesso externo (DBeaver etc.) via túnel SSH, nunca exposto direto.
+      - '127.0.0.1:5433:5432'
     volumes:
       - financeiro-pg:/var/lib/postgresql/data
     healthcheck:
