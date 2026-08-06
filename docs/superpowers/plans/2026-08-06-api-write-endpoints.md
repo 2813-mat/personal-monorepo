@@ -2094,10 +2094,12 @@ resta apenas o módulo de membros e a integração de pagamento.
 ```bash
 npx nx test api-financial
 npx nx build api-financial
-npx nx lint api-financial
 git add docs/
 git commit -m "docs: record the write-endpoints slice in the migration umbrella"
 ```
+
+> `api-financial` **não tem target `lint`** (só `ui-financial` tem). O gate deste projeto é
+> `test` + `build`.
 
 ---
 
