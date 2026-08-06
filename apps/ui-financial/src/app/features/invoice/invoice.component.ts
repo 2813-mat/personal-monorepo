@@ -1,6 +1,7 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 import { MoneyComponent } from '../../ui/money/money.component';
@@ -48,6 +49,7 @@ interface FutureInstallment {
 })
 export class InvoiceComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
   protected auth = inject(AuthService);
   private route = inject(ActivatedRoute);
 

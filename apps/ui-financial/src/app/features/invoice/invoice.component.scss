@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 /* Breadcrumb */
@@ -169,3 +171,35 @@
 .nf-title { font-size: 16px; font-weight: 600; color: var(--ink-1); margin-bottom: 6px; }
 .nf-note { font-size: 13px; color: var(--ink-4); }
 .hist-empty { margin: 0; font-size: 11.5px; color: var(--ink-4); }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   A tabela de itens (6 colunas) vira lista de cards. A de parcelas futuras
+   tem 3 colunas e nenhum cabeçalho — já lê como lista, só empilha com o grid. */
+.grid { grid-template-columns: 1fr; }
+
+.inv-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.inv-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.invc-main {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.invc-label { font-weight: 600; color: var(--ink-1); }
+.invc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.invc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.invc-empty { padding: 20px; text-align: center; color: var(--ink-3); }
+
+@include r.desktop {
+  .grid { grid-template-columns: 1.6fr 1fr; }
+}

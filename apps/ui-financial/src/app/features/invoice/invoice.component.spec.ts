@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { InvoiceComponent } from './invoice.component';
 import { AppDataService } from '../../layout/app-data.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { InvoiceHistoryEntry } from '../../core/api/invoice.mapper';
 import type { Card, Transaction } from '@caixa-familia/shared-types';
 
@@ -217,5 +218,38 @@ describe('InvoiceComponent — close invoice', () => {
     component.askCloseInvoice();
     component.cancelCloseInvoice();
     expect(data.closeInvoice).not.toHaveBeenCalled();
+  });
+});
+
+function buildResponsive(isDesktop: boolean) {
+  TestBed.configureTestingModule({
+    imports: [InvoiceComponent],
+    providers: [
+      { provide: AppDataService, useValue: mockDataService(CLOSED) },
+      { provide: AuthService, useValue: { isAdmin: signal(true), canWrite: signal(true) } },
+      { provide: ActivatedRoute, useValue: { snapshot: { params: { cardId: 'nu-t' } } } },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(InvoiceComponent);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('InvoiceComponent — responsive rendering', () => {
+  it('renders the items table on desktop and no card list', () => {
+    const el = buildResponsive(true);
+    expect(el.querySelector('.inv-cards')).toBeNull();
+    expect(el.querySelectorAll('table.tbl').length).toBeGreaterThan(0);
+  });
+
+  it('renders the item cards on mobile', () => {
+    const el = buildResponsive(false);
+    expect(el.querySelector('.inv-cards')).not.toBeNull();
+  });
+
+  it('shows one card per invoice item on mobile', () => {
+    // a fatura aberta do mock tem dois itens (a1 e a2)
+    expect(buildResponsive(false).querySelectorAll('.inv-card').length).toBe(2);
   });
 });

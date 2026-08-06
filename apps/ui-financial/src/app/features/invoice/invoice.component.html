@@ -89,6 +89,7 @@
       </div>
 
       <div class="table-scroll">
+        @if (vp.isDesktop()) {
         <table class="tbl">
           <thead>
             <tr>
@@ -155,6 +156,35 @@
             }
           </tbody>
         </table>
+        } @else {
+        <div class="inv-cards">
+          @for (tx of items(); track tx.id) {
+            <div class="inv-card">
+              <div class="invc-main">
+                <span class="invc-label">{{ tx.label }}</span>
+                <cf-money [value]="tx.value" [negColor]="false" />
+              </div>
+              <div class="invc-meta">
+                <span class="invc-tag num">{{ fmtDate(tx.date) }}</span>
+                <span class="invc-tag">
+                  <cf-cat-dot [catId]="tx.cat" [size]="6" /> {{ catLabel(tx.cat) }}
+                </span>
+                @if (tx.installments) {
+                  <span class="invc-tag num">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
+                } @else {
+                  <span class="invc-tag">À vista</span>
+                }
+                <span class="invc-tag">
+                  {{ tx.holder === 'shared' ? 'Compartilhado' : tx.holder }}
+                </span>
+              </div>
+            </div>
+          }
+          @if (items().length === 0) {
+            <p class="invc-empty">Nenhuma compra nesta fatura</p>
+          }
+        </div>
+        }
       </div>
 
       <div class="panel-foot">
