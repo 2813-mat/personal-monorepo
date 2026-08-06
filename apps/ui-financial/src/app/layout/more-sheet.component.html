@@ -1,0 +1,21 @@
+<div class="ms-backdrop" (click)="closed.emit()"></div>
+<div class="ms-sheet" role="dialog" aria-label="Mais opções">
+  <div class="ms-handle"></div>
+
+  @for (item of items; track item.id) {
+    <a
+      class="ms-item"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      (click)="closed.emit()"
+    >
+      <cf-icon [name]="item.icon" [size]="16" />
+      <span>{{ item.label }}</span>
+    </a>
+  }
+
+  <button class="ms-item" (click)="auth.logout(); closed.emit()">
+    <cf-icon name="upload" [size]="16" />
+    <span>Sair</span>
+  </button>
+</div>
