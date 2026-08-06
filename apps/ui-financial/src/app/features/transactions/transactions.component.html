@@ -65,6 +65,7 @@
     </div>
   </div>
 
+  @if (vp.isDesktop()) {
   <div class="table-scroll">
     <table class="tx-table">
       <thead>
@@ -114,6 +115,43 @@
       </tbody>
     </table>
   </div>
+  } @else {
+  <div class="tx-cards">
+    @for (day of dayGroups(); track day.key) {
+      <div class="txc-day">{{ day.label }}</div>
+      @for (tx of day.items; track tx.id) {
+        <button class="tx-card" (click)="selectedTx.set(tx)">
+          <div class="txc-main">
+            <span class="txc-label">{{ tx.label }}</span>
+            <cf-money [value]="tx.value" [negColor]="false" />
+          </div>
+          <div class="txc-meta">
+            <span class="txc-tag">
+              <cf-cat-dot [catId]="tx.cat" [size]="6" /> {{ catLabel(tx.cat) }}
+            </span>
+            @if (cardOf(tx.method); as card) {
+              <span class="txc-tag">···{{ card.last4 }}</span>
+            } @else {
+              <span class="txc-tag">Pix</span>
+            }
+            @if (tx.installments) {
+              <span class="txc-tag num">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
+            }
+            <span class="txc-tag">
+              {{ tx.holder === 'shared' ? 'Compartilhado' : tx.holder }}
+            </span>
+            @if (tx.recurring) {
+              <span class="txc-tag"><cf-icon name="repeat" [size]="9" /> fixo</span>
+            }
+          </div>
+        </button>
+      }
+    }
+    @if (filteredCount() === 0) {
+      <p class="txc-empty">Nenhuma transação encontrada</p>
+    }
+  </div>
+  }
 
   <div class="table-foot">
     <span>Mostrando {{ filteredCount() }} lançamentos</span>

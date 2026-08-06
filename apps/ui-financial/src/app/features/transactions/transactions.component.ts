@@ -9,6 +9,7 @@ import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { TxDetailDrawerComponent } from '../tx-detail-drawer/tx-detail-drawer.component';
+import { ViewportService } from '../../core/viewport.service';
 import type { Transaction } from '@caixa-familia/shared-types';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -42,6 +43,7 @@ interface TxGroup {
 })
 export class TransactionsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   searchQuery = signal('');
   selectedTx = signal<Transaction | null>(null);
@@ -87,6 +89,19 @@ export class TransactionsComponent {
         total: items.reduce((s, t) => s + t.value, 0),
       }))
       .sort((a, b) => b.total - a.total);
+  });
+
+  // Cards do celular, com quebra por dia. Agrupamento consecutivo: depende de
+  // flatSorted() vir ordenado por data — que é o default (sortCol='date') e o
+  // único estado possível no celular, onde o cabeçalho ordenável não é renderizado.
+  dayGroups = computed(() => {
+    const groups: { key: string; label: string; items: Transaction[] }[] = [];
+    for (const tx of this.flatSorted()) {
+      const last = groups[groups.length - 1];
+      if (last?.key === tx.date) last.items.push(tx);
+      else groups.push({ key: tx.date, label: this.formatDate(tx.date), items: [tx] });
+    }
+    return groups;
   });
 
   filteredCount = computed(() => this.filteredTx().length);
