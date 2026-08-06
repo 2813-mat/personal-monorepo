@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { FixedExpenseController } from './fixed-expense/interface/fixed-expense.controller';
 import { ListFixedExpensesUseCase } from './fixed-expense/application/list-fixed-expenses.usecase';
 import { CreateFixedExpenseUseCase } from './fixed-expense/application/create-fixed-expense.usecase';
+import { UpdateFixedExpenseUseCase } from './fixed-expense/application/update-fixed-expense.usecase';
+import { RemoveFixedExpenseUseCase } from './fixed-expense/application/remove-fixed-expense.usecase';
 import { FixedExpenseRepository } from './fixed-expense/domain/fixed-expense.repository';
 import { FixedExpensePrismaRepository } from './fixed-expense/infrastructure/fixed-expense.prisma.repository';
 
@@ -10,6 +12,8 @@ import { FixedExpensePrismaRepository } from './fixed-expense/infrastructure/fix
   providers: [
     ListFixedExpensesUseCase,
     CreateFixedExpenseUseCase,
+    UpdateFixedExpenseUseCase,
+    RemoveFixedExpenseUseCase,
     { provide: FixedExpenseRepository, useClass: FixedExpensePrismaRepository },
   ],
 })
