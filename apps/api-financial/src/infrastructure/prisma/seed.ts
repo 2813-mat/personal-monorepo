@@ -41,7 +41,16 @@ async function main() {
   const catId: Record<string, string> = {};
   for (const c of MOCK_CATEGORIES) {
     const row = await prisma.category.create({
-      data: { householdId: hid, slug: c.id, label: c.label, color: c.color, budget: c.budget },
+      data: {
+        householdId: hid,
+        slug: c.id,
+        label: c.label,
+        color: c.color,
+        budget: c.budget,
+        // Sem isto toda categoria semeada nasce com order 0 e a lista fica sem
+        // ordem definida até alguém reordenar.
+        order: c.order,
+      },
     });
     catId[c.id] = row.id;
   }
@@ -102,7 +111,7 @@ async function main() {
         categoryId: catId[t.cat], memberId: holderToMemberId(t.holder, memberIds),
         method: t.method === 'pix' ? PaymentMethod.PIX : PaymentMethod.CARD,
         cardId: t.method === 'pix' ? undefined : cardId[t.method],
-        recurring: t.recurring ?? false, fixedExpenseId, installmentId,
+        recurring: t.recurring ?? false, reviewed: t.reviewed, fixedExpenseId, installmentId,
       },
     });
   }
