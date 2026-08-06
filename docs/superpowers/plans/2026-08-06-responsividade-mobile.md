@@ -1353,6 +1353,23 @@ git commit -m "feat(ui-financial): render transactions as cards on phones"
 > cada uma começa com um **Step 0 de leitura**. Se preferir o plano com o código literal
 > também aqui, é um passo a mais de preparação — peça e eu expando.
 
+> **Aprendido executando a Task 9 — os quatro se repetem aqui:**
+>
+> 1. **`@use 'responsive' as r;` tem que ser a PRIMEIRA linha do arquivo**, não "antes do
+>    primeiro seletor". Vários `.scss` abrem com `:host { display: block; }` e um comentário;
+>    inserir o `@use` depois disso dá `@use rules must be written before any other rules`.
+>    Na Task 9 **a suíte passou com 195 testes verdes e o build quebrado** — rodar `nx build`.
+> 2. **O mock do `AppDataService` precisa cobrir tudo que o template lê**, não só o que o
+>    teste afirma. Faltar um signal derruba os testes com
+>    `ctx.data.<campo> is not a function`.
+> 3. **Se o card abre um drawer, o spec precisa de `{ provide: AuthService, useValue: {
+>    canWrite: signal(true) } }`.** Sem isso o Angular injeta o `AuthService` real e arrasta a
+>    cadeia do OIDC até `NG0201: No provider found for StsConfigLoader`.
+> 4. **Escrever só as regras que de fato divergem.** O exemplo de estilos da Task 9 mandava
+>    `.strip { flex-direction: column }` no celular e `row` no desktop — mas o `.strip` já era
+>    `column` no original, e o ramo desktop teria *alterado* o layout atual. Ler o valor
+>    existente antes de "restaurá-lo".
+
 Cada uma repete o ciclo da Task 9 na sua tela. **Passos idênticos em todas:**
 
 0. **Ler o template e o `.scss` atuais da tela**, e o spec existente dela quando houver
