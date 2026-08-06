@@ -16,7 +16,7 @@ import { FixedApiService } from '../core/api/fixed-api.service';
 import { GoalApiService } from '../core/api/goal-api.service';
 import { InvoiceApiService } from '../core/api/invoice-api.service';
 import { ReportApiService } from '../core/api/report-api.service';
-import { wireToTransaction, transactionToCreateWire } from '../core/api/transaction.mapper';
+import { wireToTransaction, transactionToCreateWire, transactionToUpdateWire } from '../core/api/transaction.mapper';
 import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
@@ -162,6 +162,21 @@ export class AppDataService {
         this.fail('Falha ao carregar receitas', this.incomesError);
         this.incomesLoading.set(false);
       },
+    });
+  }
+
+  /** Alterna só o campo conferido — não manda o objeto inteiro. */
+  setTransactionReviewed(id: string, reviewed: boolean): void {
+    this.txApi.update(id, { reviewed }).subscribe({
+      next: () => this.loadTransactions(),
+      error: () => this.fail('Falha ao marcar como conferido', this.transactionsError),
+    });
+  }
+
+  updateTransaction(t: Transaction): void {
+    this.txApi.update(t.id, transactionToUpdateWire(t)).subscribe({
+      next: () => this.loadTransactions(),
+      error: () => this.fail('Falha ao salvar transação', this.transactionsError),
     });
   }
 

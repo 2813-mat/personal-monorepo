@@ -27,6 +27,18 @@ export interface CreateTransactionWire {
   installments?: { n: number; of: number };
 }
 
+export interface UpdateTransactionWire {
+  date?: string;
+  label?: string;
+  value?: number;
+  categorySlug?: string;
+  holder?: string;
+  method?: 'PIX' | 'CARD';
+  cardId?: string | null;
+  note?: string;
+  reviewed?: boolean;
+}
+
 export interface CategoryWire {
   id: string;
   slug: string;

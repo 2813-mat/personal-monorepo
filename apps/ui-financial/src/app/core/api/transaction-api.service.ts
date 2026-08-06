@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import type { TransactionWire, CreateTransactionWire } from './wire.types';
+import type { TransactionWire, CreateTransactionWire, UpdateTransactionWire } from './wire.types';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionApiService {
@@ -17,6 +17,10 @@ export class TransactionApiService {
 
   create(body: CreateTransactionWire): Observable<TransactionWire> {
     return this.http.post<TransactionWire>(this.base, body);
+  }
+
+  update(id: string, body: UpdateTransactionWire): Observable<TransactionWire> {
+    return this.http.patch<TransactionWire>(`${this.base}/${id}`, body);
   }
 
   remove(id: string): Observable<void> {
