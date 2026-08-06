@@ -20,6 +20,8 @@ export interface ChartModel {
   gridlines: { y: number }[];
   polyline: string;
   points: { x: number; y: number }[];
+  /** Largura do viewBox. Acompanha o viewport para o SVG não distorcer. */
+  width: number;
 }
 
 // ─── ReportChart (private subcomponent: inline SVG, no chart lib) ──────────────

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 import { MoneyComponent } from '../../ui/money/money.component';
@@ -69,6 +70,7 @@ interface HolderBlock {
 })
 export class ReportsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
   protected auth = inject(AuthService);
 
   protected readonly fmt = fmtNum;
@@ -231,14 +233,21 @@ export class ReportsComponent {
   hasHistory = computed(() => this.monthCount() > 0);
 
   chartModel = computed((): ChartModel => {
-    const incomes = this.data.incomeHistory().map(e => e.total);
-    const expenses = this.data.history().map(e => e.total);
-    const months = this.data.history().map(e => e.m);
-    const sav = this.savings();
+    // No celular só cabem ~6 meses legíveis, e o viewBox encolhe junto: 1100
+    // unidades num contêiner de 375px é o que deforma texto e traço hoje.
+    // A janela é aplicada ANTES da geometria — o report-chart só recebe pixels.
+    const desktop = this.vp.isDesktop();
+    const window = desktop ? Infinity : 6;
+    const take = <T,>(arr: T[]) => (window === Infinity ? arr : arr.slice(-window));
+
+    const incomes = take(this.data.incomeHistory().map(e => e.total));
+    const expenses = take(this.data.history().map(e => e.total));
+    const months = take(this.data.history().map(e => e.m));
+    const sav = take(this.savings());
     const n = months.length;
     const lastIdx = n - 1;
 
-    const W = 1100;
+    const W = desktop ? 1100 : 400;
     const H = 200;
     const padTop = 10;
     const padBottom = 22;
@@ -248,7 +257,10 @@ export class ReportsComponent {
     const peak = n > 0 ? Math.max(...incomes, ...expenses) : 0;
     const max = peak > 0 ? peak * 1.15 : 1;
     // Até 12 meses preserva o espaçamento original; acima disso encolhe para caber.
-    const groupW = W / Math.max(n, 12);
+    // Com janela, o piso é a própria janela — senão as 6 barras do celular
+    // ocupariam metade da largura e a outra metade ficaria vazia.
+    const minSlots = window === Infinity ? 12 : Math.min(12, window);
+    const groupW = W / Math.max(n, minSlots);
     const barW = (groupW - 8) / 2 - 1;
 
     const bars: ChartBar[] = months.map((m, i) => {
@@ -277,7 +289,7 @@ export class ReportsComponent {
 
     const gridlines = [0.25, 0.5, 0.75, 1].map(f => ({ y: padTop + chartH - f * chartH }));
 
-    return { bars, barW, gridlines, polyline, points };
+    return { bars, barW, gridlines, polyline, points, width: W };
   });
 
   // ── 3. Top categorias ─────────────────────────────────────────────────────────

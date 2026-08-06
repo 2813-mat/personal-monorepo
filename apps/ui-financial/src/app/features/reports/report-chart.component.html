@@ -1,12 +1,12 @@
 <svg
   width="100%"
   [attr.height]="H"
-  viewBox="0 0 1100 200"
+  [attr.viewBox]="'0 0 ' + model.width + ' ' + H"
   preserveAspectRatio="none"
 >
   <!-- Gridlines -->
   @for (g of model.gridlines; track g.y) {
-    <line x1="0" [attr.y1]="g.y" x2="1100" [attr.y2]="g.y" stroke="var(--line-soft)" stroke-width="1" />
+    <line x1="0" [attr.y1]="g.y" [attr.x2]="model.width" [attr.y2]="g.y" stroke="var(--line-soft)" stroke-width="1" />
   }
 
   <!-- Bars -->
