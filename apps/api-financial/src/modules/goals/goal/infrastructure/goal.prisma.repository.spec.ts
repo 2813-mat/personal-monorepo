@@ -39,3 +39,50 @@ describe('GoalPrismaRepository.addContribution', () => {
     expect(prisma.goal.findFirstOrThrow.mock.calls[0][0].where).toMatchObject({ householdId: 'h1' });
   });
 });
+
+describe('GoalPrismaRepository.update', () => {
+  type UpdateArg = { where: Record<string, unknown>; data: Record<string, unknown> };
+
+  function setupUpdate(found: { id: string } | null) {
+    const prisma = {
+      goal: {
+        findFirst: jest.fn(async (_args: WhereArg) => found),
+        update: jest.fn(async (_args: UpdateArg) => ({
+          id: 'cuid-1',
+          slug: 'sos',
+          label: 'Reserva',
+          target: 30000,
+          monthly: 900,
+          color: '#0B6E2F',
+          subtitle: 'emergência',
+          type: 'EMERGENCIA',
+          householdId: 'h1',
+          contributions: [],
+        })),
+      },
+    };
+    const repo = new GoalPrismaRepository(prisma as never, { householdId: 'h1' } as never);
+    return { repo, prisma };
+  }
+
+  it('escopa a busca ao household', async () => {
+    const { repo, prisma } = setupUpdate({ id: 'cuid-1' });
+    await repo.update('sos', { monthly: 900 });
+    expect(prisma.goal.findFirst.mock.calls[0][0].where).toMatchObject({
+      householdId: 'h1',
+      slug: 'sos',
+    });
+  });
+
+  it('devolve null para meta de outro household', async () => {
+    const { repo, prisma } = setupUpdate(null);
+    await expect(repo.update('sos', { monthly: 900 })).resolves.toBeNull();
+    expect(prisma.goal.update).not.toHaveBeenCalled();
+  });
+
+  it('não deixa o slug ser alterado', async () => {
+    const { repo, prisma } = setupUpdate({ id: 'cuid-1' });
+    await repo.update('sos', { label: 'Novo' });
+    expect(prisma.goal.update.mock.calls[0][0].data).not.toHaveProperty('slug');
+  });
+});
