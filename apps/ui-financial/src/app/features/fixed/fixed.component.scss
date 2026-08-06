@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 /* ── KPI grid ───────────────────────────────────── */
@@ -152,3 +154,42 @@
 /* ── Typography helpers ─────────────────────────── */
 .tx-meta { font-size: 11px; color: var(--ink-4); }
 .num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   Os dois grids empilham e as duas tabelas de 5 colunas viram listas de card. */
+.kpi-grid { grid-template-columns: 1fr; }
+.tables-grid { grid-template-columns: 1fr; }
+
+.fx-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.fx-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.fxc-main {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.fxc-label {
+  font-weight: 600; color: var(--ink-1);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.fxc-meta {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 6px;
+}
+.fxc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.fxc-empty { padding: 20px; text-align: center; color: var(--ink-3); }
+
+@include r.desktop {
+  .kpi-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+  .tables-grid { grid-template-columns: 1fr 1fr; }
+}

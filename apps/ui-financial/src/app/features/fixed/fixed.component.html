@@ -58,6 +58,7 @@
       <span class="card-meta">ordenado por vencimento</span>
     </div>
 
+    @if (vp.isDesktop()) {
     <table class="tx-table">
       <thead>
         <tr>
@@ -117,6 +118,37 @@
         }
       </tbody>
     </table>
+    } @else {
+    <div class="fx-cards">
+      @for (f of pendingItems(); track f.id) {
+        <div class="fx-card">
+          <div class="fxc-main">
+            <span class="fxc-label">{{ f.label }}</span>
+            <cf-money [value]="f.value" [negColor]="false" />
+          </div>
+          <div class="fxc-meta">
+            <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
+            <span class="fxc-tag num">{{ formatDaysAway(f.due) }}</span>
+            <span class="fxc-tag">
+              <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
+            </span>
+            <span class="fxc-tag">
+              {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
+            </span>
+            @if (daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
+              <span class="pill warn">urgente</span>
+            }
+            @if (daysAway(f.due) < 0) {
+              <span class="pill neg">vencido</span>
+            }
+          </div>
+        </div>
+      }
+      @if (pendingItems().length === 0) {
+        <p class="fxc-empty">Todos os fixos foram pagos</p>
+      }
+    </div>
+    }
 
     <div class="card-foot">
       <span>{{ pendingItems().length }} contas</span>
@@ -134,6 +166,7 @@
       <span class="card-meta">automático via boleto/PIX</span>
     </div>
 
+    @if (vp.isDesktop()) {
     <table class="tx-table">
       <thead>
         <tr>
@@ -182,6 +215,29 @@
         }
       </tbody>
     </table>
+    } @else {
+    <div class="fx-cards">
+      @for (f of paidItems(); track f.id) {
+        <div class="fx-card">
+          <div class="fxc-main">
+            <span class="fxc-label">
+              <cf-icon name="check" [size]="11" color="var(--pos)" /> {{ f.label }}
+            </span>
+            <cf-money [value]="f.value" [negColor]="false" />
+          </div>
+          <div class="fxc-meta">
+            <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
+            <span class="fxc-tag">
+              <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
+            </span>
+            <span class="fxc-tag">
+              {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+    }
 
     <div class="card-foot">
       <span>{{ paidItems().length }} contas</span>

@@ -1,5 +1,6 @@
 import { Component, inject, computed } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -15,6 +16,7 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 })
 export class FixedComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   pendingItems = computed(() =>
     this.data.fixed()

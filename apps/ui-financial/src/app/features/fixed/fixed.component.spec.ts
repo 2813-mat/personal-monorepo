@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FixedComponent } from './fixed.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { FixedExpense, Transaction, Income, Category } from '@caixa-familia/shared-types';
 
 const FIXED: FixedExpense[] = [
@@ -105,5 +106,40 @@ describe('FixedComponent', () => {
       expect(component.formatDay(5)).toBe('05/mai');
       expect(component.formatDay(25)).toBe('25/mai');
     });
+  });
+});
+
+function buildResponsive(isDesktop: boolean) {
+  TestBed.configureTestingModule({
+    imports: [FixedComponent],
+    providers: [
+      { provide: AppDataService, useValue: mockDataService() },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(FixedComponent);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('FixedComponent — responsive rendering', () => {
+  it('renders both tables on desktop and no card lists', () => {
+    const el = buildResponsive(true);
+    expect(el.querySelectorAll('table.tx-table').length).toBe(2);
+    expect(el.querySelector('.fx-cards')).toBeNull();
+  });
+
+  it('renders both card lists on mobile and no tables', () => {
+    const el = buildResponsive(false);
+    expect(el.querySelectorAll('.fx-cards').length).toBe(2);
+    expect(el.querySelector('table.tx-table')).toBeNull();
+  });
+
+  it('splits the cards between pending and paid', () => {
+    const el = buildResponsive(false);
+    // o mock tem f1 pago e f2/f3 a vencer
+    const lists = el.querySelectorAll('.fx-cards');
+    expect(lists[0].querySelectorAll('.fx-card').length).toBe(2);
+    expect(lists[1].querySelectorAll('.fx-card').length).toBe(1);
   });
 });
