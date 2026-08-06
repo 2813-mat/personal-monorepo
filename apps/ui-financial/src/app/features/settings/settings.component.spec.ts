@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { SettingsComponent } from './settings.component';
 import { AppDataService } from '../../layout/app-data.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { Category } from '@caixa-familia/shared-types';
 
 const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 }];
@@ -89,5 +90,54 @@ describe('SettingsComponent — new category form', () => {
     component.newCategory.patchValue({ label: '', budget: 100 });
     component.saveCategory();
     expect(data.createCategory).not.toHaveBeenCalled();
+  });
+});
+
+const CARDS = [
+  { id: 'nu-t', name: 'Nubank', holder: 'Thais', bank: 'Nubank', color: '#820AD1',
+    closing: 5, due: 12, current: 300, limit: 4500, last4: '4421' },
+] as never[];
+
+function buildResponsive(isDesktop: boolean, section: 'cats' | 'cards' = 'cats') {
+  const data = { ...mockDataService(), cards: signal(CARDS) };
+  TestBed.configureTestingModule({
+    imports: [SettingsComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(SettingsComponent);
+  // activeSection é protected: acessível em runtime, o cast é só para o TS
+  (fixture.componentInstance as never as { activeSection: { set(s: string): void } })
+    .activeSection.set(section);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('SettingsComponent — responsive rendering', () => {
+  it('renders the categories table on desktop and no card list', () => {
+    const el = buildResponsive(true, 'cats');
+    expect(el.querySelector('table.tbl')).not.toBeNull();
+    expect(el.querySelector('.st-cards')).toBeNull();
+  });
+
+  it('renders the categories as cards on mobile', () => {
+    const el = buildResponsive(false, 'cats');
+    expect(el.querySelector('table.tbl')).toBeNull();
+    expect(el.querySelectorAll('.st-card').length).toBe(1);
+  });
+
+  it('renders the cards table on desktop', () => {
+    const el = buildResponsive(true, 'cards');
+    expect(el.querySelector('table.tbl')).not.toBeNull();
+    expect(el.querySelector('.st-cards')).toBeNull();
+  });
+
+  it('renders the credit cards as cards on mobile', () => {
+    const el = buildResponsive(false, 'cards');
+    expect(el.querySelector('table.tbl')).toBeNull();
+    expect(el.querySelectorAll('.st-card').length).toBe(1);
   });
 });

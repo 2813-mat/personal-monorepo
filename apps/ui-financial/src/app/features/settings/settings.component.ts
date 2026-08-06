@@ -2,6 +2,7 @@ import { Component, inject, computed, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { slugify } from '@caixa-familia/shared-utils';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -33,6 +34,7 @@ interface Person {
 })
 export class SettingsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
   protected auth = inject(AuthService);
 
   protected activeSection = signal<SectionId>('cats');

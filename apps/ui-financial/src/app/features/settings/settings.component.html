@@ -94,6 +94,7 @@
             </form>
           }
 
+          @if (vp.isDesktop()) {
           <div class="table-scroll">
             <table class="tbl">
               <thead>
@@ -141,6 +142,29 @@
               </tbody>
             </table>
           </div>
+          } @else {
+          <div class="st-cards">
+            @for (c of data.categories(); track c.id) {
+              <div class="st-card">
+                <div class="stc-main">
+                  <span class="stc-name">
+                    <cf-cat-dot [catId]="c.id" [size]="8" /> {{ c.label }}
+                  </span>
+                  <cf-money [value]="c.budget" [negColor]="false" size="sm" />
+                </div>
+                <div class="stc-meta">
+                  <span class="stc-tag mono">{{ c.id }}</span>
+                  <span class="stc-tag">
+                    <span class="color-swatch" [style.background]="c.color"></span>
+                    <span class="mono">{{ c.color }}</span>
+                  </span>
+                  <span class="stc-tag num">{{ catTxCount(c.id) }}/mês</span>
+                  <span class="pill pos">Ativa</span>
+                </div>
+              </div>
+            }
+          </div>
+          }
 
           <div class="card-foot">
             <span class="foot-note">Categorias organizam orçamentos e relatórios.</span>
@@ -190,6 +214,7 @@
             </div>
           </div>
 
+          @if (vp.isDesktop()) {
           <div class="table-scroll">
             <table class="tbl">
               <thead>
@@ -221,6 +246,26 @@
               </tbody>
             </table>
           </div>
+          } @else {
+          <div class="st-cards">
+            @for (c of data.cards(); track c.id) {
+              <div class="st-card">
+                <div class="stc-main">
+                  <span class="stc-name">
+                    <span class="bank-tag" [style.background]="c.color">{{ bankTag(c.bank) }}</span>
+                    {{ c.bank }}
+                  </span>
+                  <span class="num">R$ {{ formatNum(c.limit) }}</span>
+                </div>
+                <div class="stc-meta">
+                  <span class="stc-tag mono">···{{ c.last4 }}</span>
+                  <span class="stc-tag">{{ c.holder }}</span>
+                  <span class="stc-tag num">fecha {{ c.closing }} · vence {{ c.due }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          }
 
           <div class="card-foot">
             <span class="foot-note">Limites e datas de fechamento dos cartões.</span>

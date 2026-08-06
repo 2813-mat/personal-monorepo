@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 .layout {
@@ -218,4 +220,38 @@
   .color-swatch.active { border-color: var(--ink-1); border-width: 2px; }
   .form-actions { display: flex; gap: 8px; margin-left: auto; }
   .form-error { flex-basis: 100%; margin: 0; font-size: 11.5px; color: var(--neg); }
+}
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   O menu lateral de seções vira uma faixa rolável no topo, e as duas tabelas
+   (categorias com 7 colunas, cartões com 5) viram listas de card. */
+.layout { grid-template-columns: 1fr; }
+
+.st-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.st-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.stc-main {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.stc-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 600; color: var(--ink-1);
+}
+.stc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.stc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+@include r.desktop {
+  .layout { grid-template-columns: 200px 1fr; }
 }
