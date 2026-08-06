@@ -161,7 +161,18 @@
     </div>
     <div class="foot-group">
       <button type="button" class="btn ghost" disabled>Editar</button>
-      <button type="button" class="btn btn-primary" disabled>Marcar como conferido</button>
+      <button
+        type="button"
+        class="btn btn-primary btn-review"
+        [disabled]="!auth.canWrite()"
+        (click)="toggleReviewed()"
+      >
+        @if (tx().reviewed) {
+          <cf-icon name="check" [size]="12" /> Conferido
+        } @else {
+          Marcar como conferido
+        }
+      </button>
     </div>
   </footer>
 </aside>

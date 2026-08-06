@@ -62,6 +62,11 @@ export class TxDetailDrawerComponent {
     this.onClose();
   }
 
+  toggleReviewed() {
+    const tx = this.tx();
+    this.data.setTransactionReviewed(tx.id, !tx.reviewed);
+  }
+
   onClose() {
     this.closed.emit();
   }
