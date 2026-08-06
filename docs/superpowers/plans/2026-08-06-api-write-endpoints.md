@@ -2034,7 +2034,7 @@ npx nx serve api-financial
 ```bash
 TOKEN=$(curl -s -X POST \
   'http://localhost:8080/realms/caixa-familia/protocol/openid-connect/token' \
-  -d 'client_id=caixa-web' -d 'grant_type=password' \
+  -d 'client_id=ui-financial' -d 'grant_type=password' \
   -d 'username=mateus' -d 'password=mateus' | jq -r .access_token)
 ```
 

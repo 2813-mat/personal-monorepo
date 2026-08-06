@@ -106,21 +106,32 @@ Todas com spec em `docs/superpowers/specs/` e plano TDD em `docs/superpowers/pla
 
 ## 4. O que falta
 
-Nada da migração. O que resta é **funcionalidade nova**, e o gargalo é backend: fora de
-`DELETE /transactions/:id`, **não existe nenhum `PATCH` ou `DELETE` no projeto**.
+**O gargalo de backend foi resolvido em 2026-08-06.** Spec em
+`2026-08-06-api-write-endpoints-design.md`, plano em
+`../plans/2026-08-06-api-write-endpoints.md`. Sete endpoints novos, mais duas colunas
+(`Category.order`, `Transaction.reviewed`). Fechamento: **119 testes** de `api-financial`,
+build verde, e fumaça de ponta a ponta atrás do guard do Keycloak nos sete.
 
-Os stubs `disabled` da UI marcam exatamente onde:
+| Stub | Onde | Endpoint | Estado |
+|---|---|---|---|
+| Editar meta / aportar pelo card | `features/goals/goal-card.component.html` | `PATCH /goals/:slug` | **API pronta** |
+| Editar orçamento | `features/settings` | `PATCH /categories/:slug` | **API pronta** |
+| Reordenar categorias | `features/settings` | `PATCH /categories/order` | **API pronta** |
+| Editar transação | `features/tx-detail-drawer` | `PATCH /transactions/:id` | **API pronta** |
+| Marcar como conferido | `features/tx-detail-drawer` | `PATCH /transactions/:id` (`reviewed`) | **API pronta** |
+| Editar/remover gasto fixo | — | `PATCH`/`DELETE /fixed-expenses/:id` | **API pronta** |
+| Convidar pessoa | `features/settings` | módulo de membros inteiro | fora de escopo |
+| Boleto, Pagar agora | `features/invoice` | integração de pagamento | fora de escopo |
 
-| Stub | Onde | Endpoint necessário |
-|---|---|---|
-| Editar meta / aportar pelo card | `features/goals/goal-card.component.html` | `PATCH /goals/:slug` |
-| Editar orçamento, Reordenar | `features/settings` | `PATCH`/`DELETE /categories/:slug` |
-| Editar transação, "Marcar como conferido" | `features/tx-detail-drawer` | `PATCH /transactions/:id` |
-| Convidar pessoa | `features/settings` | módulo de membros inteiro |
-| Editar/remover gasto fixo | — | `PATCH`/`DELETE /fixed-expenses/:id` |
-| Boleto, Pagar agora | `features/invoice` | integração de pagamento (fora de escopo hoje) |
+**Resta o Projeto 3:** ligar esses sete stubs na UI. Nenhum arquivo de `ui-financial` foi
+tocado pela fatia de backend.
 
-Cada linha é uma fatia backend + UI, bem maior que as 12 acima.
+**Comportamento alterado de propósito:** `DELETE /transactions/:id` respondia 204 mesmo com id
+inexistente (usava `deleteMany` sem olhar o `count`). Agora responde **404**.
+
+**Dois botões mortos**, sem `(click)` e sem `disabled`, continuam pendentes de decisão de
+produto (implementar ou remover): "Importar" (`topbar.component.html`) e "Exportar"
+(`transactions.component.html`).
 
 **Responsividade mobile-first entregue em 2026-08-06.** Spec em
 `2026-08-06-responsividade-mobile-design.md`, plano em
