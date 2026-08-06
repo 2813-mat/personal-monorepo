@@ -12,4 +12,6 @@
   <cf-expense-drawer (closed)="expenseDrawerOpen.set(false)" />
 }
 
+<cf-bottom-nav (newExpense)="openExpenseDrawer()" />
+
 <cf-toast-container />

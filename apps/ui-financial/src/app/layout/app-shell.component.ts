@@ -4,6 +4,7 @@ import { SidebarComponent } from './sidebar.component';
 import { TopBarComponent } from './topbar.component';
 import { ToastContainerComponent } from '../ui/toast/toast-container.component';
 import { ExpenseDrawerComponent } from '../features/expense-drawer/expense-drawer.component';
+import { BottomNavComponent } from './bottom-nav.component';
 import { AuthService } from '../core/auth/auth.service';
 import { AppDataService } from './app-data.service';
 
@@ -16,6 +17,7 @@ import { AppDataService } from './app-data.service';
     TopBarComponent,
     ToastContainerComponent,
     ExpenseDrawerComponent,
+    BottomNavComponent,
   ],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',
