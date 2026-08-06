@@ -27,7 +27,7 @@
     <cf-icon name="upload" [size]="11" /> Importar
   </button>
   @if (auth.canWrite()) {
-    <button class="topbar-btn" (click)="drawerOpen.set(true)">
+    <button class="topbar-btn" (click)="requestNewExpense()">
       <cf-icon name="plus" [size]="11" /> Lançar gasto
     </button>
   }
@@ -41,7 +41,3 @@
     </div>
   }
 </header>
-
-@if (drawerOpen()) {
-  <cf-expense-drawer (closed)="drawerOpen.set(false)" />
-}

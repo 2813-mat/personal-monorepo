@@ -1,21 +1,36 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { TopBarComponent } from './topbar.component';
 import { ToastContainerComponent } from '../ui/toast/toast-container.component';
+import { ExpenseDrawerComponent } from '../features/expense-drawer/expense-drawer.component';
 import { AuthService } from '../core/auth/auth.service';
 import { AppDataService } from './app-data.service';
 
 @Component({
   selector: 'cf-app-shell',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, TopBarComponent, ToastContainerComponent],
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    TopBarComponent,
+    ToastContainerComponent,
+    ExpenseDrawerComponent,
+  ],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',
 })
 export class AppShellComponent {
   private auth = inject(AuthService);
   private data = inject(AppDataService);
+
+  // O drawer vive aqui, não no topbar: a bottom-nav do celular é irmã do
+  // topbar e não alcançaria um signal local dele.
+  protected readonly expenseDrawerOpen = signal(false);
+
+  openExpenseDrawer() {
+    this.expenseDrawerOpen.set(true);
+  }
 
   constructor() {
     this.auth.init();

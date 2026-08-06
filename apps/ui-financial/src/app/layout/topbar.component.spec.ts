@@ -35,7 +35,7 @@ function build() {
   });
   const fixture = TestBed.createComponent(TopBarComponent);
   fixture.detectChanges();
-  return { component: fixture.componentInstance, data };
+  return { component: fixture.componentInstance, data, fixture };
 }
 
 afterEach(() => TestBed.resetTestingModule());
@@ -75,5 +75,22 @@ describe('TopBarComponent — month navigation', () => {
     expect(before).toMatch(/^[A-Z][a-z]{2}\/\d{2}$/);
     expect(data.currentMonth().short).toMatch(/^[A-Z][a-z]{2}\/\d{2}$/);
     expect(data.currentMonth().label).toMatch(/^[A-ZÇ][a-zç]+ \d{4}$/);
+  });
+});
+
+describe('TopBarComponent — new expense', () => {
+  it('emits newExpense instead of owning the drawer', () => {
+    const { component } = build();
+    const seen: void[] = [];
+    component.newExpense.subscribe(() => seen.push(undefined));
+    component.requestNewExpense();
+    expect(seen.length).toBe(1);
+  });
+
+  it('does not render the expense drawer when the button is pressed', () => {
+    const { fixture } = build();
+    fixture.nativeElement.querySelector('.topbar-btn:not(.ghost)').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('cf-expense-drawer')).toBeNull();
   });
 });
