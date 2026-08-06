@@ -122,9 +122,18 @@ Os stubs `disabled` da UI marcam exatamente onde:
 
 Cada linha é uma fatia backend + UI, bem maior que as 12 acima.
 
+**Responsividade mobile-first entregue em 2026-08-06.** Spec em
+`2026-08-06-responsividade-mobile-design.md`, plano em
+`../plans/2026-08-06-responsividade-mobile.md`. Breakpoint único de 768px, bottom-nav com
+botão central de novo gasto, 9 das 14 tabelas viram cards no celular, drawers em tela cheia.
+Fechamento: **225 testes**, lint e build verdes, e validação visual em 375/768/1280 com
+`scrollWidth == clientWidth` nas 8 rotas.
+
 **Dívidas menores registradas:**
-- `settings.component.scss` ~860 bytes acima do budget de 4 kB do build (5 outros componentes já
-  estouram o mesmo limite — padrão preexistente, decisão de config pendente).
+- ~~`settings.component.scss` acima do budget de 4 kB~~ — **resolvido**: o budget
+  `anyComponentStyle` subiu para 8 kB (aviso) / 16 kB (erro) na fatia de responsividade. O
+  limite antigo já não descrevia o projeto (10 de 16 componentes o estouravam) e o
+  `maximumError` de 8 kB bloquearia os estilos mobile.
 - `futureInstallments()` da tela de fatura projeta os meses a partir de `currentMonth()`, mas a
   fatura aberta é sempre a do ciclo corrente: navegando de mês, os rótulos das parcelas deslizam
   enquanto a fatura fica parada. Preexistente.
