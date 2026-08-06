@@ -223,3 +223,12 @@
   .filter-chip { min-height: 0; flex: initial; }
   .group-seg { display: flex; }
 }
+
+/* Alvos de toque (spec §6). Decoração — .kpi-divider, .cat-stripe — fica fora. */
+.search-box,
+.action-btn { min-height: 44px; }
+
+@include r.desktop {
+  .search-box,
+  .action-btn { min-height: 0; }
+}

@@ -332,3 +332,12 @@
 @include r.desktop {
   .summary-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
 }
+
+/* Alvos de toque (spec §6). .card-badge é decoração. */
+.seg { height: auto; }
+.seg-btn { min-height: 44px; }
+
+@include r.desktop {
+  .seg { height: 22px; }
+  .seg-btn { min-height: 0; }
+}

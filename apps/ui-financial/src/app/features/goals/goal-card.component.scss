@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 .goal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .goal-stripe { height: 4px; }
@@ -24,3 +26,12 @@
 .stat-col-end { flex: 1; align-items: flex-end; }
 .stat-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; }
 .stat-value { font-size: 14px; font-weight: 600; color: var(--ink-1); }
+
+/* Alvos de toque (spec §6) */
+.btn-ghost,
+.btn-colored { min-height: 44px; }
+
+@include r.desktop {
+  .btn-ghost,
+  .btn-colored { min-height: 0; }
+}

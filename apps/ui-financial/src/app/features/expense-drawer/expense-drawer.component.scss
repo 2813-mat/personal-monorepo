@@ -175,3 +175,12 @@
 }
 .save-btn:disabled { opacity: 0.5; cursor: default; }
 .save-btn:not(:disabled):hover { opacity: 0.9; }
+
+/* Alvos de toque (spec §6) */
+.step-btn { min-width: 44px; min-height: 44px; }
+.save-btn { min-height: 44px; }
+
+@include r.desktop {
+  .step-btn { min-width: 0; min-height: 0; }
+  .save-btn { min-height: 0; }
+}

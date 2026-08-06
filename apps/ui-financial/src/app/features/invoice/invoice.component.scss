@@ -203,3 +203,12 @@
 @include r.desktop {
   .grid { grid-template-columns: 1.6fr 1fr; }
 }
+
+/* Alvos de toque (spec §6) */
+.btn-ghost,
+.btn-primary { min-height: 44px; }
+
+@include r.desktop {
+  .btn-ghost,
+  .btn-primary { min-height: 0; }
+}

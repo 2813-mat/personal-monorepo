@@ -236,3 +236,12 @@
   color: #fff;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Alvos de toque (spec §6) */
+.icon-btn { min-width: 44px; min-height: 44px; }
+.btn { min-height: 44px; }
+
+@include r.desktop {
+  .icon-btn { min-width: 0; min-height: 0; }
+  .btn { min-height: 0; }
+}
