@@ -14,26 +14,26 @@
       Todos
     </button>
     <button class="seg-btn" [class.active]="filter() === 'Mateus'" (click)="setFilter('Mateus')">
-      <cf-avatar holder="Mateus" [size]="12" /> Mateus
+      <cf-avatar holder="Mateus" [size]="12" /> <span class="seg-text">Mateus</span>
     </button>
     <button class="seg-btn" [class.active]="filter() === 'Thais'" (click)="setFilter('Thais')">
-      <cf-avatar holder="Thais" [size]="12" /> Thais
+      <cf-avatar holder="Thais" [size]="12" /> <span class="seg-text">Thais</span>
     </button>
   </div>
 
   <div class="topbar-spacer"></div>
 
-  <button class="topbar-btn ghost">
+  <button class="topbar-btn ghost desktop-only">
     <cf-icon name="upload" [size]="11" /> Importar
   </button>
   @if (auth.canWrite()) {
-    <button class="topbar-btn" (click)="requestNewExpense()">
+    <button class="topbar-btn desktop-only" (click)="requestNewExpense()">
       <cf-icon name="plus" [size]="11" /> Lançar gasto
     </button>
   }
 
   @if (auth.isAuthenticated()) {
-    <div class="topbar-user">
+    <div class="topbar-user desktop-only">
       <span class="topbar-user-name">{{ auth.userName() }}</span>
       <button class="topbar-btn ghost" (click)="auth.logout()" aria-label="Sair">
         <cf-icon name="upload" [size]="11" /> Sair

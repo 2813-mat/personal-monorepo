@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 .topbar {
   display: flex; align-items: center; gap: 16px;
   height: 48px;
@@ -50,3 +52,45 @@
 .topbar-btn:disabled { opacity: 0.5; cursor: default; }
 .topbar-btn.ghost { background: var(--surface); color: var(--ink-1); border: 1px solid var(--line); }
 .topbar-btn:not(:disabled):hover { opacity: 0.9; }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   Sobra espaço para mês + titular. "Importar", "Lançar gasto" (coberto pelo
+   FAB) e o bloco de usuário (coberto pelo "Sair" da folha "Mais") saem daqui.
+   Cada um é qualificado pelo próprio seletor: .topbar-btn é inline-flex e
+   .topbar-user não tem estilo — um `display` genérico quebraria os dois. */
+.topbar-btn.desktop-only { display: none; }
+.topbar-user.desktop-only { display: none; }
+.seg-text { display: none; }
+
+.topbar {
+  height: auto;
+  min-height: 48px;
+  padding: 8px 12px;
+  gap: 10px;
+}
+.topbar-spacer { display: none; }
+.month-label { min-width: 0; flex: 1; text-align: left; }
+
+/* Alvos de toque de 44px (spec §6) */
+.month-nav-btn { min-width: 44px; min-height: 44px; }
+.seg { height: auto; }
+.seg-btn { min-height: 44px; padding: 0 12px; }
+
+@include r.desktop {
+  .topbar-btn.desktop-only { display: inline-flex; }
+  .topbar-user.desktop-only { display: block; }
+  .seg-text { display: inline; }
+
+  .topbar {
+    height: 48px;
+    min-height: 0;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .topbar-spacer { display: block; }
+  .month-label { min-width: 110px; flex: none; text-align: center; }
+
+  .month-nav-btn { min-width: 0; min-height: 0; }
+  .seg { height: 26px; }
+  .seg-btn { min-height: 0; padding: 0 10px; }
+}
