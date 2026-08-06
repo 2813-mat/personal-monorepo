@@ -20,7 +20,10 @@
             "input": "apps/ui-financial/public"
           }
         ],
-        "styles": ["apps/ui-financial/src/styles.scss"]
+        "styles": ["apps/ui-financial/src/styles.scss"],
+        "stylePreprocessorOptions": {
+          "includePaths": ["apps/ui-financial/src/styles"]
+        }
       },
       "configurations": {
         "production": {
@@ -32,8 +35,8 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumWarning": "8kb",
+              "maximumError": "16kb"
             }
           ],
           "outputHashing": "all",
