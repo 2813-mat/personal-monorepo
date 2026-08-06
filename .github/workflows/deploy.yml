@@ -33,3 +33,10 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yml build --no-cache
           docker compose -f docker-compose.prod.yml up -d
+
+      - name: Reload infra nginx
+        run: |
+          # Containers do stack são recriados a cada deploy e trocam de IP na rede
+          # infra; o infra-nginx cacheia o IP antigo no proxy_pass e passa a
+          # devolver 502 até ser recarregado.
+          docker exec infra-nginx nginx -s reload
