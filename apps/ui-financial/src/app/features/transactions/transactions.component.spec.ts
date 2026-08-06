@@ -81,3 +81,49 @@ describe('TransactionsComponent — responsive rendering', () => {
     expect(el.querySelectorAll('.tx-card').length).toBe(2);
   });
 });
+
+describe('TransactionsComponent — indicador de conferido', () => {
+  it('marca a linha conferida no desktop', () => {
+    const { el, fixture, data } = build(true);
+    data.transactions.set([{ ...TRANSACTIONS[0], reviewed: true }]);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.tx-reviewed').length).toBe(1);
+  });
+
+  it('não marca a linha não conferida', () => {
+    const { el, fixture, data } = build(true);
+    data.transactions.set([{ ...TRANSACTIONS[0], reviewed: false }]);
+    fixture.detectChanges();
+    expect(el.querySelector('.tx-reviewed')).toBeNull();
+  });
+
+  it('marca o card conferido no celular', () => {
+    const { el, fixture, data } = build(false);
+    data.transactions.set([{ ...TRANSACTIONS[0], reviewed: true }]);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.tx-reviewed').length).toBe(1);
+  });
+});
+
+describe('TransactionsComponent — filtro de conferidos', () => {
+  const MIXED = [
+    { ...TRANSACTIONS[0], id: 'a', reviewed: true },
+    { ...TRANSACTIONS[1], id: 'b', reviewed: false },
+  ];
+
+  it('mostra tudo por padrão', () => {
+    const { fixture, data } = build(true);
+    data.transactions.set(MIXED);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.filteredCount()).toBe(2);
+  });
+
+  it('esconde as conferidas quando ligado', () => {
+    const { fixture, data } = build(true);
+    data.transactions.set(MIXED);
+    fixture.componentInstance.onlyUnreviewed.set(true);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.filteredCount()).toBe(1);
+    expect(fixture.componentInstance.flatSorted()[0].id).toBe('b');
+  });
+});

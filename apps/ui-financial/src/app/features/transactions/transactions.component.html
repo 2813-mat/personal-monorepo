@@ -35,6 +35,13 @@
           {{ cat.label }}
         </button>
       }
+      <button
+        class="filter-chip"
+        [class.active]="onlyUnreviewed()"
+        (click)="onlyUnreviewed.set(!onlyUnreviewed())"
+      >
+        Só não conferidos
+      </button>
     </div>
     <!-- Search -->
     <div class="search-box">
@@ -140,6 +147,11 @@
             <span class="txc-tag">
               {{ tx.holder === 'shared' ? 'Compartilhado' : tx.holder }}
             </span>
+            @if (tx.reviewed) {
+              <span class="txc-tag tx-reviewed">
+                <cf-icon name="check" [size]="9" /> conferido
+              </span>
+            }
             @if (tx.recurring) {
               <span class="txc-tag"><cf-icon name="repeat" [size]="9" /> fixo</span>
             }
@@ -173,6 +185,9 @@
     <td>
       <div class="desc-cell">
         <span class="desc-label">{{ tx.label }}</span>
+        @if (tx.reviewed) {
+          <span class="tx-reviewed" title="Conferido"><cf-icon name="check" [size]="10" /></span>
+        }
         @if (tx.recurring) {
           <span class="pill-fixed">
             <cf-icon name="repeat" [size]="9" /> fixo

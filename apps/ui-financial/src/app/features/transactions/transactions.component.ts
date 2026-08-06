@@ -51,6 +51,7 @@ export class TransactionsComponent {
   sortCol = signal<SortCol>('date');
   sortDir = signal<SortDir>('desc');
   groupMode = signal<'category' | 'date'>('category');
+  onlyUnreviewed = signal(false);
 
   private filteredTx = computed(() => {
     const query = this.searchQuery().toLowerCase();
@@ -59,7 +60,8 @@ export class TransactionsComponent {
     return this.data.transactions()
       .filter(t => filter === 'todos' || t.holder === filter || (filter !== 'shared' && t.holder === 'shared'))
       .filter(t => !cat || t.cat === cat)
-      .filter(t => !query || t.label.toLowerCase().includes(query));
+      .filter(t => !query || t.label.toLowerCase().includes(query))
+      .filter(t => !this.onlyUnreviewed() || !t.reviewed);
   });
 
   flatSorted = computed(() => {

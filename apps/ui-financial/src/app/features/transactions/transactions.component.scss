@@ -241,3 +241,9 @@
 @include r.desktop {
   .strip-filters { flex-wrap: wrap; }
 }
+
+/* Indicador de conferido — vale nos dois ramos (linha do desktop e card). */
+.tx-reviewed {
+  display: inline-flex; align-items: center; gap: 3px;
+  color: var(--pos);
+}
