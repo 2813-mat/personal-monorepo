@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 .kpi-strip { display:flex; align-items:center; background:var(--surface); border:1px solid var(--line); box-shadow:var(--shadow-sm); padding:10px 16px; margin-bottom:12px; }
 .kpi-item { display:flex; flex-direction:column; gap:2px; }
@@ -58,3 +60,14 @@
 .activity-cat { font-size:11px; color:var(--ink-4); }
 .activity-right { display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; }
 .activity-method { font-size:11px; color:var(--ink-4); }
+
+/* ── Celular ─────────────────────────────────────────────────────────────── */
+.dash-grid { grid-template-columns: 1fr; }
+.cards-grid { grid-template-columns: 1fr; }
+.kpi-strip { flex-wrap: wrap; gap: 10px; }
+
+@include r.desktop {
+  .dash-grid { grid-template-columns: 1.55fr 1fr; }
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-strip { flex-wrap: nowrap; gap: 0; }
+}

@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display:block; }
 
 .tab-bar {
@@ -38,4 +40,13 @@
   color: var(--ink-3);
   background: var(--surface-alt);
   border: 1px solid var(--line);
+}
+
+/* ── Celular: as abas rolam de lado em vez de espremer ──────────────────── */
+.tab-bar { overflow-x: auto; }
+.tab-btn { flex: none; min-height: 44px; }
+
+@include r.desktop {
+  .tab-bar { overflow-x: visible; }
+  .tab-btn { min-height: 0; }
 }
