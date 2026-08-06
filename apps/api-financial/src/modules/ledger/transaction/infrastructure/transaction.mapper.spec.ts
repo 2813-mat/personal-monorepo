@@ -25,3 +25,15 @@ describe('toView', () => {
     expect(toView(row).holder).toBe('shared');
   });
 });
+
+describe('toView — reviewed', () => {
+  it('emite reviewed no wire', () => {
+    const row = { ...baseRow, reviewed: true } as unknown as TransactionRow;
+    expect(toView(row).reviewed).toBe(true);
+  });
+
+  it('emite false quando a transação não foi conferida', () => {
+    const row = { ...baseRow, reviewed: false } as unknown as TransactionRow;
+    expect(toView(row).reviewed).toBe(false);
+  });
+});

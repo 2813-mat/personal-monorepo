@@ -14,6 +14,7 @@ export interface TransactionView {
   cardId: string | null;
   note?: string;
   recurring: boolean;
+  reviewed: boolean;
   fixedExpenseId?: string;
   installments: TransactionInstallments | null;
 }

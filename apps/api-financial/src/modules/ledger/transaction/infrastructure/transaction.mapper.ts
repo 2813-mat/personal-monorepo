@@ -16,6 +16,7 @@ export const toView = (r: TransactionRow): TransactionView => ({
   cardId: r.cardId,
   note: r.note ?? undefined,
   recurring: r.recurring,
+  reviewed: r.reviewed,
   fixedExpenseId: r.fixedExpenseId ?? undefined,
   installments: r.installment ? { n: r.installment.number, of: r.installment.plan.totalCount } : null,
 });

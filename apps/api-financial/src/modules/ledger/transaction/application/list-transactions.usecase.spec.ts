@@ -13,6 +13,7 @@ describe('ListTransactionsUseCase', () => {
       method: 'PIX',
       cardId: null,
       recurring: false,
+      reviewed: false,
       installments: null,
     };
     const repo = { findAll: jest.fn(async () => [item]), create: jest.fn(), remove: jest.fn() };
