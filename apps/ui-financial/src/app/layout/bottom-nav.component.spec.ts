@@ -22,7 +22,7 @@ afterEach(() => TestBed.resetTestingModule());
 describe('BottomNavComponent', () => {
   it('renders the three fixed destinations', () => {
     const links = build().nativeElement.querySelectorAll('a.bn-item');
-    expect(Array.from(links).map((a: any) => a.getAttribute('href'))).toEqual([
+    expect(Array.from(links).map((a) => (a as HTMLAnchorElement).getAttribute('href'))).toEqual([
       '/dashboard',
       '/transactions',
       '/cards',
@@ -59,7 +59,7 @@ describe('BottomNavComponent', () => {
     fixture.detectChanges();
     const hrefs = Array.from(
       fixture.nativeElement.querySelectorAll('cf-more-sheet a.ms-item'),
-    ).map((a: any) => a.getAttribute('href'));
+    ).map((a) => (a as HTMLAnchorElement).getAttribute('href'));
     expect(hrefs).toEqual(['/fixed', '/budgets', '/goals', '/reports', '/settings']);
   });
 });

@@ -1,4 +1,12 @@
-<div class="ms-backdrop" (click)="closed.emit()"></div>
+<div
+  class="ms-backdrop"
+  role="button"
+  tabindex="0"
+  aria-label="Fechar"
+  (click)="closed.emit()"
+  (keydown.enter)="closed.emit()"
+  (keydown.space)="closed.emit()"
+></div>
 <div class="ms-sheet" role="dialog" aria-label="Mais opções">
   <div class="ms-handle"></div>
 

@@ -138,7 +138,7 @@ describe('CardsComponent — responsive rendering', () => {
     const links = buildResponsive(false).querySelectorAll('a.cd-card');
     // ordenação é de sortedCards() e tem teste próprio — aqui só importa
     // que todo cartão vira um link para a sua fatura
-    expect(Array.from(links).map((a: any) => a.getAttribute('href')).sort()).toEqual([
+    expect(Array.from(links).map((a) => (a as HTMLAnchorElement).getAttribute('href')).sort()).toEqual([
       '/cards/it-m/invoice',
       '/cards/nu-t/invoice',
     ]);

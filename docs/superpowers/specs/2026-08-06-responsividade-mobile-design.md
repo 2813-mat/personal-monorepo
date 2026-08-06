@@ -146,7 +146,8 @@ dados é duplicada, só a apresentação.
 
 ### 5.3 Onde aplicar
 
-São **11 tabelas em 10 arquivos** (Configurações tem duas).
+São **14 tabelas em 10 arquivos**: Dashboard A, Gastos fixos, Fatura e Configurações têm
+**duas cada**.
 
 **Recebem o padrão de cards (9 tabelas):**
 
@@ -156,11 +157,16 @@ São **11 tabelas em 10 arquivos** (Configurações tem duas).
 | Orçamentos | 7 (Categoria, Orçamento, Gasto, Restante, Progresso, Tendência 6m, Status) |
 | Configurações — categorias | 7 |
 | Configurações — cartões | 5 (Banco, Titular, Fatura, Limite) |
-| Fatura | grade densa |
-| Gastos fixos | grade densa |
-| Cartões | grade densa |
-| Dashboard A | grade densa |
-| Dashboard B | grade densa |
+| Fatura — itens | 6 |
+| Gastos fixos — a vencer | 5 |
+| Gastos fixos — pagos | 5 |
+| Cartões | 7 |
+| Dashboard A — lançamentos | 6 |
+| Dashboard B — lançamentos | 6 |
+
+**Só empilham, sem virar card (3 tabelas):** parcelas futuras (Fatura, 3 colunas) e faturas
+abertas (Dashboard A, 4 colunas) não têm cabeçalho e já leem como lista — aplicar o padrão
+seria trabalho sem ganho.
 
 **Recebem scroll horizontal (2 tabelas), e por quê:**
 

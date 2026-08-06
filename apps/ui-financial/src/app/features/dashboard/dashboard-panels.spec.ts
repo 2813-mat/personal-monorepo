@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { signal, type Type } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { DashboardAComponent } from './dashboard-a.component';
 import { DashboardBComponent } from './dashboard-b.component';
@@ -39,7 +39,7 @@ function mockData() {
   };
 }
 
-function build(component: any, isDesktop: boolean) {
+function build(component: Type<unknown>, isDesktop: boolean) {
   TestBed.configureTestingModule({
     imports: [component],
     providers: [
