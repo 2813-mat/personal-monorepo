@@ -3,6 +3,7 @@ import { TransactionController } from './transaction/interface/transaction.contr
 import { ListTransactionsUseCase } from './transaction/application/list-transactions.usecase';
 import { CreateTransactionUseCase } from './transaction/application/create-transaction.usecase';
 import { RemoveTransactionUseCase } from './transaction/application/remove-transaction.usecase';
+import { UpdateTransactionUseCase } from './transaction/application/update-transaction.usecase';
 import { TransactionRepository } from './transaction/domain/transaction.repository';
 import { TransactionPrismaRepository } from './transaction/infrastructure/transaction.prisma.repository';
 import { IncomeController } from './income/interface/income.controller';
@@ -17,6 +18,7 @@ import { IncomePrismaRepository } from './income/infrastructure/income.prisma.re
     ListTransactionsUseCase,
     CreateTransactionUseCase,
     RemoveTransactionUseCase,
+    UpdateTransactionUseCase,
     { provide: TransactionRepository, useClass: TransactionPrismaRepository },
     ListIncomesUseCase,
     CreateIncomeUseCase,
