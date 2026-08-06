@@ -341,3 +341,10 @@
   .seg { height: 22px; }
   .seg-btn { min-height: 0; }
 }
+
+/* Faixa de compromissos em linha: quebra em vez de estourar. */
+.commitments-grid { flex-wrap: wrap; }
+
+@include r.desktop {
+  .commitments-grid { flex-wrap: nowrap; }
+}

@@ -93,3 +93,15 @@
 @include r.desktop {
   .main-grid { grid-template-columns: 1.7fr 1fr; }
 }
+
+/* A faixa de KPIs do topo é `flex` sem wrap: 5 KPIs mais a sparkline estouram
+   375px. O spacer só faz sentido numa linha única. */
+.header-strip { flex-wrap: wrap; gap: 14px; }
+.header-spacer { display: none; }
+.sparkline-block { align-items: flex-start; width: 100%; }
+
+@include r.desktop {
+  .header-strip { flex-wrap: nowrap; gap: 28px; }
+  .header-spacer { display: block; }
+  .sparkline-block { align-items: flex-end; width: auto; }
+}

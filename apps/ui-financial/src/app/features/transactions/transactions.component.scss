@@ -232,3 +232,12 @@
   .search-box,
   .action-btn { min-height: 0; }
 }
+
+/* Em contêiner `column`, `flex-wrap: wrap` quebra no eixo HORIZONTAL: os itens
+   criam novas colunas e a página passa a rolar de lado. O wrap original é do
+   layout em linha do desktop. */
+.strip-filters { flex-wrap: nowrap; }
+
+@include r.desktop {
+  .strip-filters { flex-wrap: wrap; }
+}

@@ -197,3 +197,16 @@
   .kpi-grid { grid-template-columns: repeat(5, 1fr); }
   .bottom-grid { grid-template-columns: 1.4fr 1fr; }
 }
+
+/* Item de grid tem `min-width: auto`: empilhar em 1fr não impede o filho de
+   estourar a trilha se o conteúdo for mais largo. */
+.bottom-grid > * { min-width: 0; }
+.kpi-grid > * { min-width: 0; }
+
+/* Título + "Fechar mês" + legenda numa linha só espremem para 84px/41px em
+   375px e quebram em três linhas cada. Não estoura, mas fica ilegível. */
+.panel-head { flex-wrap: wrap; gap: 8px; }
+
+@include r.desktop {
+  .panel-head { flex-wrap: nowrap; gap: 0; }
+}

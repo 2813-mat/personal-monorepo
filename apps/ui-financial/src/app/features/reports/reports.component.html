@@ -22,7 +22,7 @@
 <div class="panel chart-panel">
   <div class="panel-head">
     <span class="panel-title">
-      Receita vs. Despesa · {{ monthCount() }} {{ monthCount() === 1 ? 'mês' : 'meses' }}
+      Receita vs. Despesa · {{ chartMonthCount() }} {{ chartMonthCount() === 1 ? 'mês' : 'meses' }}
     </span>
     @if (auth.isAdmin()) {
       <button

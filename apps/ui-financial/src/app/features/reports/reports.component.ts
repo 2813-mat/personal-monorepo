@@ -232,6 +232,12 @@ export class ReportsComponent {
   monthCount = computed(() => this.data.history().length);
   hasHistory = computed(() => this.monthCount() > 0);
 
+  /**
+   * Meses de fato plotados. No celular a série é recortada, e o título tem de
+   * contar o que está na tela — não o tamanho do histórico.
+   */
+  chartMonthCount = computed(() => this.chartModel().bars.length);
+
   chartModel = computed((): ChartModel => {
     // No celular só cabem ~6 meses legíveis, e o viewBox encolhe junto: 1100
     // unidades num contêiner de 375px é o que deforma texto e traço hoje.

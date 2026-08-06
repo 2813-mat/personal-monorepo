@@ -266,6 +266,15 @@ describe('ReportsComponent — chart window', () => {
     expect(buildChart(true).chartModel().width).toBe(1100);
   });
 
+  it('counts the months actually plotted, not the whole history', () => {
+    // o título dizia "12 meses" enquanto o gráfico mostrava 6 no celular
+    expect(buildChart(false).chartMonthCount()).toBe(6);
+  });
+
+  it('counts the whole history on desktop', () => {
+    expect(buildChart(true).chartMonthCount()).toBe(12);
+  });
+
   it('spreads the windowed bars across the full width', () => {
     // 6 barras em 400 de largura: sem o piso ajustado sobrariam 50% vazios
     const bars = buildChart(false).chartModel().bars;
