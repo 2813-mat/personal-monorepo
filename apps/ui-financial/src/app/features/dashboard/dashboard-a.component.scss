@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display:block; }
 
 /* Header strip */
@@ -61,3 +63,33 @@
 .cat-name { font-size:12px; color:var(--ink-1); }
 .cat-amount { display:flex; align-items:baseline; gap:2px; }
 .cat-budget { color:var(--ink-4); font-size:10.5px; }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   A tabela de 6 colunas vira lista de cards; as tabelas sem cabeçalho
+   (faturas abertas) já leem como lista e só empilham com o grid. */
+.dsh-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.dsh-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.dshc-main {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.dshc-label { font-weight: 600; color: var(--ink-1); }
+.dshc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.dshc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.main-grid { grid-template-columns: 1fr; }
+@include r.desktop {
+  .main-grid { grid-template-columns: 1.7fr 1fr; }
+}

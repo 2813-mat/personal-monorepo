@@ -1,6 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -20,6 +21,7 @@ const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov
 })
 export class DashboardAComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   kpis = computed(() => {
     const income = this.data.incomes().reduce((s, i) => s + i.value, 0);
