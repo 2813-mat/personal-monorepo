@@ -14,10 +14,49 @@ modo de edição dentro do `expense-drawer` para transação.
 
 **Spec:** `docs/superpowers/specs/2026-08-06-ui-write-actions-design.md`
 
+## Estado da execução (2026-08-06)
+
+**Fatias A e B entregues.** Tasks 1 a 5 concluídas, mais uma correção não prevista.
+
+| Task | Commit | Estado |
+|---|---|---|
+| 1 — `reviewed` e `order` no domínio | `6373143` | ✅ |
+| — correção de `shared-mocks` e `seed.ts` | `61829d7` | ✅ (não estava no plano) |
+| 2 — camada de dados do `PATCH` de transação | `5179a46` | ✅ |
+| 3 — botão "Marcar como conferido" | `791674c` | ✅ |
+| 4 + 5 — indicador na lista e filtro | `a0c04b6` | ✅ |
+| 6 a 17 | — | pendente |
+
+Suítes no ponto de parada: **ui-financial 242**, **api-financial 119**, `lint` e `build`
+verdes nos dois. API verificada no ar: `GET /categories` devolve `order` numérico em todas e
+`GET /transactions` devolve `reviewed` booleano em todas.
+
+### Task não prevista que precisou entrar
+
+Tornar `reviewed` e `order` obrigatórios quebrou o type-check de **`api-financial`**, porque
+`seed.ts` importa `libs/shared-mocks`. Além de acrescentar os campos aos mocks (11 categorias,
+33 transações), o `seed.ts` **não gravava `order`** — uma base recém-semeada nasceria com todas
+as categorias em `order: 0`, sem ordem definida. Corrigido nos dois lugares.
+
+**Lição para as fatias restantes:** mudança em `libs/shared-types` atravessa os dois apps. Ao
+mexer em tipo compartilhado, rodar também `npx nx build api-financial`.
+
+### Dívidas abertas, deliberadamente não pagas
+
+1. **Erros de tipo pré-existentes** em `apps/ui-financial/src/app/features/reports/reports.component.spec.ts`
+   — três fixtures de `MonthEntry` sem `year`, `month` e `perCategory`. Anteriores a esta
+   sessão. Enquanto existirem, o `tsc -p tsconfig.spec.json` nasce com ruído.
+2. **O `tsc --noEmit` dos specs não é gate automático** — segue como disciplina manual.
+   Adicioná-lo ao target `test` do Nx é mudança de configuração fora do escopo desta fatia.
+3. **`app-data.service.ts`** cresce a cada fatia; a quebra por recurso segue registrada para a
+   Task 17.
+
 ## Global Constraints
 
 - **Branch:** `feat/upgrading-the-system`. Commits diretos, sem PR.
-- **Nenhum arquivo de `api-financial` é tocado.** O backend está pronto.
+- **`api-financial` só é tocado se um tipo compartilhado mudar.** O backend está pronto, mas
+  `seed.ts` importa `libs/shared-mocks`, que usa os tipos de `libs/shared-types` — mexer neles
+  atravessa os dois apps. Rodar `npx nx build api-financial` nesse caso.
 - **Padrão da fachada:** todo método de escrita em `AppDataService` faz
   `subscribe({ next: () => this.load<Recurso>(), error: () => this.fail(msg, this.<recurso>Error) })`.
   Não inventar outro fluxo.
