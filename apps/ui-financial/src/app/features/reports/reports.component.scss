@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 /* 1. KPI strip */
@@ -165,3 +167,33 @@
 .split-val { font-size: 11px; color: var(--ink-4); }
 .empty-note { margin: 0; padding: 16px; font-size: 12px; color: var(--ink-4); }
 .close-btn { margin-left: auto; }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   Grade de comparação: aqui a leitura entre linhas É o conteúdo, então em vez
+   de virar card ela rola de lado com a primeira coluna ancorada. */
+.hscroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.hscroll table { min-width: 640px; }
+.hscroll th:first-child,
+.hscroll td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+@include r.desktop {
+  .hscroll { overflow-x: visible; }
+  .hscroll table { min-width: 0; }
+  .hscroll th:first-child,
+  .hscroll td:first-child { position: static; }
+}
+
+.kpi-grid { grid-template-columns: 1fr 1fr; }
+.bottom-grid { grid-template-columns: 1fr; }
+@include r.desktop {
+  .kpi-grid { grid-template-columns: repeat(5, 1fr); }
+  .bottom-grid { grid-template-columns: 1.4fr 1fr; }
+}

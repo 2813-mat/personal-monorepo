@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 /* KPI strip */
 .kpi-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
@@ -24,3 +26,33 @@
 .tx-meta { font-size: 12px; color: var(--ink-3); }
 
 .pill.pos { background: var(--pos-soft); color: var(--pos); border: 1px solid var(--pos); font-size: 11px; padding: 1px 6px; border-radius: 20px; white-space: nowrap; }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   Grade de comparação: aqui a leitura entre linhas É o conteúdo, então em vez
+   de virar card ela rola de lado com a primeira coluna ancorada. */
+.hscroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.hscroll table { min-width: 640px; }
+.hscroll th:first-child,
+.hscroll td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+@include r.desktop {
+  .hscroll { overflow-x: visible; }
+  .hscroll table { min-width: 0; }
+  .hscroll th:first-child,
+  .hscroll td:first-child { position: static; }
+}
+
+.kpi-grid { grid-template-columns: 1fr; }
+.cards-grid { grid-template-columns: 1fr; }
+@include r.desktop {
+  .kpi-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+  .cards-grid { grid-template-columns: 1fr 1fr; }
+}
