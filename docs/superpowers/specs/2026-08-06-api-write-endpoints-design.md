@@ -68,8 +68,11 @@ identidade seria outra operação, com migração de referências.
 ### 3.1 Semântica do PATCH
 
 - Atualização **parcial**: todos os campos do DTO são opcionais.
-- Um corpo **sem nenhum campo reconhecido responde 400**. Sem essa guarda, um nome de campo
-  digitado errado no cliente vira no-op silencioso com 200 — o pior modo de falha possível.
+- Um corpo **vazio (`{}`) responde 400**, em vez de um no-op com 200.
+
+  Campo com nome errado **já** é rejeitado: o `ValidationPipe` global roda com
+  `forbidNonWhitelisted: true` (`main.ts:9`), então `{ labl: 'x' }` devolve 400 sozinho. A
+  guarda extra cobre só o corpo genuinamente vazio, que passaria pela validação como `{}`.
 - `holder` segue a convenção transversal do umbrella (§2.1): o wire usa **nome**, nunca
   `memberId`; `'shared'` resolve para `memberId: undefined`.
 - `categorySlug` resolve para `categoryId` na escrita, como no `create`.
