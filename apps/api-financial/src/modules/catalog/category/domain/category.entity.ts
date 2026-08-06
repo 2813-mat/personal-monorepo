@@ -4,6 +4,7 @@ export interface CategoryProps {
   label: string;
   color: string;
   budget: number;
+  order: number;
 }
 
 export class Category {
