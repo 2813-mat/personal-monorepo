@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 /* Strip */
@@ -179,4 +181,40 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   A tabela de 7 colunas vira um card por categoria. Progresso e tendência
+   ficam em linha própria, em largura total — espremidos entre as etiquetas
+   eles perdem a legibilidade que justifica existirem. */
+.bd-cards { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
+
+.bd-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px;
+}
+.bdc-main {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.bdc-cat {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 600; color: var(--ink-1);
+}
+.bdc-nums {
+  display: flex; justify-content: space-between; gap: 8px;
+  margin-top: 10px;
+}
+.bdc-num { display: flex; flex-direction: column; gap: 2px; }
+.bdc-num-label {
+  font-size: 9.5px; color: var(--ink-4);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.bdc-prog { margin-top: 10px; }
+.bdc-trend {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line-soft);
 }

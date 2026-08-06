@@ -1,5 +1,6 @@
 import { Component, inject, computed } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
@@ -28,6 +29,7 @@ interface CatRow {
 })
 export class BudgetsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   catRows = computed((): CatRow[] =>
     this.data.categories().map(cat => {
