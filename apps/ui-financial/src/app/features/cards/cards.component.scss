@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host {
   display: block;
 }
@@ -293,4 +295,40 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   width: fit-content;
+}
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   A tabela de 7 colunas vira um card por cartão. A linha era um routerLink
+   para a fatura; o card é um <a> para preservar isso. */
+.summary-grid { grid-template-columns: 1fr; }
+
+.cd-cards { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
+
+.cd-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px;
+}
+.cdc-main { display: flex; align-items: center; gap: 9px; }
+.cdc-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cdc-bank { font-weight: 600; color: var(--ink-1); }
+.cdc-last4 { font-size: 10.5px; color: var(--ink-4); }
+
+.cdc-util { margin-top: 10px; }
+
+.cdc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.cdc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.cdc-tag.warn { background: var(--warn-soft); color: var(--warn); }
+
+@include r.desktop {
+  .summary-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
 }

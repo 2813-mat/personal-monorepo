@@ -97,6 +97,7 @@
     </div>
   </div>
 
+  @if (vp.isDesktop()) {
   <table class="cards-table">
     <thead>
       <tr>
@@ -196,6 +197,49 @@
       }
     </tbody>
   </table>
+  } @else {
+  <div class="cd-cards">
+    @for (card of sortedCards(); track card.id) {
+      <a class="cd-card" [routerLink]="['/cards', card.id, 'invoice']">
+        <div class="cdc-main">
+          <span class="card-badge" [style.background]="card.color">
+            {{ card.bank.slice(0, 4).toUpperCase() }}
+          </span>
+          <div class="cdc-id">
+            <span class="cdc-bank">{{ card.bank }}</span>
+            <span class="cdc-last4 num">···· {{ card.last4 }}</span>
+          </div>
+          <cf-money [value]="card.current" [negColor]="false" />
+        </div>
+
+        <div class="cdc-util">
+          <div class="util-header">
+            <span class="util-values num">
+              R$ {{ fmtShort(card.current) }} / R$ {{ fmtShort(card.limit) }}
+            </span>
+            <span class="util-pct num" [class.over]="utilPct(card) > 80">
+              {{ utilPct(card) }}%
+            </span>
+          </div>
+          <cf-progress-bar
+            [value]="card.current"
+            [max]="card.limit"
+            [color]="card.color"
+            [height]="4"
+          />
+        </div>
+
+        <div class="cdc-meta">
+          <span class="cdc-tag">{{ card.holder }}</span>
+          <span class="cdc-tag num" [class.warn]="daysLeft(card) <= 7">
+            fecha dia {{ card.closing }}
+          </span>
+          <span class="cdc-tag num">vence dia {{ card.due }}</span>
+        </div>
+      </a>
+    }
+  </div>
+  }
 
   <div class="panel-foot">
     <span class="foot-add">

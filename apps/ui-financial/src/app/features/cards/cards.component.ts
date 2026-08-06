@@ -1,6 +1,7 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
@@ -48,6 +49,7 @@ const FUTURE_MONTHS = [
 })
 export class CardsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   sortMode = signal<SortMode>('closing');
 
