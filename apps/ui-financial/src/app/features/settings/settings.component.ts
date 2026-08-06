@@ -79,6 +79,8 @@ export class SettingsComponent {
       label: v.label,
       color: v.color,
       budget: Number(v.budget),
+      // O backend atribui a posição real (último + 1) e o recarregamento a traz.
+      order: 0,
     });
     this.cancelNewCategory();
   }

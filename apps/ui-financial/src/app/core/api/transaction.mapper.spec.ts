@@ -12,6 +12,7 @@ const cardWire: TransactionWire = {
   method: 'CARD',
   cardId: 'card-db-1',
   recurring: false,
+  reviewed: false,
   installments: { n: 1, of: 3 },
 };
 
@@ -58,5 +59,17 @@ describe('transactionToCreateWire', () => {
       installments: { n: 1, of: 3 },
     } as Transaction);
     expect(w).toMatchObject({ method: 'CARD', cardId: 'card-db-1', installments: { n: 1, of: 3 } });
+  });
+});
+
+describe('wireToTransaction — reviewed', () => {
+  it('traz reviewed do wire', () => {
+    const w = { ...cardWire, reviewed: true } as TransactionWire;
+    expect(wireToTransaction(w).reviewed).toBe(true);
+  });
+
+  it('traz false quando não conferido', () => {
+    const w = { ...cardWire, reviewed: false } as TransactionWire;
+    expect(wireToTransaction(w).reviewed).toBe(false);
   });
 });

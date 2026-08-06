@@ -6,7 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ViewportService } from '../../core/viewport.service';
 import type { Category } from '@caixa-familia/shared-types';
 
-const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 }];
+const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 }];
 
 function mockDataService() {
   return {
@@ -69,6 +69,8 @@ describe('SettingsComponent — new category form', () => {
       label: 'Farmácia',
       color: '#2E7D5B',
       budget: 300,
+      // a posição real vem do backend (último + 1) no recarregamento
+      order: 0,
     });
   });
 

@@ -13,21 +13,21 @@ const FIXED: FixedExpense[] = [
 
 const TRANSACTIONS: Transaction[] = [
   // recurring, value matches f1
-  { id: 't1', date: '2026-05-05', label: 'Conta A', value: 100, cat: 'casa',  holder: 'shared', method: 'pix', installments: null, recurring: true },
+  { id: 't1', date: '2026-05-05', label: 'Conta A', value: 100, cat: 'casa',  holder: 'shared', method: 'pix', installments: null, recurring: true, reviewed: false },
   // recurring, value does NOT match any fixed item
-  { id: 't2', date: '2026-05-10', label: 'Spotify', value: 32,  cat: 'assin', holder: 'Mateus', method: 'pix', installments: null, recurring: true },
+  { id: 't2', date: '2026-05-10', label: 'Spotify', value: 32,  cat: 'assin', holder: 'Mateus', method: 'pix', installments: null, recurring: true, reviewed: false },
   // recurring, value coincidentally matches f2 — must NOT make it paid
-  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null, recurring: true },
+  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null, recurring: true, reviewed: false },
 ];
 
 const INCOMES: Income[] = [
-  { id: 'i1', label: 'Salário', holder: 'Mateus', value: 1000, date: '2026-05-05', recurring: true },
+  { id: 'i1', label: 'Salário', holder: 'Mateus', value: 1000, date: '2026-05-05', recurring: true, reviewed: false },
 ];
 
 const CAT_BY: Record<string, Category> = {
-  casa:  { id: 'casa',  label: 'Casa',       color: '#7A4F1D', budget: 500 },
-  assin: { id: 'assin', label: 'Assinaturas', color: '#0F2D4F', budget: 150 },
-  educ:  { id: 'educ',  label: 'Educação',   color: '#3F2C7A', budget: 920 },
+  casa:  { id: 'casa',  label: 'Casa',       color: '#7A4F1D', budget: 500, order: 1 },
+  assin: { id: 'assin', label: 'Assinaturas', color: '#0F2D4F', budget: 150, order: 1 },
+  educ:  { id: 'educ',  label: 'Educação',   color: '#3F2C7A', budget: 920, order: 1 },
 };
 
 function mockDataService() {

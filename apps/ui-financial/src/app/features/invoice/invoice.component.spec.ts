@@ -32,6 +32,7 @@ const TRANSACTIONS: Transaction[] = [
     method: 'nu-t',
     installments: null,
     recurring: false,
+    reviewed: false,
   },
 ];
 

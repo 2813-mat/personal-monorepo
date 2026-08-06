@@ -28,6 +28,17 @@ modo de edição dentro do `expense-drawer` para transação.
 - **Gate:** `npx nx test ui-financial`, `npx nx lint ui-financial` e
   **`npx nx build ui-financial`**. O umbrella §6 registra que o Jest da UI não faz type-check
   estrito de template — no Projeto 1 a suíte passou verde com o build quebrado.
+- **O Jest da UI também não reporta erro de tipo em `.spec.ts`** (descoberto na Task 1). O
+  `nx build` tampouco, porque `tsconfig.app.json` exclui specs. Ao mexer em tipo compartilhado,
+  rodar também:
+
+  ```bash
+  npx tsc -p apps/ui-financial/tsconfig.spec.json --noEmit
+  ```
+
+  Ignorar o ruído de `TS2307`/`moduleResolution` (artefato de rodar `tsc` fora do preset) e
+  olhar os `TS2345`/`TS2741`, que são reais. Na Task 1 esse comando revelou **20 erros** que a
+  suíte verde escondia — dois deles em **código de produção**.
 - Todo texto de UI em **pt-BR**.
 
 ### Convenções de nome que o plano assume (verificadas no código)

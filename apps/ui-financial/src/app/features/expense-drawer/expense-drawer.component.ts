@@ -153,6 +153,7 @@ export class ExpenseDrawerComponent {
       method: v.method,
       installments: v.installments.enabled ? { n: 1, of: Number(v.installments.total) } : null,
       recurring: v.recurring,
+      reviewed: false, // lançamento novo nasce por conferir
     };
     this.data.createTransaction(tx);
     this.onClose();

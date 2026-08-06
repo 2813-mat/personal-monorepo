@@ -33,6 +33,8 @@ export interface Category {
   label: string;
   color: string;
   budget: number;
+  /** Posição de exibição, ditada pelo backend. */
+  order: number;
 }
 
 export interface FixedExpense {
@@ -75,6 +77,7 @@ export interface Transaction {
   installments: Installments | null;
   note?: string;
   recurring?: boolean;
+  reviewed: boolean;
   fixedRef?: Id;
 }
 

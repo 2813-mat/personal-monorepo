@@ -4,7 +4,7 @@ import { ExpenseDrawerComponent } from './expense-drawer.component';
 import { AppDataService } from '../../layout/app-data.service';
 import type { Category, Goal } from '@caixa-familia/shared-types';
 
-const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#000', budget: 100 }];
+const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#000', budget: 100, order: 1 }];
 
 const GOALS: Goal[] = [
   {

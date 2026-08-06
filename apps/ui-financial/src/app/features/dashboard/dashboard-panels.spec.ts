@@ -9,13 +9,13 @@ import type { Transaction, Category } from '@caixa-familia/shared-types';
 
 const TRANSACTIONS: Transaction[] = [
   { id: 't1', date: '2026-07-10', label: 'Mercado', value: 300, cat: 'casa',
-    holder: 'Mateus', method: 'pix', installments: null, recurring: false },
+    holder: 'Mateus', method: 'pix', installments: null, recurring: false, reviewed: false },
   { id: 't2', date: '2026-07-11', label: 'Farmácia', value: 120, cat: 'casa',
-    holder: 'Thais', method: 'pix', installments: null, recurring: false },
+    holder: 'Thais', method: 'pix', installments: null, recurring: false, reviewed: false },
 ];
 
 const CATEGORIES: Category[] = [
-  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 },
+  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 },
 ];
 
 function mockData() {

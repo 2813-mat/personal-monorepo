@@ -8,13 +8,13 @@ import type { Transaction, Category, Card } from '@caixa-familia/shared-types';
 
 const TRANSACTIONS: Transaction[] = [
   { id: 't1', date: '2026-05-05', label: 'Mercado', value: 240, cat: 'casa',
-    holder: 'Mateus', method: 'pix', installments: null, recurring: false },
+    holder: 'Mateus', method: 'pix', installments: null, recurring: false, reviewed: false },
   { id: 't2', date: '2026-05-06', label: 'Farmácia', value: 88, cat: 'casa',
-    holder: 'shared', method: 'pix', installments: null, recurring: false },
+    holder: 'shared', method: 'pix', installments: null, recurring: false, reviewed: false },
 ];
 
 const CATEGORIES: Category[] = [
-  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 },
+  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 },
 ];
 
 const CAT_BY: Record<string, Category> = { casa: CATEGORIES[0] };

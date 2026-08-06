@@ -7,8 +7,8 @@ import type { MonthEntry } from '../../core/api/report.mapper';
 import type { Category } from '@caixa-familia/shared-types';
 
 const CATEGORIES: Category[] = [
-  { id: 'mercado', label: 'Mercado', color: '#2E7D5B', budget: 1000 },
-  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 },
+  { id: 'mercado', label: 'Mercado', color: '#2E7D5B', budget: 1000, order: 1 },
+  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 },
 ];
 
 const month = (m: number, perCategory: Record<string, number>): MonthEntry => ({

@@ -13,6 +13,7 @@ export function wireToTransaction(w: TransactionWire): Transaction {
     installments: w.installments,
     note: w.note,
     recurring: w.recurring,
+    reviewed: w.reviewed,
     fixedRef: w.fixedExpenseId,
   };
 }

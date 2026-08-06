@@ -9,6 +9,7 @@ export interface TransactionWire {
   cardId: string | null;
   note?: string;
   recurring: boolean;
+  reviewed: boolean;
   fixedExpenseId?: string;
   installments: { n: number; of: number } | null;
 }
@@ -32,6 +33,7 @@ export interface CategoryWire {
   label: string;
   color: string;
   budget: number;
+  order: number;
 }
 
 export interface CreateCategoryWire {
