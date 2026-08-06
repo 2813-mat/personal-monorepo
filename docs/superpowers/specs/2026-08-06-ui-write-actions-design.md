@@ -155,7 +155,7 @@ O backend responde três casos que a UI não pode engolir num "Falha ao salvar" 
 | Caso | Tratamento na UI |
 |---|---|
 | **409** ao excluir categoria | O corpo traz `{ transactions, fixedExpenses }`. Toast com a contagem: *"Não dá para excluir: 5 lançamentos e 4 gastos fixos usam esta categoria."* |
-| **404** ao editar | Item removido em outra aba. Toast e recarga da lista. |
+| **404** ao editar | Item removido em outra aba. Toast, como qualquer outro erro de escrita. |
 | **400** de corpo vazio | Não deve acontecer: Salvar só habilita com o formulário sujo (`form.dirty`). |
 
 Exclusões (gasto fixo e categoria) passam pelo `cf-confirm-modal` existente, com `danger` — que
@@ -163,6 +163,12 @@ já tem `title`, `description`, `confirmLabel`, `cancelLabel`, `confirmed`, `can
 
 O 409 é o caso que mais importa: a API foi desenhada para entregar a contagem justamente para
 a UI poder explicar. Desperdiçá-la anularia a decisão do Projeto 2.
+
+**O 404 não recebe tratamento especial.** Uma versão anterior desta spec prometia recarregar a
+lista nesse caso. Recuei: exigiria inspecionar o status em cada um dos seis métodos de escrita
+da fachada, que hoje têm uma linha de erro cada, para cobrir um cenário que só ocorre com duas
+abas abertas na mesma conta. O toast informa, e a próxima navegação recarrega. Se o caso se
+mostrar real no uso, vira fatia própria.
 
 ---
 
