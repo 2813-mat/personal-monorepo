@@ -14,9 +14,9 @@ modo de edição dentro do `expense-drawer` para transação.
 
 **Spec:** `docs/superpowers/specs/2026-08-06-ui-write-actions-design.md`
 
-## Estado da execução (2026-08-06)
+## Estado da execução (2026-08-07)
 
-**Fatias A e B entregues.** Tasks 1 a 5 concluídas, mais uma correção não prevista.
+**Fatias A, B e C entregues.** Tasks 1 a 9 concluídas, mais duas correções não previstas.
 
 | Task | Commit | Estado |
 |---|---|---|
@@ -25,11 +25,32 @@ modo de edição dentro do `expense-drawer` para transação.
 | 2 — camada de dados do `PATCH` de transação | `5179a46` | ✅ |
 | 3 — botão "Marcar como conferido" | `791674c` | ✅ |
 | 4 + 5 — indicador na lista e filtro | `a0c04b6` | ✅ |
-| 6 a 17 | — | pendente |
+| 6 — camada de dados de categoria | `ef42829` | ✅ |
+| 7 — `category-edit-drawer` | `6cb1bb3` | ✅ |
+| 8 — excluir categoria com o 409 traduzido | `ce27a16` | ✅ |
+| 9 — reordenar com setas | `14f9224` | ✅ |
+| — `reviewed` num mock de `Income` | `6266326` | ✅ (não estava no plano) |
+| 10 a 17 | — | pendente |
 
-Suítes no ponto de parada: **ui-financial 242**, **api-financial 119**, `lint` e `build`
-verdes nos dois. API verificada no ar: `GET /categories` devolve `order` numérico em todas e
-`GET /transactions` devolve `reviewed` booleano em todas.
+Suítes no ponto de parada: **ui-financial 261**, `lint` e `build` verdes.
+
+### Desvios do plano na Fatia C
+
+1. **`confirmingRemoval` ficou público**, não `protected`. O teste da Task 8 acessa
+   `component.confirmingRemoval()` direto; como `protected` isso é `TS2445` no `tsc` dos specs.
+   Segue a convenção do `showNewCategory`, que já é `readonly` público no mesmo arquivo.
+2. **`categoryToUpdateWire` ganhou teste próprio** no `catalog.mapper.spec.ts` — o plano listava
+   o arquivo como modificado mas não trazia o teste, e a constraint de "mapper que descarta
+   campo é bug" pedia um.
+3. **Botões de Excluir e de setas também no card mobile**, não só na tabela. O plano só
+   detalhava o desktop para o Excluir. `button.stc-tag` precisou zerar o chrome de botão.
+4. A célula de arraste (`grid`) da tabela virou as duas setas; a `<th>` foi de 24px para 64px.
+
+### Correção não prevista que entrou
+
+`fixed.component.spec.ts` tinha um mock de `Income` com `reviewed: false` — campo que `Income`
+não possui. Entrou na Task 1 de ontem e só aparecia no `tsc -p tsconfig.spec.json`, que o Jest
+não roda. Reforça a dívida nº 2 abaixo.
 
 ### Task não prevista que precisou entrar
 
