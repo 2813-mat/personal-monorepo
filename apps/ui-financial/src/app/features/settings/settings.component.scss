@@ -264,6 +264,14 @@ button.stc-tag:disabled { opacity: 0.5; cursor: default; }
   .layout { grid-template-columns: 200px 1fr; }
 }
 
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+}
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.icon-btn.btn-neg { color: var(--neg); }
+
 /* Alvos de toque (spec §6). .bank-tag e .color-swatch são decoração. */
 .btn-ghost,
 .btn-primary { min-height: 44px; }
@@ -271,4 +279,5 @@ button.stc-tag:disabled { opacity: 0.5; cursor: default; }
 @include r.desktop {
   .btn-ghost,
   .btn-primary { min-height: 0; }
+  .icon-btn { min-width: 26px; min-height: 26px; }
 }

@@ -97,6 +97,29 @@ export class SettingsComponent {
     this.cancelNewCategory();
   }
 
+  /**
+   * `delta` é -1 para subir e 1 para descer. Manda a lista completa: o
+   * PATCH /categories/order rejeita lista parcial com 400 — é o contrato.
+   */
+  moveCategory(slug: string, delta: -1 | 1): void {
+    const slugs = this.data.categories().map((c) => c.id);
+    const from = slugs.indexOf(slug);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= slugs.length) return;
+    const next = [...slugs];
+    [next[from], next[to]] = [next[to], next[from]];
+    this.data.reorderCategories(next);
+  }
+
+  isFirstCategory(slug: string): boolean {
+    return this.data.categories()[0]?.id === slug;
+  }
+
+  isLastCategory(slug: string): boolean {
+    const list = this.data.categories();
+    return list[list.length - 1]?.id === slug;
+  }
+
   readonly confirmingRemoval = signal<string | null>(null);
 
   askRemoveCategory(slug: string): void {

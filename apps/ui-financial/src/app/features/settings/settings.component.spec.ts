@@ -124,6 +124,7 @@ function buildSettings(categories: Category[] = CATEGORIES) {
     categories: signal(categories),
     catBy: signal(Object.fromEntries(categories.map((c) => [c.id, c]))),
     removeCategory: jest.fn(),
+    reorderCategories: jest.fn(),
   };
   TestBed.configureTestingModule({
     imports: [SettingsComponent],
@@ -160,6 +161,43 @@ describe('SettingsComponent — excluir categoria', () => {
     component.cancelRemoveCategory();
     expect(data.removeCategory).not.toHaveBeenCalled();
     expect(component.confirmingRemoval()).toBeNull();
+  });
+});
+
+describe('SettingsComponent — reordenar', () => {
+  it('sobe uma categoria e manda a lista completa', () => {
+    const { component, data } = buildSettings([
+      { id: 'a', label: 'A', color: '#000000', budget: 0, order: 1 },
+      { id: 'b', label: 'B', color: '#000000', budget: 0, order: 2 },
+      { id: 'c', label: 'C', color: '#000000', budget: 0, order: 3 },
+    ]);
+    component.moveCategory('b', -1);
+    expect(data.reorderCategories).toHaveBeenCalledWith(['b', 'a', 'c']);
+  });
+
+  it('desce uma categoria', () => {
+    const { component, data } = buildSettings([
+      { id: 'a', label: 'A', color: '#000000', budget: 0, order: 1 },
+      { id: 'b', label: 'B', color: '#000000', budget: 0, order: 2 },
+    ]);
+    component.moveCategory('a', 1);
+    expect(data.reorderCategories).toHaveBeenCalledWith(['b', 'a']);
+  });
+
+  it('ignora subir a primeira', () => {
+    const { component, data } = buildSettings([
+      { id: 'a', label: 'A', color: '#000000', budget: 0, order: 1 },
+    ]);
+    component.moveCategory('a', -1);
+    expect(data.reorderCategories).not.toHaveBeenCalled();
+  });
+
+  it('ignora descer a última', () => {
+    const { component, data } = buildSettings([
+      { id: 'a', label: 'A', color: '#000000', budget: 0, order: 1 },
+    ]);
+    component.moveCategory('a', 1);
+    expect(data.reorderCategories).not.toHaveBeenCalled();
   });
 });
 

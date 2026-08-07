@@ -26,7 +26,6 @@
               <span class="card-sub">{{ data.categories().length }} ativas</span>
             </div>
             <div class="card-head-actions">
-              <button class="btn-ghost" disabled>Reordenar</button>
               <button
                 class="btn-primary"
                 type="button"
@@ -99,7 +98,7 @@
             <table class="tbl">
               <thead>
                 <tr>
-                  <th style="width:24px"></th>
+                  <th style="width:64px"></th>
                   <th>Nome</th>
                   <th>Cor</th>
                   <th class="r" style="width:130px">Orçamento/mês</th>
@@ -112,7 +111,14 @@
                 @for (c of data.categories(); track c.id) {
                   <tr>
                     <td class="drag-cell">
-                      <cf-icon name="grid" [size]="10" color="var(--ink-4)" />
+                      <button type="button" class="icon-btn" (click)="moveCategory(c.id, -1)"
+                        [disabled]="!auth.canWrite() || isFirstCategory(c.id)" aria-label="Subir">
+                        <cf-icon name="arrowUp" [size]="11" />
+                      </button>
+                      <button type="button" class="icon-btn" (click)="moveCategory(c.id, 1)"
+                        [disabled]="!auth.canWrite() || isLastCategory(c.id)" aria-label="Descer">
+                        <cf-icon name="arrowDown" [size]="11" />
+                      </button>
                     </td>
                     <td>
                       <div class="name-cell">
@@ -174,6 +180,14 @@
                   <button type="button" class="stc-tag neg" (click)="askRemoveCategory(c.id)"
                     [disabled]="!auth.canWrite()">
                     Excluir
+                  </button>
+                  <button type="button" class="icon-btn" (click)="moveCategory(c.id, -1)"
+                    [disabled]="!auth.canWrite() || isFirstCategory(c.id)" aria-label="Subir">
+                    <cf-icon name="arrowUp" [size]="11" />
+                  </button>
+                  <button type="button" class="icon-btn" (click)="moveCategory(c.id, 1)"
+                    [disabled]="!auth.canWrite() || isLastCategory(c.id)" aria-label="Descer">
+                    <cf-icon name="arrowDown" [size]="11" />
                   </button>
                 </div>
               </div>
