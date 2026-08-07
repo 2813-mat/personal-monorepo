@@ -298,3 +298,67 @@ describe('ExpenseDrawerComponent — cartão arquivado', () => {
     expect(texto).not.toContain('Itau');
   });
 });
+
+const TX_CARTAO: Transaction = {
+  id: 't9',
+  date: '2026-05-05',
+  label: 'Mercado',
+  value: 240,
+  cat: 'casa',
+  holder: 'Mateus',
+  method: 'c1',
+  installments: null,
+  reviewed: false,
+};
+
+describe('ExpenseDrawerComponent — trocar o cartão na edição', () => {
+  function buildComCartoes() {
+    const data = {
+      ...mockDataService(),
+      cards: signal([ATIVO, { ...ATIVO, id: 'c3', bank: 'Inter', name: 'Inter' }]),
+      activeCards: signal([ATIVO, { ...ATIVO, id: 'c3', bank: 'Inter', name: 'Inter' }]),
+      updateTransaction: jest.fn(),
+    };
+    TestBed.configureTestingModule({
+      imports: [ExpenseDrawerComponent],
+      providers: [{ provide: AppDataService, useValue: data }],
+    });
+    const fixture = TestBed.createComponent(ExpenseDrawerComponent);
+    fixture.componentRef.setInput('editing', TX_CARTAO);
+    fixture.detectChanges();
+    return { fixture, data };
+  }
+
+  it('habilita Salvar ao escolher outro cartão', () => {
+    const { fixture } = buildComCartoes();
+    const linhas: HTMLButtonElement[] = [
+      ...fixture.nativeElement.querySelectorAll('.method-row'),
+    ];
+    const inter = linhas.find((b) => b.textContent?.includes('Inter'));
+    expect(inter).toBeTruthy();
+    inter!.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.pristine).toBe(false);
+  });
+
+  it('manda o cartão novo ao salvar', () => {
+    const { fixture, data } = buildComCartoes();
+    const linhas: HTMLButtonElement[] = [
+      ...fixture.nativeElement.querySelectorAll('.method-row'),
+    ];
+    linhas.find((b) => b.textContent?.includes('Inter'))!.click();
+    fixture.detectChanges();
+    fixture.componentInstance.save();
+    expect(data.updateTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 't9', method: 'c3' }),
+    );
+  });
+
+  it('a categoria escolhida por chip também habilita Salvar', () => {
+    const { fixture } = buildComCartoes();
+    const chips: HTMLButtonElement[] = [...fixture.nativeElement.querySelectorAll('.cat-chip')];
+    chips[0].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.pristine).toBe(false);
+  });
+});

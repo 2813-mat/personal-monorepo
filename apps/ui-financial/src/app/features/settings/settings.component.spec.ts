@@ -349,3 +349,33 @@ describe('SettingsComponent — cartão arquivado', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Arquivado');
   });
 });
+
+describe('SettingsComponent — arquivar direto', () => {
+  it('oferece arquivar num cartão ativo', () => {
+    const { fixture, data } = buildSettings();
+    data.cards.set([CARTAO()]);
+    (
+      fixture.componentInstance as never as { activeSection: { set(s: string): void } }
+    ).activeSection.set('cards');
+    fixture.detectChanges();
+    const botao = fixture.nativeElement.querySelector('button[aria-label="Arquivar cartão"]');
+    expect(botao).not.toBeNull();
+    botao.click();
+    expect(data.archiveCard).toHaveBeenCalledWith('c1', true);
+  });
+
+  it('não oferece arquivar num cartão já arquivado', () => {
+    const { fixture, data } = buildSettings();
+    data.cards.set([CARTAO({ archived: true })]);
+    (
+      fixture.componentInstance as never as { activeSection: { set(s: string): void } }
+    ).activeSection.set('cards');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Arquivar cartão"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Desarquivar cartão"]'),
+    ).not.toBeNull();
+  });
+});

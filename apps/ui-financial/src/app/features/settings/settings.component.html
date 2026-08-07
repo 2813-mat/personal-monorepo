@@ -297,6 +297,10 @@
                           <cf-icon name="repeat" [size]="11" />
                         </button>
                       } @else {
+                        <button type="button" class="icon-btn" (click)="data.archiveCard(c.id, true)"
+                          [disabled]="!auth.canWrite()" aria-label="Arquivar cartão">
+                          <cf-icon name="download" [size]="11" />
+                        </button>
                         <button type="button" class="icon-btn btn-neg" (click)="askRemoveCard(c.id)"
                           [disabled]="!auth.canWrite()" aria-label="Excluir cartão">
                           <cf-icon name="x" [size]="11" />
@@ -334,6 +338,10 @@
                       Desarquivar
                     </button>
                   } @else {
+                    <button type="button" class="stc-tag" (click)="data.archiveCard(c.id, true)"
+                      [disabled]="!auth.canWrite()">
+                      Arquivar
+                    </button>
                     <button type="button" class="stc-tag neg" (click)="askRemoveCard(c.id)"
                       [disabled]="!auth.canWrite()">
                       Excluir

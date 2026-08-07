@@ -40,7 +40,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.type.value === 'expense'"
-        (click)="form.controls.type.setValue('expense')"
+        (click)="pick(form.controls.type, 'expense')"
         [disabled]="isEditing()"
       >
         <cf-icon name="arrowDown" [size]="11" /> Despesa
@@ -49,7 +49,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.type.value === 'income'"
-        (click)="form.controls.type.setValue('income')"
+        (click)="pick(form.controls.type, 'income')"
         [disabled]="isEditing()"
       >
         <cf-icon name="arrowUp" [size]="11" /> Receita
@@ -58,7 +58,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.type.value === 'contribution'"
-        (click)="form.controls.type.setValue('contribution')"
+        (click)="pick(form.controls.type, 'contribution')"
         [disabled]="isEditing()"
       >
         <cf-icon name="target" [size]="11" /> Aporte
@@ -67,7 +67,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.type.value === 'fixed'"
-        (click)="form.controls.type.setValue('fixed')"
+        (click)="pick(form.controls.type, 'fixed')"
         [disabled]="isEditing()"
       >
         <cf-icon name="repeat" [size]="11" /> Fixo
@@ -106,7 +106,7 @@
             type="button"
             class="cat-chip"
             [class.active]="form.controls.goal.value === g.id"
-            (click)="form.controls.goal.setValue(g.id)"
+            (click)="pick(form.controls.goal, g.id)"
           >
             {{ g.label }}
           </button>
@@ -121,7 +121,7 @@
             type="button"
             class="cat-chip"
             [class.active]="form.controls.cat.value === cat.id"
-            (click)="form.controls.cat.setValue(cat.id)"
+            (click)="pick(form.controls.cat, cat.id)"
           >
             <cf-cat-dot [catId]="cat.id" [size]="8" />
             {{ cat.label }}
@@ -155,7 +155,7 @@
         type="button"
         class="method-row"
         [class.active]="form.controls.method.value === 'pix'"
-        (click)="form.controls.method.setValue('pix')"
+        (click)="pick(form.controls.method, 'pix')"
       >
         <span class="method-main">
           <cf-icon name="pix" [size]="13" color="var(--brand)" />
@@ -174,7 +174,7 @@
           type="button"
           class="method-row"
           [class.active]="form.controls.method.value === c.id"
-          (click)="form.controls.method.setValue(c.id)"
+          (click)="pick(form.controls.method, c.id)"
         >
           <span class="method-main">
             <cf-card-chip [cardId]="c.id" size="md" />
@@ -198,7 +198,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.holder.value === 'Mateus'"
-        (click)="form.controls.holder.setValue('Mateus')"
+        (click)="pick(form.controls.holder, 'Mateus')"
       >
         <cf-avatar holder="Mateus" [size]="14" /> Mateus
       </button>
@@ -206,7 +206,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.holder.value === 'Thais'"
-        (click)="form.controls.holder.setValue('Thais')"
+        (click)="pick(form.controls.holder, 'Thais')"
       >
         <cf-avatar holder="Thais" [size]="14" /> Thais
       </button>
@@ -214,7 +214,7 @@
         type="button"
         class="seg-btn"
         [class.active]="form.controls.holder.value === 'shared'"
-        (click)="form.controls.holder.setValue('shared')"
+        (click)="pick(form.controls.holder, 'shared')"
       >
         Compartilhado
       </button>

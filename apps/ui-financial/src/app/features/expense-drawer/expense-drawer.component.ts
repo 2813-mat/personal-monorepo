@@ -126,6 +126,17 @@ export class ExpenseDrawerComponent {
     });
   }
 
+  /**
+   * Chip, linha de método e segmento mexem no form por código, e `setValue`
+   * não marca `dirty` — só interação via ControlValueAccessor marca. Sem isto o
+   * Salvar do modo edição, que é `[disabled]="form.pristine"`, nunca habilita:
+   * dava para trocar o cartão e não dava para salvar.
+   */
+  pick<T>(control: FormControl<T>, value: T) {
+    control.setValue(value);
+    control.markAsDirty();
+  }
+
   stepInstallments(delta: number) {
     const ctrl = this.form.controls.installments.controls.total;
     const next = Math.max(1, ctrl.value + delta);
