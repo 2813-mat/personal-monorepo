@@ -327,3 +327,25 @@ describe('SettingsComponent — excluir cartão', () => {
     expect(component.confirmingCardRemoval()).toBeNull();
   });
 });
+
+describe('SettingsComponent — cartão arquivado', () => {
+  it('marca o cartão arquivado na tabela', () => {
+    const { fixture, data } = buildSettings();
+    data.cards.set([CARTAO({ archived: true })]);
+    (
+      fixture.componentInstance as never as { activeSection: { set(s: string): void } }
+    ).activeSection.set('cards');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Arquivado');
+  });
+
+  it('não marca cartão ativo', () => {
+    const { fixture, data } = buildSettings();
+    data.cards.set([CARTAO()]);
+    (
+      fixture.componentInstance as never as { activeSection: { set(s: string): void } }
+    ).activeSection.set('cards');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Arquivado');
+  });
+});

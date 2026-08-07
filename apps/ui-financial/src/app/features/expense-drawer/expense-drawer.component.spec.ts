@@ -24,6 +24,7 @@ function mockDataService() {
   return {
     categories: signal(CATEGORIES),
     cards: signal([]),
+    activeCards: signal([]),
     goals: signal(GOALS),
     catBy: signal({}),
     cardBy: signal({}),
@@ -267,5 +268,33 @@ describe('ExpenseDrawerComponent — modo edição', () => {
     fixture.detectChanges();
     const chips: HTMLButtonElement[] = [...fixture.nativeElement.querySelectorAll('.seg-type .seg-btn')];
     expect(chips.some((b) => b.disabled)).toBe(false);
+  });
+});
+
+const ATIVO = {
+  id: 'c1', name: 'Nubank', holder: 'Thais' as const, bank: 'Nubank', color: '#820AD1',
+  closing: 5, due: 12, current: 0, limit: 4500, last4: '4421', archived: false,
+};
+const ARQUIVADO = {
+  id: 'c2', name: 'Itau', holder: 'Mateus' as const, bank: 'Itau', color: '#EC7000',
+  closing: 8, due: 15, current: 0, limit: 3800, last4: '3367', archived: true,
+};
+
+describe('ExpenseDrawerComponent — cartão arquivado', () => {
+  it('não oferece cartão arquivado como método', () => {
+    const data = {
+      ...mockDataService(),
+      cards: signal([ATIVO, ARQUIVADO]),
+      activeCards: signal([ATIVO]),
+    };
+    TestBed.configureTestingModule({
+      imports: [ExpenseDrawerComponent],
+      providers: [{ provide: AppDataService, useValue: data }],
+    });
+    const fixture = TestBed.createComponent(ExpenseDrawerComponent);
+    fixture.detectChanges();
+    const texto = fixture.nativeElement.textContent;
+    expect(texto).toContain('Nubank');
+    expect(texto).not.toContain('Itau');
   });
 });

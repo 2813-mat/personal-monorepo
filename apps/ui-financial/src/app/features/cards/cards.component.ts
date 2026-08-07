@@ -58,10 +58,10 @@ export class CardsComponent {
   // ── KPI computeds ─────────────────────────────────────────────────────────
 
   totalOpen = computed(() =>
-    this.data.cards().reduce((s, c) => s + c.current, 0),
+    this.data.activeCards().reduce((s, c) => s + c.current, 0),
   );
   totalLimit = computed(() =>
-    this.data.cards().reduce((s, c) => s + c.limit, 0),
+    this.data.activeCards().reduce((s, c) => s + c.limit, 0),
   );
 
   utilizationPct = computed(() =>
@@ -71,21 +71,21 @@ export class CardsComponent {
   );
 
   mateusCount = computed(
-    () => this.data.cards().filter((c) => c.holder === 'Mateus').length,
+    () => this.data.activeCards().filter((c) => c.holder === 'Mateus').length,
   );
   thaisCount = computed(
-    () => this.data.cards().filter((c) => c.holder === 'Thais').length,
+    () => this.data.activeCards().filter((c) => c.holder === 'Thais').length,
   );
 
   closingSoon = computed(
     () =>
-      this.data.cards().filter((c) => daysUntilClosing(c, this.today) <= 7)
+      this.data.activeCards().filter((c) => daysUntilClosing(c, this.today) <= 7)
         .length,
   );
 
   nextDueCard = computed(() => {
     return (
-      [...this.data.cards()].sort(
+      [...this.data.activeCards()].sort(
         (a, b) => daysUntilDue(a, this.today) - daysUntilDue(b, this.today),
       )[0] ?? null
     );
@@ -102,7 +102,7 @@ export class CardsComponent {
   // ── Table ─────────────────────────────────────────────────────────────────
 
   sortedCards = computed(() => {
-    const cards = [...this.data.cards()];
+    const cards = [...this.data.activeCards()];
     switch (this.sortMode()) {
       case 'closing':
         return cards.sort(

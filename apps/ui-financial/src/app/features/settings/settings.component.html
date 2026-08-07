@@ -274,7 +274,12 @@
                     </td>
                     <td>
                       <div class="name-stack">
-                        <span class="name-label">{{ c.bank }}</span>
+                        <span class="name-label">
+                          {{ c.bank }}
+                          @if (c.archived) {
+                            <span class="pill">Arquivado</span>
+                          }
+                        </span>
                         <span class="name-sub mono">···{{ c.last4 }}</span>
                       </div>
                     </td>
@@ -286,10 +291,17 @@
                         [disabled]="!auth.canWrite()" aria-label="Editar cartão">
                         <cf-icon name="settings" [size]="11" />
                       </button>
-                      <button type="button" class="icon-btn btn-neg" (click)="askRemoveCard(c.id)"
-                        [disabled]="!auth.canWrite()" aria-label="Excluir cartão">
-                        <cf-icon name="x" [size]="11" />
-                      </button>
+                      @if (c.archived) {
+                        <button type="button" class="icon-btn" (click)="data.archiveCard(c.id, false)"
+                          [disabled]="!auth.canWrite()" aria-label="Desarquivar cartão">
+                          <cf-icon name="repeat" [size]="11" />
+                        </button>
+                      } @else {
+                        <button type="button" class="icon-btn btn-neg" (click)="askRemoveCard(c.id)"
+                          [disabled]="!auth.canWrite()" aria-label="Excluir cartão">
+                          <cf-icon name="x" [size]="11" />
+                        </button>
+                      }
                     </td>
                   </tr>
                 }
@@ -315,10 +327,18 @@
                     [disabled]="!auth.canWrite()">
                     Editar
                   </button>
-                  <button type="button" class="stc-tag neg" (click)="askRemoveCard(c.id)"
-                    [disabled]="!auth.canWrite()">
-                    Excluir
-                  </button>
+                  @if (c.archived) {
+                    <span class="pill">Arquivado</span>
+                    <button type="button" class="stc-tag" (click)="data.archiveCard(c.id, false)"
+                      [disabled]="!auth.canWrite()">
+                      Desarquivar
+                    </button>
+                  } @else {
+                    <button type="button" class="stc-tag neg" (click)="askRemoveCard(c.id)"
+                      [disabled]="!auth.canWrite()">
+                      Excluir
+                    </button>
+                  }
                 </div>
               </div>
             }

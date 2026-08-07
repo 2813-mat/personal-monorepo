@@ -41,10 +41,15 @@ const entry = (year: number, month: number, total: number): InvoiceHistoryEntry 
   perCategory: {},
 });
 
-function build(byCard: Record<string, InvoiceHistoryEntry[]>) {
+function build(
+  byCard: Record<string, InvoiceHistoryEntry[]>,
+  cards: Card[] = CARDS,
+  activeCards: Card[] = cards,
+) {
   const data = {
-    cards: signal(CARDS),
-    cardBy: signal(Object.fromEntries(CARDS.map((c) => [c.id, c]))),
+    cards: signal(cards),
+    activeCards: signal(activeCards),
+    cardBy: signal(Object.fromEntries(cards.map((c) => [c.id, c]))),
     transactions: signal([]),
     catBy: signal({}),
     currentMonth: signal({ year: 2026, month: 7, label: 'Julho 2026', short: 'Jul/26' }),
@@ -102,6 +107,7 @@ describe('CardsComponent — invoice history column', () => {
 function buildResponsive(isDesktop: boolean) {
   const data = {
     cards: signal(CARDS),
+    activeCards: signal(CARDS),
     cardBy: signal(Object.fromEntries(CARDS.map((c) => [c.id, c]))),
     transactions: signal([]),
     catBy: signal({}),
@@ -142,5 +148,13 @@ describe('CardsComponent — responsive rendering', () => {
       '/cards/it-m/invoice',
       '/cards/nu-t/invoice',
     ]);
+  });
+});
+
+describe('CardsComponent — arquivados', () => {
+  it('soma só o limite dos cartões ativos', () => {
+    const arquivado = { ...CARDS[1], archived: true };
+    const component = build({}, [CARDS[0], arquivado], [CARDS[0]]);
+    expect(component.totalLimit()).toBe(4500);
   });
 });
