@@ -364,3 +364,95 @@ describe('ExpenseDrawerComponent — trocar o cartão na edição', () => {
     expect(fixture.componentInstance.form.pristine).toBe(false);
   });
 });
+
+/**
+ * O drawer monta um objeto diferente por tipo, e o template mostrava campos que
+ * o objeto de receita descarta: categoria, método de pagamento e parcelamento
+ * apareciam e não chegavam ao `Income`. Estes casos existem para que a tela não
+ * volte a prometer campo que não vai a lugar nenhum.
+ */
+describe('ExpenseDrawerComponent — receita não mostra campo que descarta', () => {
+  function buildReceita() {
+    const data = mockDataService();
+    TestBed.configureTestingModule({
+      imports: [ExpenseDrawerComponent],
+      providers: [{ provide: AppDataService, useValue: data }],
+    });
+    const fixture = TestBed.createComponent(ExpenseDrawerComponent);
+    fixture.detectChanges();
+    const c = fixture.componentInstance;
+    c.pick(c.form.controls.type, 'income');
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement, data, c };
+  }
+
+  it('esconde a grade de categorias', () => {
+    expect(buildReceita().el.querySelector('.cat-grid')).toBeNull();
+  });
+
+  it('esconde o método de pagamento', () => {
+    expect(buildReceita().el.querySelector('.method-list')).toBeNull();
+  });
+
+  it('esconde parcelamento e o toggle de recorrente', () => {
+    expect(buildReceita().el.querySelector('.toggle-grid')).toBeNull();
+  });
+
+  it('aponta para /incomes em vez de oferecer um recorrente que não recorre', () => {
+    expect(buildReceita().el.querySelector('.type-note').textContent).toContain('Receitas');
+  });
+
+  it('chama a receita pelo nome no cabeçalho e no botão', () => {
+    const { el } = buildReceita();
+    expect(el.querySelector('.head-title').textContent).toContain('Nova receita');
+    expect(el.querySelector('.save-btn').textContent).toContain('Salvar receita');
+  });
+
+  it('pergunta de quem é a receita, não quem fez o gasto', () => {
+    const labels = [...buildReceita().el.querySelectorAll('.label')].map((l) => l.textContent);
+    expect(labels).toContain('De quem é a receita');
+    expect(labels).not.toContain('Quem fez o gasto');
+  });
+
+  it('salva sem exigir categoria e sem carregar método nem parcelas', () => {
+    const { c, data } = buildReceita();
+    c.form.patchValue({ label: 'Freela', value: 1200, date: '2026-08-20', holder: 'Mateus' });
+    c.save();
+    expect(data.createIncome).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Freela', value: 1200, holder: 'Mateus' }),
+    );
+    const enviado = data.createIncome.mock.calls[0][0];
+    expect(enviado).not.toHaveProperty('cat');
+    expect(enviado).not.toHaveProperty('method');
+    expect(enviado).not.toHaveProperty('installments');
+  });
+
+  it('não deixa o recorrente marcado numa despesa vazar para a receita', () => {
+    const { fixture, c, data } = buildReceita();
+    // Volta para despesa, marca recorrente, e retorna para receita.
+    c.pick(c.form.controls.type, 'expense');
+    c.form.controls.recurring.setValue(true);
+    c.pick(c.form.controls.type, 'income');
+    fixture.detectChanges();
+
+    c.form.patchValue({ label: 'Bônus', value: 500, date: '2026-08-20', holder: 'Thais' });
+    c.save();
+    expect(data.createIncome).toHaveBeenCalledWith(
+      expect.objectContaining({ recurring: false }),
+    );
+  });
+
+  it('a despesa continua com os três campos', () => {
+    const data = mockDataService();
+    TestBed.configureTestingModule({
+      imports: [ExpenseDrawerComponent],
+      providers: [{ provide: AppDataService, useValue: data }],
+    });
+    const fixture = TestBed.createComponent(ExpenseDrawerComponent);
+    fixture.detectChanges();
+    const el = fixture.nativeElement;
+    expect(el.querySelector('.cat-grid')).not.toBeNull();
+    expect(el.querySelector('.method-list')).not.toBeNull();
+    expect(el.querySelector('.toggle-grid')).not.toBeNull();
+  });
+});

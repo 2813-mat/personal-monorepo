@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -67,6 +68,25 @@ export class ExpenseDrawerComponent {
     }),
     recurring: new FormControl(false, { nonNullable: true }),
   });
+
+  /**
+   * Que campos o tipo escolhido de fato usa.
+   *
+   * `save()` monta um objeto diferente por tipo, e o template mostrava campos
+   * que aquele objeto descarta: receita exibia categoria, método de pagamento e
+   * parcelamento, e nenhum dos três chegava ao `Income`. Estes sinais existem
+   * para que "este campo vai a algum lugar?" tenha uma resposta só, aqui do
+   * lado do `save()` que a define.
+   */
+  protected tipo = toSignal(this.form.controls.type.valueChanges, {
+    initialValue: this.form.controls.type.value,
+  });
+
+  protected isIncome = computed(() => this.tipo() === 'income');
+  protected showCategoria = computed(() => this.tipo() === 'expense' || this.tipo() === 'fixed');
+  protected showMetodo = computed(() => this.tipo() === 'expense');
+  /** Parcelar e recorrer são coisas de despesa; a edição não mexe em nenhum dos dois. */
+  protected showToggles = computed(() => !this.isEditing() && this.tipo() === 'expense');
 
   constructor() {
     effect(() => {
@@ -197,7 +217,11 @@ export class ExpenseDrawerComponent {
         holder: v.holder,
         value: Number(v.value),
         date: v.date,
-        recurring: v.recurring,
+        // Receita lançada aqui é avulsa por definição: recorrência de receita
+        // mora em /incomes, como cadastro que gera a linha de cada mês. Fixar
+        // em false também impede que o toggle marcado numa despesa vaze para
+        // cá quando o tipo muda.
+        recurring: false,
       };
       this.data.createIncome(income);
       this.onClose();

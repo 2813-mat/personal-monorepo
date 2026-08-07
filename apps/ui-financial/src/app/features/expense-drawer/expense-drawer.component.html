@@ -14,6 +14,9 @@
       } @else if (form.controls.type.value === 'contribution') {
       <div class="head-title">Novo aporte</div>
       <span class="head-sub">{{ data.currentMonth().label }}</span>
+      } @else if (isIncome()) {
+      <div class="head-title">Nova receita</div>
+      <span class="head-sub">{{ data.currentMonth().label }}</span>
       } @else {
       <div class="head-title">Novo lançamento</div>
       <span class="head-sub">{{ data.currentMonth().label }}</span>
@@ -69,7 +72,7 @@
       </button>
       }
     </div>
-    } @else {
+    } @else if (showCategoria()) {
     <!-- Categoria -->
     <div class="label mt">Categoria</div>
     <div class="cat-grid">
@@ -93,7 +96,7 @@
     <input type="date" class="text-input num" formControlName="date" />
     }
 
-    @if (form.controls.type.value !== 'fixed' && form.controls.type.value !== 'contribution') {
+    @if (showMetodo()) {
     <!-- Método -->
     <div class="label mt">Método de pagamento</div>
     <div class="method-list">
@@ -129,8 +132,8 @@
     </div>
     }
 
-    <!-- Quem fez o gasto -->
-    <div class="label mt">Quem fez o gasto</div>
+    <!-- Titular: "quem fez o gasto" não descreve uma receita. -->
+    <div class="label mt">{{ isIncome() ? 'De quem é a receita' : 'Quem fez o gasto' }}</div>
     <div class="seg seg-full">
       <button type="button" class="seg-btn" [class.active]="form.controls.holder.value === 'Mateus'"
         (click)="pick(form.controls.holder, 'Mateus')">
@@ -146,11 +149,16 @@
       </button>
     </div>
 
-    @if (
-    !isEditing() &&
-    form.controls.type.value !== 'fixed' &&
-    form.controls.type.value !== 'contribution'
-    ) {
+    @if (isIncome()) {
+    <!-- Recorrência de receita não é um checkbox aqui: é cadastro em /incomes,
+         que gera a linha de cada mês e sobrevive a um aumento. -->
+    <p class="type-note mt">
+      Salário e outras receitas que se repetem todo mês se cadastram em
+      <strong>Receitas</strong> — lá elas lançam sozinhas e o valor pode ser reajustado.
+    </p>
+    }
+
+    @if (showToggles()) {
     <!-- Toggles -->
     <div class="toggle-grid mt" formGroupName="installments">
       <label class="toggle-row">
@@ -191,6 +199,7 @@
       @switch (form.controls.type.value) {
       @case ('fixed') { Salvar gasto fixo }
       @case ('contribution') { Salvar aporte }
+      @case ('income') { Salvar receita }
       @default { Salvar lançamento }
       }
     </button>
