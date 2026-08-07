@@ -4,6 +4,25 @@ import type { Card, Holder } from '@caixa-familia/shared-types';
 import { AppDataService } from '../../layout/app-data.service';
 import { IconComponent } from '../../ui/icon/icon.component';
 
+/**
+ * Cores de marca dos bancos que a gente usa, mais alguns neutros. Ninguém sabe
+ * hexadecimal de cabeça: o campo livre só existe atrás do seletor nativo.
+ */
+const PALETA = [
+  { hex: '#820AD1', nome: 'Roxo Nubank' },
+  { hex: '#FF7A00', nome: 'Laranja Inter' },
+  { hex: '#EC7000', nome: 'Laranja Itaú' },
+  { hex: '#CC092F', nome: 'Vermelho Bradesco' },
+  { hex: '#005CA9', nome: 'Azul Caixa' },
+  { hex: '#FAE128', nome: 'Amarelo Banco do Brasil' },
+  { hex: '#00A868', nome: 'Verde Sicredi' },
+  { hex: '#1F4E79', nome: 'Azul-marinho' },
+  { hex: '#0F766E', nome: 'Verde-petróleo' },
+  { hex: '#A16207', nome: 'Mostarda' },
+  { hex: '#BE185D', nome: 'Magenta' },
+  { hex: '#334155', nome: 'Grafite' },
+] as const;
+
 const VAZIO = {
   name: '',
   bank: '',
@@ -30,11 +49,16 @@ export class CardEditDrawerComponent {
   readonly closed = output<void>();
 
   protected isEditing = computed(() => this.card() !== null);
+  protected readonly paleta = PALETA;
 
   form = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     bank: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    color: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    // Espelha o @IsHexColor do DTO na forma que o seletor nativo produz.
+    color: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^#[0-9A-Fa-f]{6}$/)],
+    }),
     // Quatro dígitos, não quatro caracteres — espelha o @Matches do DTO.
     last4: new FormControl('', {
       nonNullable: true,
@@ -71,6 +95,17 @@ export class CardEditDrawerComponent {
       );
       this.form.markAsPristine();
     });
+  }
+
+  /** O seletor nativo devolve minúsculo; o cartão salvo pode estar maiúsculo. */
+  protected isSelected(hex: string) {
+    return this.form.controls.color.value.toUpperCase() === hex.toUpperCase();
+  }
+
+  protected pickColor(hex: string) {
+    this.form.controls.color.setValue(hex);
+    // setValue sozinho não suja o form, e Salvar depende de dirty.
+    this.form.controls.color.markAsDirty();
   }
 
   save() {

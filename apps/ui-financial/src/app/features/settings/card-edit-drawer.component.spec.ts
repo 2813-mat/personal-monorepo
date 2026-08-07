@@ -113,3 +113,43 @@ describe('CardEditDrawerComponent — criação', () => {
     expect(data.createCard).not.toHaveBeenCalled();
   });
 });
+
+describe('CardEditDrawerComponent — seletor de cor', () => {
+  it('abre com uma cor válida já escolhida, sem digitar hexadecimal', () => {
+    const { c } = build(null);
+    expect(c.form.controls.color.value).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(c.form.controls.color.valid).toBe(true);
+  });
+
+  it('escolher uma amostra troca a cor e habilita Salvar', () => {
+    const { fixture, el } = build(null);
+    const swatches: HTMLButtonElement[] = Array.from(el.querySelectorAll('.swatch'));
+    expect(swatches.length).toBeGreaterThan(1);
+
+    const alvo = swatches.find((s) => !s.classList.contains('active'));
+    alvo?.click();
+    fixture.detectChanges();
+
+    expect(alvo?.classList.contains('active')).toBe(true);
+    expect(fixture.componentInstance.form.dirty).toBe(true);
+  });
+
+  it('marca a amostra do cartão em edição mesmo com hexadecimal em outra caixa', () => {
+    const { el } = build({ ...CARD, color: '#820ad1' });
+    const ativa: HTMLButtonElement | null = el.querySelector('.swatch.active');
+    expect(ativa?.getAttribute('aria-label')).toBe('Roxo Nubank');
+  });
+
+  it('oferece o seletor nativo para uma cor fora da paleta', () => {
+    const { el } = build(CARD);
+    expect(el.querySelector('input#card-color').type).toBe('color');
+  });
+
+  it('rejeita uma cor que não é hexadecimal', () => {
+    const { c, data } = build(null);
+    c.form.controls.color.setValue('roxo');
+    c.form.markAsDirty();
+    c.save();
+    expect(data.createCard).not.toHaveBeenCalled();
+  });
+});
