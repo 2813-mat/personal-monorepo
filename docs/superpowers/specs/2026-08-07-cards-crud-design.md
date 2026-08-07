@@ -90,10 +90,13 @@ Todas atrás de `@Roles('admin', 'editor')`, como as demais escritas.
 Mesma forma do 409 de categoria, para a UI traduzir com um `cardConflictMessage` irmão do
 `categoryConflictMessage` que já existe.
 
-**Wire de leitura:** hoje **não existe `CardWire`** — `listCards()` devolve o `Card` de
-`shared-types` direto, sem mapper, e a `card.view.ts` da API monta esse mesmo tipo. Esta fatia
-cria `CardWire` (cópia de `Card` mais `archived: boolean`), e o `Card` de domínio ganha
-`archived` também, porque a UI precisa dele para separar ativos de arquivados.
+**Wire de leitura:** `card.view.ts` já devolve o formato de domínio (`closing`, `due`, `limit`),
+e `listCards()` consome o `Card` de `shared-types` direto. Então **não se cria `CardWire`**: o
+`Card` compartilhado ganha `archived: boolean` e pronto. Um wire separado seria cópia do
+domínio e o `wireToCard` seria função identidade — cerimônia sem ganho.
+
+Wire só existe onde a forma de fato difere: `CreateCardWire` e `UpdateCardWire`, que não têm
+`id`, `current` nem `archived`.
 
 > **`shared-types` atravessa os dois apps.** Mexer em `Card` quebra o type-check de
 > `api-financial`, porque `seed.ts` importa `libs/shared-mocks`. `MOCK_CARDS` precisa ganhar
@@ -134,18 +137,19 @@ O segundo modal transforma o erro em caminho de saída, em vez de um toast que s
 - `activeCards` — `cards().filter(c => !c.archived)`, alimenta o seletor de método do
   `expense-drawer` e a tela `/cards`.
 
-Isto encosta em **duas telas já entregues**: `expense-drawer` e `/cards` trocam a fonte da
-lista. Uma linha em cada, e os testes das duas entram no gate.
+Isto encosta em **duas telas já entregues**: `expense-drawer` (uma linha, o `@for` do seletor
+de método) e `/cards`, que usa `data.cards()` em **sete lugares** no componente e um no
+template — KPIs, contagem por titular, ordenação e proximidade de fechamento. Os testes das
+duas entram no gate.
 
 ## Camada de dados da UI
 
 Seguindo o padrão da fatia anterior:
 
-- `wire.types.ts`: `CreateCardWire`, `UpdateCardWire`, `archived` em `CardWire`;
+- `wire.types.ts`: `CreateCardWire` e `UpdateCardWire`;
 - `catalog-api.service.ts`: `createCard`, `updateCard`, `removeCard`, `archiveCard`;
-- `card.mapper.ts` novo, ao lado de `catalog.mapper.ts`: `wireToCard`, `cardToCreateWire`,
-  `cardToUpdateWire`. Hoje não há mapper de cartão — `listCards` devolve `Card` direto — e
-  `archived` é a razão para passar a ter um. `catalog.mapper.ts` fica só com categoria;
+- `card.mapper.ts` novo, ao lado de `catalog.mapper.ts`: `cardToCreateWire` e
+  `cardToUpdateWire` — só o sentido domínio → wire, porque a leitura não precisa de mapper;
 - `CatalogStore`: `createCard`, `updateCard`, `removeCard`, `archiveCard`, `activeCards`;
 - `AppDataService`: delegação, como o resto.
 
@@ -173,8 +177,9 @@ Cada escrita segue o padrão da fachada: recarrega o catálogo no sucesso, e no 
 
 **`ui-financial`**:
 
-- mapper: `cardToCreateWire` não manda `id`; `wireToCard` carrega `archived` — a constraint do
-  umbrella §1b vale aqui: mapper que descarta campo é bug, e já houve três ocorrências;
+- mapper: `cardToCreateWire` manda os oito campos editáveis e deixa `id`, `current` e
+  `archived` de fora — a constraint do umbrella §1b vale aqui, mapper que descarta campo é bug,
+  e já houve três ocorrências;
 - api service: as quatro chamadas com verbo e URL certos;
 - `cardConflictMessage`: plural, singular, parte zerada, e não-409;
 - drawer: preenche a partir do cartão, Salvar desabilitado enquanto `pristine`, salva com o id
