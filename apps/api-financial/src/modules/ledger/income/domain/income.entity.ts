@@ -5,6 +5,8 @@ export interface IncomeProps {
   value: number;
   date: string;
   recurring: boolean;
+  /** Presente quando a linha nasceu de um template de receita recorrente. */
+  recurringIncomeId?: string;
 }
 
 export class Income {

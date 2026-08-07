@@ -11,4 +11,5 @@ export const toDomain = (r: IncomeRow): Income =>
     value: Number(r.value),
     date: r.date.toISOString().slice(0, 10),
     recurring: r.recurring,
+    recurringIncomeId: r.recurringIncomeId ?? undefined,
   });
