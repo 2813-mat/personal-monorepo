@@ -169,3 +169,26 @@ describe('CardPrismaRepository.create', () => {
     expect((await repo.create(NOVO)).toJSON().current).toBe(0);
   });
 });
+
+describe('CardPrismaRepository.update', () => {
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.update('de-outro', { creditLimit: 1 })).resolves.toBeNull();
+    expect(prisma.card.update).not.toHaveBeenCalled();
+  });
+
+  it('só traduz holder para ownerMemberId quando holder veio no corpo', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.update('c1', { creditLimit: 6000 });
+    expect(prisma.member.findFirst).not.toHaveBeenCalled();
+    expect(prisma.card.update.mock.calls[0][0].data).not.toHaveProperty('ownerMemberId');
+  });
+
+  it('traduz o titular quando ele veio no corpo', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.member.findFirst.mockResolvedValue({ id: 'm-mateus' });
+    await repo.update('c1', { holder: 'Mateus' });
+    expect(prisma.card.update.mock.calls[0][0].data.ownerMemberId).toBe('m-mateus');
+  });
+});
