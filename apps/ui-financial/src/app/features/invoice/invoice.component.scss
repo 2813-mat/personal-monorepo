@@ -53,9 +53,12 @@
   display: inline-flex; align-items: center; gap: 6px;
   height: 28px; padding: 0 12px;
   font-size: 12px; font-family: inherit;
-  cursor: not-allowed; opacity: 0.55;
+  cursor: pointer;
   white-space: nowrap;
 }
+
+/* Boleto e Pagar agora seguem stubs; fechar fatura só é bloqueado para não-admin. */
+.btn-ghost:disabled, .btn-primary:disabled { cursor: not-allowed; opacity: 0.55; }
 .btn-ghost {
   border: 1px solid var(--line); background: var(--surface); color: var(--ink-1);
 }
