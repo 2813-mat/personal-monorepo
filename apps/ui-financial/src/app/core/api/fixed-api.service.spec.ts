@@ -35,4 +35,19 @@ describe('FixedApiService', () => {
     expect(req.request.body).toEqual(body);
     req.flush({ id: 'f1', ...body, paidThisMonth: false });
   });
+
+  it('PATCHes a fixed expense', () => {
+    service.update('f1', { value: 300 }).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/fixed-expenses/f1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ value: 300 });
+    req.flush({});
+  });
+
+  it('DELETEs a fixed expense', () => {
+    service.remove('f1').subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/fixed-expenses/f1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({});
+  });
 });

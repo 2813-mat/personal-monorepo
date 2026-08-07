@@ -24,7 +24,7 @@ import {
 } from '../core/api/catalog.mapper';
 import { categoryConflictMessage } from '../core/api/category-conflict';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
-import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
+import { wireToFixed, fixedToCreateWire, fixedToUpdateWire } from '../core/api/fixed.mapper';
 import { wireToGoal, goalToUpdateWire } from '../core/api/goal.mapper';
 import {
   wireToInvoiceHistory,
@@ -212,6 +212,20 @@ export class AppDataService {
     this.fixApi.create(fixedToCreateWire(f)).subscribe({
       next: () => this.loadFixed(),
       error: () => this.fail('Falha ao criar gasto fixo', this.fixedError),
+    });
+  }
+
+  updateFixed(f: FixedExpense): void {
+    this.fixApi.update(f.id, fixedToUpdateWire(f)).subscribe({
+      next: () => this.loadFixed(),
+      error: () => this.fail('Falha ao salvar gasto fixo', this.fixedError),
+    });
+  }
+
+  removeFixed(id: string): void {
+    this.fixApi.remove(id).subscribe({
+      next: () => this.loadFixed(),
+      error: () => this.fail('Falha ao remover gasto fixo', this.fixedError),
     });
   }
 

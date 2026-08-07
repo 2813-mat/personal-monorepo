@@ -156,6 +156,14 @@ export interface CreateFixedExpenseWire {
   holder: string;
 }
 
+export interface UpdateFixedExpenseWire {
+  label?: string;
+  value?: number;
+  dueDay?: number;
+  categorySlug?: string;
+  holder?: string;
+}
+
 export interface CreateIncomeWire {
   label: string;
   holder: string;
