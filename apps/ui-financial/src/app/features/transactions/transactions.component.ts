@@ -10,6 +10,7 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 import { IconComponent } from '../../ui/icon/icon.component';
 import { TxDetailDrawerComponent } from '../tx-detail-drawer/tx-detail-drawer.component';
 import { ViewportService } from '../../core/viewport.service';
+import { matchesHolder } from '@caixa-familia/shared-utils';
 import type { Transaction } from '@caixa-familia/shared-types';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -67,7 +68,7 @@ export class TransactionsComponent {
     const cat = this.selectedCat();
     const filter = this.data.holderFilter();
     return this.data.transactions()
-      .filter(t => filter === 'todos' || t.holder === filter || (filter !== 'shared' && t.holder === 'shared'))
+      .filter(t => matchesHolder(filter, t.holder))
       .filter(t => !cat || t.cat === cat)
       .filter(t => !query || t.label.toLowerCase().includes(query))
       .filter(t => !this.onlyUnreviewed() || !t.reviewed);

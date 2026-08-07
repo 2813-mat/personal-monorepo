@@ -6,7 +6,7 @@ import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
-import { daysUntilClosing } from '@caixa-familia/shared-utils';
+import { daysUntilClosing, matchesHolder } from '@caixa-familia/shared-utils';
 import type { Card } from '@caixa-familia/shared-types';
 
 @Component({
@@ -26,16 +26,17 @@ export class DashboardCComponent {
     return last.getDate() - this.today.getDate();
   })();
 
-  receita = computed(() =>
-    this.data.incomes()
-      .filter(i => { const f = this.data.holderFilter(); return f === 'todos' || i.holder === f; })
-      .reduce((s, i) => s + i.value, 0)
-  );
+  receita = computed(() => {
+    const f = this.data.holderFilter();
+    return this.data.incomes()
+      .filter(i => matchesHolder(f, i.holder))
+      .reduce((s, i) => s + i.value, 0);
+  });
 
   gastos = computed(() => {
     const f = this.data.holderFilter();
     return this.data.transactions()
-      .filter(t => f === 'todos' || t.holder === f || (f !== 'shared' && t.holder === 'shared'))
+      .filter(t => matchesHolder(f, t.holder))
       .reduce((s, t) => s + t.value, 0);
   });
 
@@ -51,7 +52,10 @@ export class DashboardCComponent {
   );
 
   recentTx = computed(() =>
-    [...this.data.transactions()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7)
+    [...this.data.transactions()]
+      .filter(t => matchesHolder(this.data.holderFilter(), t.holder))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 7)
   );
 
   daysLeft(card: Card) { return daysUntilClosing(card, this.today); }
