@@ -148,3 +148,43 @@ describe('FixedComponent — responsive rendering', () => {
     expect(lists[1].querySelectorAll('.fx-card').length).toBe(1);
   });
 });
+
+/** No molde do buildResponsive acima, mas devolvendo o mock para as asserções. */
+function buildFixed() {
+  const data = { ...mockDataService(), removeFixed: jest.fn() };
+  TestBed.configureTestingModule({
+    imports: [FixedComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(FixedComponent);
+  fixture.detectChanges();
+  return { fixture, component: fixture.componentInstance, data };
+}
+
+describe('FixedComponent — remover', () => {
+  it('pede confirmação antes de remover', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    expect(component.confirmingRemoval()).toBe('f1');
+    expect(data.removeFixed).not.toHaveBeenCalled();
+  });
+
+  it('remove ao confirmar', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    component.confirmRemove();
+    expect(data.removeFixed).toHaveBeenCalledWith('f1');
+    expect(component.confirmingRemoval()).toBeNull();
+  });
+
+  it('não remove ao cancelar', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    component.cancelRemove();
+    expect(data.removeFixed).not.toHaveBeenCalled();
+    expect(component.confirmingRemoval()).toBeNull();
+  });
+});

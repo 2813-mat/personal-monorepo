@@ -115,6 +115,10 @@
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />
               </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemove(f.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover gasto fixo">
+                <cf-icon name="x" [size]="11" />
+              </button>
             </td>
           </tr>
         }
@@ -150,6 +154,8 @@
             }
             <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
               [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
           </div>
         </div>
       }
@@ -226,6 +232,10 @@
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />
               </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemove(f.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover gasto fixo">
+                <cf-icon name="x" [size]="11" />
+              </button>
             </td>
           </tr>
         }
@@ -251,6 +261,8 @@
             </span>
             <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
               [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
           </div>
         </div>
       }
@@ -266,4 +278,15 @@
 
 @if (editingFixed(); as f) {
   <cf-fixed-edit-drawer [fixed]="f" (closed)="editingFixed.set(null)" />
+}
+
+@if (confirmingRemoval()) {
+  <cf-confirm-modal
+    title="Remover gasto fixo?"
+    description="Os lançamentos já registrados continuam no histórico — apenas deixam de estar vinculados a este gasto fixo."
+    confirmLabel="Remover"
+    [danger]="true"
+    (confirmed)="confirmRemove()"
+    (cancelled)="cancelRemove()"
+  />
 }

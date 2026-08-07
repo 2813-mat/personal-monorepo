@@ -9,6 +9,7 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { FixedEditDrawerComponent } from './fixed-edit-drawer.component';
+import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'cf-fixed',
@@ -20,6 +21,7 @@ import { FixedEditDrawerComponent } from './fixed-edit-drawer.component';
     IconComponent,
     ProgressBarComponent,
     FixedEditDrawerComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './fixed.component.html',
   styleUrl: './fixed.component.scss',
@@ -30,6 +32,22 @@ export class FixedComponent {
   protected auth = inject(AuthService);
 
   protected editingFixed = signal<FixedExpense | null>(null);
+
+  readonly confirmingRemoval = signal<string | null>(null);
+
+  askRemove(id: string): void {
+    this.confirmingRemoval.set(id);
+  }
+
+  confirmRemove(): void {
+    const id = this.confirmingRemoval();
+    if (id) this.data.removeFixed(id);
+    this.confirmingRemoval.set(null);
+  }
+
+  cancelRemove(): void {
+    this.confirmingRemoval.set(null);
+  }
 
   pendingItems = computed(() =>
     this.data.fixed()
