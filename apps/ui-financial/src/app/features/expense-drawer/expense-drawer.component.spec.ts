@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ExpenseDrawerComponent } from './expense-drawer.component';
 import { AppDataService } from '../../layout/app-data.service';
-import type { Category, Goal } from '@caixa-familia/shared-types';
+import type { Category, Goal, Transaction } from '@caixa-familia/shared-types';
 
 const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#000', budget: 100, order: 1 }];
 
@@ -179,16 +179,17 @@ describe('ExpenseDrawerComponent — contribution type', () => {
 
 /** O arquivo constrói o drawer em cada `describe`; aqui basta um fixture cru. */
 function buildDrawer() {
+  const data = { ...mockDataService(), updateTransaction: jest.fn() };
   TestBed.configureTestingModule({
     imports: [ExpenseDrawerComponent],
-    providers: [{ provide: AppDataService, useValue: mockDataService() }],
+    providers: [{ provide: AppDataService, useValue: data }],
   });
-  return TestBed.createComponent(ExpenseDrawerComponent);
+  return { fixture: TestBed.createComponent(ExpenseDrawerComponent), data };
 }
 
 describe('ExpenseDrawerComponent — aporte pré-selecionado', () => {
   it('abre no modo aporte com a meta escolhida', () => {
-    const fixture = buildDrawer();
+    const { fixture } = buildDrawer();
     fixture.componentRef.setInput('presetGoal', 'sos');
     fixture.detectChanges();
     const v = fixture.componentInstance.form.getRawValue();
@@ -197,8 +198,58 @@ describe('ExpenseDrawerComponent — aporte pré-selecionado', () => {
   });
 
   it('abre no modo gasto quando não há meta', () => {
-    const fixture = buildDrawer();
+    const { fixture } = buildDrawer();
     fixture.detectChanges();
     expect(fixture.componentInstance.form.getRawValue().type).toBe('expense');
+  });
+});
+
+const TX_EDIT: Transaction = {
+  id: 't1',
+  date: '2026-05-05',
+  label: 'Mercado',
+  value: 240,
+  cat: 'casa',
+  holder: 'Mateus',
+  method: 'pix',
+  installments: null,
+  reviewed: false,
+};
+
+describe('ExpenseDrawerComponent — modo edição', () => {
+  it('preenche o formulário a partir da transação', () => {
+    const { fixture } = buildDrawer();
+    fixture.componentRef.setInput('editing', TX_EDIT);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.getRawValue()).toMatchObject({
+      label: 'Mercado',
+      value: 240,
+    });
+  });
+
+  it('salva com updateTransaction, não createTransaction', () => {
+    const { fixture, data } = buildDrawer();
+    fixture.componentRef.setInput('editing', TX_EDIT);
+    fixture.detectChanges();
+    fixture.componentInstance.form.markAsDirty();
+    fixture.componentInstance.save();
+    expect(data.updateTransaction).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
+    expect(data.createTransaction).not.toHaveBeenCalled();
+  });
+
+  it('continua criando quando não há transação em edição', () => {
+    const { fixture, data } = buildDrawer();
+    fixture.detectChanges();
+    fixture.componentInstance.form.patchValue({ label: 'Nova', value: 10, cat: 'casa' });
+    fixture.componentInstance.save();
+    expect(data.createTransaction).toHaveBeenCalled();
+    expect(data.updateTransaction).not.toHaveBeenCalled();
+  });
+
+  it('trava o chip de tipo na edição', () => {
+    const { fixture } = buildDrawer();
+    fixture.componentRef.setInput('editing', TX_EDIT);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.controls.type.disabled).toBe(true);
   });
 });

@@ -12,7 +12,10 @@
   <!-- Header -->
   <header class="drawer-head">
     <div class="head-text">
-      @if (form.controls.type.value === 'fixed') {
+      @if (isEditing()) {
+        <div class="head-title">Editar lançamento</div>
+        <span class="head-sub">{{ data.currentMonth().label }}</span>
+      } @else if (form.controls.type.value === 'fixed') {
         <div class="head-title">Novo gasto fixo</div>
         <span class="head-sub">Todo mês</span>
       } @else if (form.controls.type.value === 'contribution') {
@@ -213,7 +216,11 @@
       </button>
     </div>
 
-    @if (form.controls.type.value !== 'fixed' && form.controls.type.value !== 'contribution') {
+    @if (
+      !isEditing() &&
+      form.controls.type.value !== 'fixed' &&
+      form.controls.type.value !== 'contribution'
+    ) {
     <!-- Toggles -->
     <div class="toggle-grid mt" formGroupName="installments">
       <label class="toggle-row">

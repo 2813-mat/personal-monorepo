@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -46,6 +46,11 @@ export class ExpenseDrawerComponent {
   /** Quando presente, o drawer abre no modo aporte já apontando para esta meta. */
   readonly presetGoal = input<string | null>(null);
 
+  /** Vazio = criar (comportamento atual). Preenchido = editar. */
+  readonly editing = input<Transaction | null>(null);
+
+  protected isEditing = computed(() => this.editing() !== null);
+
   form = new FormGroup({
     type: new FormControl<'expense' | 'income' | 'contribution' | 'fixed'>('expense', { nonNullable: true }),
     value: new FormControl<number>(0, { nonNullable: true, validators: [Validators.required, Validators.min(0.01)] }),
@@ -68,6 +73,24 @@ export class ExpenseDrawerComponent {
       const slug = this.presetGoal();
       if (!slug) return;
       this.form.patchValue({ type: 'contribution', goal: slug });
+    });
+
+    effect(() => {
+      const tx = this.editing();
+      if (!tx) return;
+      this.form.patchValue({
+        type: 'expense',
+        label: tx.label,
+        value: tx.value,
+        cat: tx.cat,
+        method: tx.method,
+        holder: tx.holder,
+        date: tx.date,
+      });
+      // Mudar o tipo de um lançamento existente é outra operação; o PATCH
+      // também não aceita alterar parcelamento.
+      this.form.controls.type.disable();
+      this.form.markAsPristine();
     });
 
     this.form.controls.type.valueChanges.subscribe((type) => {
@@ -116,6 +139,24 @@ export class ExpenseDrawerComponent {
   save() {
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
+
+    const editing = this.editing();
+    if (editing) {
+      if (this.form.pristine) return;
+      // note, recurring e installments sobrevivem pelo espalhamento: o PATCH
+      // não os edita aqui.
+      this.data.updateTransaction({
+        ...editing,
+        label: v.label,
+        value: Number(v.value),
+        cat: v.cat,
+        method: v.method,
+        holder: v.holder,
+        date: v.date,
+      });
+      this.onClose();
+      return;
+    }
 
     if (v.type === 'fixed') {
       const fixed: FixedExpense = {

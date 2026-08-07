@@ -160,7 +160,8 @@
       <button type="button" class="btn ghost btn-neg" (click)="remove()" [disabled]="!auth.canWrite()">Excluir</button>
     </div>
     <div class="foot-group">
-      <button type="button" class="btn ghost" disabled>Editar</button>
+      <button type="button" class="btn ghost" [disabled]="!auth.canWrite()"
+        (click)="editing.set(true)">Editar</button>
       <button
         type="button"
         class="btn btn-primary btn-review"
@@ -176,3 +177,7 @@
     </div>
   </footer>
 </aside>
+
+@if (editing()) {
+  <cf-expense-drawer [editing]="tx()" (closed)="editing.set(false)" />
+}

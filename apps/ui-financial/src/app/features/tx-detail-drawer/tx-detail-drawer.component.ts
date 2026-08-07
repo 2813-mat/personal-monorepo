@@ -1,4 +1,4 @@
-import { Component, inject, input, output, computed } from '@angular/core';
+import { Component, inject, input, output, computed, signal } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
@@ -7,6 +7,7 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { ExpenseDrawerComponent } from '../expense-drawer/expense-drawer.component';
 import type { Transaction } from '@caixa-familia/shared-types';
 
 @Component({
@@ -19,6 +20,7 @@ import type { Transaction } from '@caixa-familia/shared-types';
     CardChipComponent,
     ProgressBarComponent,
     IconComponent,
+    ExpenseDrawerComponent,
   ],
   host: { '(document:keydown.escape)': 'onClose()' },
   templateUrl: './tx-detail-drawer.component.html',
@@ -30,6 +32,8 @@ export class TxDetailDrawerComponent {
 
   tx = input.required<Transaction>();
   closed = output<void>();
+
+  protected editing = signal(false);
 
   card = computed(() => this.data.cardBy()[this.tx().method] ?? null);
   catLabel = computed(() => this.data.catBy()[this.tx().cat]?.label ?? this.tx().cat);
