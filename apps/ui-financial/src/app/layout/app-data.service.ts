@@ -1,390 +1,160 @@
-import { Injectable, signal, computed, inject, type WritableSignal } from '@angular/core';
-import type {
-  Card,
-  Category,
-  FixedExpense,
-  Goal,
-  HolderFilter,
-  Income,
-  Transaction,
-} from '@caixa-familia/shared-types';
-import { monthContextOf, type MonthView } from '@caixa-familia/shared-utils';
-import { TransactionApiService } from '../core/api/transaction-api.service';
-import { CatalogApiService } from '../core/api/catalog-api.service';
-import { IncomeApiService } from '../core/api/income-api.service';
-import { FixedApiService } from '../core/api/fixed-api.service';
-import { GoalApiService } from '../core/api/goal-api.service';
-import { InvoiceApiService } from '../core/api/invoice-api.service';
-import { ReportApiService } from '../core/api/report-api.service';
-import { wireToTransaction, transactionToCreateWire, transactionToUpdateWire } from '../core/api/transaction.mapper';
-import {
-  wireToCategory,
-  categoryToCreateWire,
-  categoryToUpdateWire,
-} from '../core/api/catalog.mapper';
-import { categoryConflictMessage } from '../core/api/category-conflict';
-import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
-import { wireToFixed, fixedToCreateWire, fixedToUpdateWire } from '../core/api/fixed.mapper';
-import { wireToGoal, goalToUpdateWire } from '../core/api/goal.mapper';
-import {
-  wireToInvoiceHistory,
-  wireToOpenInvoiceItem,
-  groupInvoiceHistoryByCard,
-  type InvoiceHistoryEntry,
-  type OpenInvoiceState,
-} from '../core/api/invoice.mapper';
-import {
-  wireToExpenseHistory,
-  wireToIncomeHistory,
-  type MonthEntry,
-} from '../core/api/report.mapper';
-import { ToastService } from '../ui/toast/toast.service';
+import { Injectable, inject } from '@angular/core';
+import type { Category, FixedExpense, Goal, Income, Transaction } from '@caixa-familia/shared-types';
+import { CatalogStore } from '../core/state/catalog.store';
+import { FixedStore } from '../core/state/fixed.store';
+import { GoalStore } from '../core/state/goal.store';
+import { IncomeStore } from '../core/state/income.store';
+import { InvoiceStore } from '../core/state/invoice.store';
+import { ReportStore } from '../core/state/report.store';
+import { TransactionStore } from '../core/state/transaction.store';
+import { ViewContextService } from '../core/state/view-context.service';
 
+/**
+ * Fachada única que a UI injeta. Cada recurso mora no seu store em
+ * `core/state/`; aqui só há reexportação de sinais e delegação de métodos.
+ *
+ * A fachada existe porque a superfície é consumida por ~15 componentes e
+ * mockada em 15 specs: quebrar isso em injeções separadas espalharia a mudança
+ * por todos eles sem ganho. O que doía era a lógica num arquivo só, e essa saiu.
+ */
 @Injectable({ providedIn: 'root' })
 export class AppDataService {
-  private txApi = inject(TransactionApiService);
-  private catApi = inject(CatalogApiService);
-  private incApi = inject(IncomeApiService);
-  private fixApi = inject(FixedApiService);
-  private goalApi = inject(GoalApiService);
-  private invApi = inject(InvoiceApiService);
-  private repApi = inject(ReportApiService);
-  private toast = inject(ToastService);
+  private catalog = inject(CatalogStore);
+  private tx = inject(TransactionStore);
+  private income = inject(IncomeStore);
+  private fix = inject(FixedStore);
+  private goal = inject(GoalStore);
+  private invoice = inject(InvoiceStore);
+  private report = inject(ReportStore);
+  private view = inject(ViewContextService);
 
-  private fail(message: string, errorSignal: WritableSignal<string | null>): void {
-    errorSignal.set(message);
-    this.toast.show(message, 'neg');
-  }
-
-  readonly cards = signal<Card[]>([]);
-  readonly transactions = signal<Transaction[]>([]);
-  readonly categories = signal<Category[]>([]);
-
-  readonly incomes = signal<Income[]>([]);
-  readonly fixed = signal<FixedExpense[]>([]);
-  readonly goals = signal<Goal[]>([]);
-  readonly history = signal<MonthEntry[]>([]);
-  readonly incomeHistory = signal<MonthEntry[]>([]);
-
-  readonly catBy = computed<Record<string, Category>>(() =>
-    Object.fromEntries(this.categories().map((c) => [c.id, c])),
-  );
-  readonly cardBy = computed<Record<string, Card>>(() =>
-    Object.fromEntries(this.cards().map((c) => [c.id, c])),
-  );
-
-  readonly currentMonth = signal<MonthView>(monthContextOf());
-  readonly holderFilter = signal<HolderFilter>('todos');
-  readonly monthLabel = computed(() => this.currentMonth().label);
-
-  readonly transactionsLoading = signal(false);
-  readonly transactionsError = signal<string | null>(null);
-
-  readonly incomesLoading = signal(false);
-  readonly incomesError = signal<string | null>(null);
-
-  readonly fixedLoading = signal(false);
-  readonly fixedError = signal<string | null>(null);
-
-  readonly goalsLoading = signal(false);
-  readonly goalsError = signal<string | null>(null);
-
-  readonly categoriesError = signal<string | null>(null);
-  readonly cardsError = signal<string | null>(null);
-
-  readonly reportsLoading = signal(false);
-  readonly reportsError = signal<string | null>(null);
-
-  /** Faturas fechadas de todos os cartões, por cartão — alimenta a tabela de cartões. */
-  readonly invoiceHistoryByCard = signal<Record<string, InvoiceHistoryEntry[]>>({});
-
-  readonly invoiceHistory = signal<InvoiceHistoryEntry[]>([]);
-  readonly invoiceHistoryLoading = signal(false);
-  readonly invoiceHistoryError = signal<string | null>(null);
-
-  readonly openInvoice = signal<OpenInvoiceState>({
-    total: 0,
-    items: [],
-    closingDate: '',
-    year: 0,
-    month: 0,
-  });
-  readonly openInvoiceLoading = signal(false);
-  readonly openInvoiceError = signal<string | null>(null);
+  // ─── Catálogo ──────────────────────────────────────────────────────────────
+  readonly categories = this.catalog.categories;
+  readonly cards = this.catalog.cards;
+  readonly catBy = this.catalog.catBy;
+  readonly cardBy = this.catalog.cardBy;
+  readonly categoriesError = this.catalog.categoriesError;
+  readonly cardsError = this.catalog.cardsError;
 
   loadCatalog(): void {
-    this.categoriesError.set(null);
-    this.cardsError.set(null);
-    this.catApi.listCategories().subscribe({
-      next: (rows) => this.categories.set(rows.map(wireToCategory)),
-      error: () => this.fail('Falha ao carregar categorias', this.categoriesError),
-    });
-    this.catApi.listCards().subscribe({
-      next: (rows) => this.cards.set(rows),
-      error: () => this.fail('Falha ao carregar cartões', this.cardsError),
-    });
+    this.catalog.load();
   }
+  createCategory(c: Category): void {
+    this.catalog.createCategory(c);
+  }
+  updateCategory(c: Category): void {
+    this.catalog.updateCategory(c);
+  }
+  removeCategory(slug: string): void {
+    this.catalog.removeCategory(slug);
+  }
+  reorderCategories(slugs: string[]): void {
+    this.catalog.reorderCategories(slugs);
+  }
+
+  // ─── Contexto de navegação ─────────────────────────────────────────────────
+  readonly currentMonth = this.view.currentMonth;
+  readonly holderFilter = this.view.holderFilter;
+  readonly monthLabel = this.view.monthLabel;
+
+  // ─── Transações ────────────────────────────────────────────────────────────
+  readonly transactions = this.tx.transactions;
+  readonly transactionsLoading = this.tx.loading;
+  readonly transactionsError = this.tx.error;
 
   loadTransactions(): void {
-    const { year, month } = this.currentMonth();
-    this.transactionsLoading.set(true);
-    this.transactionsError.set(null);
-    this.txApi.list({ year, month }).subscribe({
-      next: (rows) => {
-        this.transactions.set(rows.map(wireToTransaction));
-        this.transactionsLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar transações', this.transactionsError);
-        this.transactionsLoading.set(false);
-      },
-    });
+    this.tx.load();
   }
-
   createTransaction(t: Transaction): void {
-    this.txApi.create(transactionToCreateWire(t)).subscribe({
-      next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao criar transação', this.transactionsError),
-    });
+    this.tx.create(t);
+  }
+  updateTransaction(t: Transaction): void {
+    this.tx.update(t);
+  }
+  setTransactionReviewed(id: string, reviewed: boolean): void {
+    this.tx.setReviewed(id, reviewed);
+  }
+  removeTransaction(id: string): void {
+    this.tx.remove(id);
   }
 
-  removeTransaction(id: string): void {
-    this.txApi.remove(id).subscribe({
-      next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao remover transação', this.transactionsError),
-    });
-  }
+  // ─── Receitas ──────────────────────────────────────────────────────────────
+  readonly incomes = this.income.incomes;
+  readonly incomesLoading = this.income.loading;
+  readonly incomesError = this.income.error;
 
   loadIncomes(): void {
-    this.incomesLoading.set(true);
-    this.incomesError.set(null);
-    this.incApi.list().subscribe({
-      next: (rows) => {
-        this.incomes.set(rows.map(wireToIncome));
-        this.incomesLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar receitas', this.incomesError);
-        this.incomesLoading.set(false);
-      },
-    });
+    this.income.load();
   }
-
-  /** Alterna só o campo conferido — não manda o objeto inteiro. */
-  setTransactionReviewed(id: string, reviewed: boolean): void {
-    this.txApi.update(id, { reviewed }).subscribe({
-      next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao marcar como conferido', this.transactionsError),
-    });
-  }
-
-  updateTransaction(t: Transaction): void {
-    this.txApi.update(t.id, transactionToUpdateWire(t)).subscribe({
-      next: () => this.loadTransactions(),
-      error: () => this.fail('Falha ao salvar transação', this.transactionsError),
-    });
-  }
-
   createIncome(i: Income): void {
-    this.incApi.create(incomeToCreateWire(i)).subscribe({
-      next: () => this.loadIncomes(),
-      error: () => this.fail('Falha ao criar receita', this.incomesError),
-    });
+    this.income.create(i);
   }
+
+  // ─── Gastos fixos ──────────────────────────────────────────────────────────
+  readonly fixed = this.fix.fixed;
+  readonly fixedLoading = this.fix.loading;
+  readonly fixedError = this.fix.error;
 
   loadFixed(): void {
-    const { year, month } = this.currentMonth();
-    this.fixedLoading.set(true);
-    this.fixedError.set(null);
-    this.fixApi.list({ year, month }).subscribe({
-      next: (rows) => {
-        this.fixed.set(rows.map(wireToFixed));
-        this.fixedLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar gastos fixos', this.fixedError);
-        this.fixedLoading.set(false);
-      },
-    });
+    this.fix.load();
   }
-
   createFixed(f: FixedExpense): void {
-    this.fixApi.create(fixedToCreateWire(f)).subscribe({
-      next: () => this.loadFixed(),
-      error: () => this.fail('Falha ao criar gasto fixo', this.fixedError),
-    });
+    this.fix.create(f);
   }
-
   updateFixed(f: FixedExpense): void {
-    this.fixApi.update(f.id, fixedToUpdateWire(f)).subscribe({
-      next: () => this.loadFixed(),
-      error: () => this.fail('Falha ao salvar gasto fixo', this.fixedError),
-    });
+    this.fix.update(f);
+  }
+  removeFixed(id: string): void {
+    this.fix.remove(id);
   }
 
-  removeFixed(id: string): void {
-    this.fixApi.remove(id).subscribe({
-      next: () => this.loadFixed(),
-      error: () => this.fail('Falha ao remover gasto fixo', this.fixedError),
-    });
-  }
+  // ─── Metas ─────────────────────────────────────────────────────────────────
+  readonly goals = this.goal.goals;
+  readonly goalsLoading = this.goal.loading;
+  readonly goalsError = this.goal.error;
 
   loadGoals(): void {
-    this.goalsLoading.set(true);
-    this.goalsError.set(null);
-    this.goalApi.list().subscribe({
-      next: (rows) => {
-        this.goals.set(rows.map(wireToGoal));
-        this.goalsLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar metas', this.goalsError);
-        this.goalsLoading.set(false);
-      },
-    });
+    this.goal.load();
   }
-
-  /**
-   * Fecha o mês (admin). O backend faz upsert: refazer recalcula em vez de
-   * duplicar. Invalida a série de meses fechados.
-   */
-  closeMonth(year: number, month: number): void {
-    this.repApi.closeMonth(year, month).subscribe({
-      next: () => this.loadMonthlyHistory(),
-      error: () => this.fail('Falha ao fechar o mês', this.reportsError),
-    });
-  }
-
-  /**
-   * Fecha a fatura de um cartão (admin). `year`/`month` são as coordenadas do
-   * **fechamento** do ciclo, que vêm de `openInvoice()` — não use `currentMonth()`.
-   */
-  closeInvoice(cardId: string, year: number, month: number): void {
-    this.invApi.closeInvoice(cardId, year, month).subscribe({
-      next: () => {
-        this.loadInvoiceHistory(cardId);
-        this.loadOpenInvoice(cardId);
-      },
-      error: () => this.fail('Falha ao fechar a fatura', this.invoiceHistoryError),
-    });
-  }
-
-  /**
-   * Série de meses fechados. Uma chamada alimenta as duas projeções — despesa e
-   * receita saem do mesmo summary.
-   */
-  loadMonthlyHistory(): void {
-    this.reportsLoading.set(true);
-    this.reportsError.set(null);
-    this.repApi.listMonthly().subscribe({
-      next: (rows) => {
-        this.history.set(wireToExpenseHistory(rows));
-        this.incomeHistory.set(wireToIncomeHistory(rows));
-        this.reportsLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar o histórico mensal', this.reportsError);
-        this.reportsLoading.set(false);
-      },
-    });
-  }
-
-  /**
-   * Fatura aberta de um cartão, pelo ciclo de faturamento real. Não deriva de
-   * `transactions()`: um ciclo atravessa dois meses-calendário e a UI só carrega
-   * um mês por vez, então o client não teria os dados para acertar.
-   */
-  loadOpenInvoice(cardId: string): void {
-    this.openInvoiceLoading.set(true);
-    this.openInvoiceError.set(null);
-    this.invApi.getOpen(cardId).subscribe({
-      next: (wire) => {
-        this.openInvoice.set({
-          total: wire.total,
-          items: wire.items.map(wireToOpenInvoiceItem),
-          closingDate: wire.closingDate,
-          year: wire.year,
-          month: wire.month,
-        });
-        this.openInvoiceLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar a fatura', this.openInvoiceError);
-        this.openInvoiceLoading.set(false);
-      },
-    });
-  }
-
-  /**
-   * Histórico de todos os cartões numa chamada. Sem dimensão de mês: carrega no
-   * login, junto do catálogo.
-   */
-  loadAllInvoiceHistory(): void {
-    this.invApi.listAll().subscribe({
-      next: (rows) => this.invoiceHistoryByCard.set(groupInvoiceHistoryByCard(rows)),
-      error: () => this.fail('Falha ao carregar o histórico de faturas', this.invoiceHistoryError),
-    });
-  }
-
-  /**
-   * Histórico de faturas fechadas de um cartão. Disparado pela tela de fatura,
-   * que é quem conhece o cartão da rota — não entra nos effects do shell.
-   */
-  loadInvoiceHistory(cardId: string): void {
-    this.invoiceHistoryLoading.set(true);
-    this.invoiceHistoryError.set(null);
-    this.invApi.listByCard(cardId).subscribe({
-      next: (rows) => {
-        this.invoiceHistory.set(rows.map(wireToInvoiceHistory));
-        this.invoiceHistoryLoading.set(false);
-      },
-      error: () => {
-        this.fail('Falha ao carregar o histórico de faturas', this.invoiceHistoryError);
-        this.invoiceHistoryLoading.set(false);
-      },
-    });
-  }
-
-  createCategory(c: Category): void {
-    this.catApi.createCategory(categoryToCreateWire(c)).subscribe({
-      next: () => this.loadCatalog(),
-      error: () => this.fail('Falha ao criar categoria', this.categoriesError),
-    });
-  }
-
-  updateCategory(c: Category): void {
-    this.catApi.updateCategory(c.id, categoryToUpdateWire(c)).subscribe({
-      next: () => this.loadCatalog(),
-      error: () => this.fail('Falha ao salvar categoria', this.categoriesError),
-    });
-  }
-
-  removeCategory(slug: string): void {
-    this.catApi.removeCategory(slug).subscribe({
-      next: () => this.loadCatalog(),
-      error: (err) => this.fail(categoryConflictMessage(err), this.categoriesError),
-    });
-  }
-
-  /** Adota a lista da resposta, não o estado otimista: duas abas não divergem. */
-  reorderCategories(slugs: string[]): void {
-    this.catApi.reorderCategories(slugs).subscribe({
-      next: (rows) => this.categories.set(rows.map(wireToCategory)),
-      error: () => this.fail('Falha ao reordenar categorias', this.categoriesError),
-    });
-  }
-
   updateGoal(g: Goal): void {
-    this.goalApi.update(g.id, goalToUpdateWire(g)).subscribe({
-      next: () => this.loadGoals(),
-      error: () => this.fail('Falha ao salvar meta', this.goalsError),
-    });
+    this.goal.update(g);
+  }
+  addContribution(slug: string, amount: number, date: string): void {
+    this.goal.addContribution(slug, amount, date);
   }
 
-  addContribution(slug: string, amount: number, date: string): void {
-    this.goalApi.addContribution(slug, { amount, date }).subscribe({
-      next: () => this.loadGoals(),
-      error: () => this.fail('Falha ao registrar aporte', this.goalsError),
-    });
+  // ─── Faturas ───────────────────────────────────────────────────────────────
+  readonly invoiceHistoryByCard = this.invoice.historyByCard;
+  readonly invoiceHistory = this.invoice.history;
+  readonly invoiceHistoryLoading = this.invoice.historyLoading;
+  readonly invoiceHistoryError = this.invoice.historyError;
+  readonly openInvoice = this.invoice.open;
+  readonly openInvoiceLoading = this.invoice.openLoading;
+  readonly openInvoiceError = this.invoice.openError;
+
+  loadOpenInvoice(cardId: string): void {
+    this.invoice.loadOpen(cardId);
+  }
+  loadAllInvoiceHistory(): void {
+    this.invoice.loadAllHistory();
+  }
+  loadInvoiceHistory(cardId: string): void {
+    this.invoice.loadHistory(cardId);
+  }
+  closeInvoice(cardId: string, year: number, month: number): void {
+    this.invoice.close(cardId, year, month);
+  }
+
+  // ─── Relatórios ────────────────────────────────────────────────────────────
+  readonly history = this.report.history;
+  readonly incomeHistory = this.report.incomeHistory;
+  readonly reportsLoading = this.report.loading;
+  readonly reportsError = this.report.error;
+
+  loadMonthlyHistory(): void {
+    this.report.loadMonthlyHistory();
+  }
+  closeMonth(year: number, month: number): void {
+    this.report.closeMonth(year, month);
   }
 }
