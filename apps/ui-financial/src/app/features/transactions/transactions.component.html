@@ -127,7 +127,7 @@
     @for (day of dayGroups(); track day.key) {
       <div class="txc-day">{{ day.label }}</div>
       @for (tx of day.items; track tx.id) {
-        <button class="tx-card" (click)="selectedTx.set(tx)">
+        <button class="tx-card" (click)="selectedTxId.set(tx.id)">
           <div class="txc-main">
             <span class="txc-label">{{ tx.label }}</span>
             <cf-money [value]="tx.value" [negColor]="false" />
@@ -174,12 +174,12 @@
 </div>
 
 @if (selectedTx(); as tx) {
-  <cf-tx-detail-drawer [tx]="tx" (closed)="selectedTx.set(null)" />
+  <cf-tx-detail-drawer [tx]="tx" (closed)="selectedTxId.set(null)" />
 }
 
 <!-- Row template -->
 <ng-template #txRow let-tx>
-  <tr class="tx-row" style="cursor:pointer" (click)="selectedTx.set(tx)">
+  <tr class="tx-row" style="cursor:pointer" (click)="selectedTxId.set(tx.id)">
     <td (click)="$event.stopPropagation()"><input type="checkbox" class="tx-check" /></td>
     <td class="tx-date num">{{ formatDate(tx.date) }}</td>
     <td>

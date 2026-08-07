@@ -127,3 +127,24 @@ describe('TransactionsComponent — filtro de conferidos', () => {
     expect(fixture.componentInstance.flatSorted()[0].id).toBe('b');
   });
 });
+
+describe('TransactionsComponent — lançamento selecionado', () => {
+  it('deriva o selecionado da lista, para o drawer não ficar com uma cópia velha', () => {
+    const { fixture, data } = build(true);
+    const c = fixture.componentInstance;
+    c.selectedTxId.set('t1');
+    expect(c.selectedTx()?.reviewed).toBe(false);
+
+    // simula o recarregamento que AppDataService faz depois de um PATCH
+    data.transactions.set(TRANSACTIONS.map((t) => (t.id === 't1' ? { ...t, reviewed: true } : t)));
+    expect(c.selectedTx()?.reviewed).toBe(true);
+  });
+
+  it('devolve null quando o lançamento sai da lista', () => {
+    const { fixture, data } = build(true);
+    const c = fixture.componentInstance;
+    c.selectedTxId.set('t1');
+    data.transactions.set(TRANSACTIONS.filter((t) => t.id !== 't1'));
+    expect(c.selectedTx()).toBeNull();
+  });
+});

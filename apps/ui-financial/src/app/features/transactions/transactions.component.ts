@@ -46,7 +46,16 @@ export class TransactionsComponent {
   protected vp = inject(ViewportService);
 
   searchQuery = signal('');
-  selectedTx = signal<Transaction | null>(null);
+  selectedTxId = signal<string | null>(null);
+
+  /**
+   * Deriva da lista em vez de guardar o objeto: depois de um PATCH o
+   * AppDataService recarrega, e um snapshot deixaria o drawer mostrando o
+   * valor antigo enquanto a lista já mostra o novo.
+   */
+  selectedTx = computed(
+    () => this.data.transactions().find((t) => t.id === this.selectedTxId()) ?? null,
+  );
   selectedCat = signal<string | null>(null);
   sortCol = signal<SortCol>('date');
   sortDir = signal<SortDir>('desc');
