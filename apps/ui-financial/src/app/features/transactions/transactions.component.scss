@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 /* Strip */
@@ -164,3 +166,84 @@
   font-size: 11px; color: var(--ink-3);
 }
 .table-foot-total { color: var(--ink-1); font-weight: 600; }
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   A tabela de 8 colunas dá lugar a um card por lançamento. O toque continua
+   abrindo o tx-detail-drawer, que mostra todos os campos — nada se perde. */
+
+/* Os 4 KPIs e os chips de categoria rolam de lado em vez de quebrar linha. */
+.strip-kpis { overflow-x: auto; }
+.strip-filters { flex-direction: column; align-items: stretch; }
+.filter-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+.filter-chip { min-height: 44px; flex: none; }
+
+/* "Agrupar" é controle de tabela: no celular os cards são sempre por dia. */
+.group-seg { display: none; }
+
+.tx-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.txc-day {
+  font-size: 10px;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 2px 2px;
+}
+
+.tx-card {
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.txc-main {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.txc-label { font-weight: 600; color: var(--ink-1); }
+.txc-meta {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 6px;
+}
+.txc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.txc-empty { padding: 20px; text-align: center; color: var(--ink-3); }
+
+@include r.desktop {
+  .strip-kpis { overflow-x: visible; }
+  .strip-filters { flex-direction: row; align-items: center; }
+  .filter-chips { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
+  .filter-chip { min-height: 0; flex: initial; }
+  .group-seg { display: flex; }
+}
+
+/* Alvos de toque (spec §6). Decoração — .kpi-divider, .cat-stripe — fica fora. */
+.search-box,
+.action-btn { min-height: 44px; }
+
+@include r.desktop {
+  .search-box,
+  .action-btn { min-height: 0; }
+}
+
+/* Em contêiner `column`, `flex-wrap: wrap` quebra no eixo HORIZONTAL: os itens
+   criam novas colunas e a página passa a rolar de lado. O wrap original é do
+   layout em linha do desktop. */
+.strip-filters { flex-wrap: nowrap; }
+
+@include r.desktop {
+  .strip-filters { flex-wrap: wrap; }
+}
+
+/* Indicador de conferido — vale nos dois ramos (linha do desktop e card). */
+.tx-reviewed {
+  display: inline-flex; align-items: center; gap: 3px;
+  color: var(--pos);
+}

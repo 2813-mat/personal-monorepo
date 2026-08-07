@@ -1,9 +1,12 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject, signal } from '@angular/core';
 import type { Goal } from '@caixa-familia/shared-types';
+import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { GoalEditDrawerComponent } from './goal-edit-drawer.component';
+import { ExpenseDrawerComponent } from '../expense-drawer/expense-drawer.component';
 import { fmtShort } from './goal-format.utils';
 
 // ─── GoalCard (private subcomponent) ─────────────────────────────────────────
@@ -11,12 +14,25 @@ import { fmtShort } from './goal-format.utils';
 @Component({
   selector: 'cf-goal-card',
   standalone: true,
-  imports: [MoneyComponent, ProgressBarComponent, SparkbarsComponent, IconComponent],
+  imports: [
+    MoneyComponent,
+    ProgressBarComponent,
+    SparkbarsComponent,
+    IconComponent,
+    GoalEditDrawerComponent,
+    ExpenseDrawerComponent,
+  ],
   templateUrl: './goal-card.component.html',
   styleUrl: './goal-card.component.scss',
 })
 export class GoalCardComponent {
   @Input() goal!: Goal;
+
+  protected auth = inject(AuthService);
+
+  protected editing = signal(false);
+
+  protected contributing = signal(false);
 
   protected readonly fmtShort = fmtShort;
 

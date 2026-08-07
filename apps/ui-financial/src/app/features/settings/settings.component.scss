@@ -1,3 +1,5 @@
+@use 'responsive' as r;
+
 :host { display: block; }
 
 .layout {
@@ -62,16 +64,20 @@
   height: 28px; padding: 0 12px;
   border: 1px solid var(--line); background: transparent;
   font-size: 12px; color: var(--ink-2);
-  cursor: not-allowed; opacity: 0.6;
+  cursor: pointer;
   font-family: inherit;
 }
 .btn-primary {
   height: 28px; padding: 0 12px;
   border: none; background: var(--brand);
   font-size: 12px; color: #fff;
-  cursor: not-allowed; opacity: 0.7;
+  cursor: pointer;
   font-family: inherit;
 }
+
+/* O visual de indisponível vale para quem não pode escrever, não para todo mundo. */
+.btn-ghost:disabled,
+.btn-primary:disabled { cursor: not-allowed; opacity: 0.6; }
 
 /* Tables */
 .table-scroll { overflow-x: auto; }
@@ -105,7 +111,10 @@
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
 .muted { color: var(--ink-3); }
 
-.drag-cell, .gear-cell { text-align: center; }
+/* Sem o nowrap os dois botões quebram para linhas separadas e esticam a linha. */
+.drag-cell, .gear-cell { text-align: center; white-space: nowrap; }
+.drag-cell .icon-btn + .icon-btn,
+.gear-cell .icon-btn + .icon-btn { margin-left: 4px; }
 
 .name-cell { display: flex; align-items: center; gap: 8px; }
 .name-stack { display: flex; flex-direction: column; gap: 1px; }
@@ -218,4 +227,64 @@
   .color-swatch.active { border-color: var(--ink-1); border-width: 2px; }
   .form-actions { display: flex; gap: 8px; margin-left: auto; }
   .form-error { flex-basis: 100%; margin: 0; font-size: 11.5px; color: var(--neg); }
+}
+
+/* ── Celular ────────────────────────────────────────────────────────────────
+   O menu lateral de seções vira uma faixa rolável no topo, e as duas tabelas
+   (categorias com 7 colunas, cartões com 5) viram listas de card. */
+.layout { grid-template-columns: 1fr; }
+
+.st-cards { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+
+.st-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 11px;
+}
+.stc-main {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.stc-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 600; color: var(--ink-1);
+}
+.stc-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.stc-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+/* Editar/Excluir no card mobile reusam a pílula; como <button> precisam zerar o chrome. */
+button.stc-tag {
+  border: 0; font-family: inherit; cursor: pointer;
+  min-height: 30px; padding: 4px 12px;
+}
+button.stc-tag:disabled { opacity: 0.5; cursor: default; }
+.stc-tag.neg { color: var(--neg); }
+
+@include r.desktop {
+  .layout { grid-template-columns: 200px 1fr; }
+}
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+}
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.icon-btn.btn-neg { color: var(--neg); }
+
+/* Alvos de toque (spec §6). .bank-tag e .color-swatch são decoração. */
+.btn-ghost,
+.btn-primary { min-height: 44px; }
+
+@include r.desktop {
+  .btn-ghost,
+  .btn-primary { min-height: 0; }
+  .icon-btn { min-width: 26px; min-height: 26px; }
 }

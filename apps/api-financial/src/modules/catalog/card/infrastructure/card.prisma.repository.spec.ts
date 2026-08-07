@@ -98,3 +98,132 @@ describe('CardPrismaRepository.openInvoice — cycle coordinates', () => {
     expect((await repo.openInvoice('nu-t')).closingDate).toBe('2026-08-05');
   });
 });
+
+// O `setup` acima monta um Prisma afinado para openInvoice. As operações de
+// escrita precisam de outras tabelas, então ganham o seu próprio.
+const CARD_ROW = {
+  id: 'c1',
+  householdId: 'h1',
+  ownerMemberId: null as string | null,
+  name: 'Nubank',
+  bank: 'Nubank',
+  color: '#820AD1',
+  closingDay: 5,
+  dueDay: 12,
+  creditLimit: 4500,
+  last4: '4421',
+  archivedAt: null as Date | null,
+  owner: null as { name: string } | null,
+};
+
+type WriteArgs = { where?: Record<string, unknown>; data?: Record<string, unknown> };
+
+function setupWrite(over: Record<string, unknown> = {}) {
+  const prisma = {
+    card: {
+      findFirst: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
+      create: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
+      update: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
+      delete: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
+    },
+    member: { findFirst: jest.fn(async (_a: WriteArgs) => null as unknown) },
+    transaction: {
+      count: jest.fn(async (_a: WriteArgs) => 0),
+      aggregate: jest.fn(async (_a: WriteArgs) => ({ _sum: { value: 0 } })),
+    },
+    invoiceHistory: { count: jest.fn(async (_a: WriteArgs) => 0) },
+    ...over,
+  };
+  const repo = new CardPrismaRepository(prisma as never, { householdId: 'h1' } as never);
+  return { repo, prisma };
+}
+
+const NOVO = {
+  name: 'Nubank',
+  bank: 'Nubank',
+  color: '#820AD1',
+  closingDay: 5,
+  dueDay: 12,
+  creditLimit: 4500,
+  last4: '4421',
+  holder: 'Thais',
+};
+
+describe('CardPrismaRepository.create', () => {
+  it('resolve o titular para ownerMemberId pelo nome', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.member.findFirst.mockResolvedValue({ id: 'm-thais' });
+    await repo.create(NOVO);
+    expect(prisma.card.create.mock.calls[0][0].data.ownerMemberId).toBe('m-thais');
+  });
+
+  it('grava ownerMemberId nulo quando o titular é shared', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.create({ ...NOVO, holder: 'shared' });
+    expect(prisma.card.create.mock.calls[0][0].data.ownerMemberId).toBeNull();
+    expect(prisma.member.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('nasce com fatura zero — não há lançamento ainda', async () => {
+    const { repo } = setupWrite();
+    expect((await repo.create(NOVO)).toJSON().current).toBe(0);
+  });
+});
+
+describe('CardPrismaRepository.update', () => {
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.update('de-outro', { creditLimit: 1 })).resolves.toBeNull();
+    expect(prisma.card.update).not.toHaveBeenCalled();
+  });
+
+  it('só traduz holder para ownerMemberId quando holder veio no corpo', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.update('c1', { creditLimit: 6000 });
+    expect(prisma.member.findFirst).not.toHaveBeenCalled();
+    expect(prisma.card.update.mock.calls[0][0].data).not.toHaveProperty('ownerMemberId');
+  });
+
+  it('traduz o titular quando ele veio no corpo', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.member.findFirst.mockResolvedValue({ id: 'm-mateus' });
+    await repo.update('c1', { holder: 'Mateus' });
+    expect(prisma.card.update.mock.calls[0][0].data.ownerMemberId).toBe('m-mateus');
+  });
+});
+
+describe('CardPrismaRepository.countUsage', () => {
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.countUsage('de-outro')).resolves.toBeNull();
+  });
+
+  it('conta lançamentos e faturas do cartão', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.transaction.count.mockResolvedValue(47);
+    prisma.invoiceHistory.count.mockResolvedValue(8);
+    await expect(repo.countUsage('c1')).resolves.toEqual({ transactions: 47, invoices: 8 });
+  });
+});
+
+describe('CardPrismaRepository.setArchived', () => {
+  it('grava a data ao arquivar', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.setArchived('c1', true);
+    expect(prisma.card.update.mock.calls[0][0].data.archivedAt).toBeInstanceOf(Date);
+  });
+
+  it('limpa a data ao desarquivar', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.setArchived('c1', false);
+    expect(prisma.card.update.mock.calls[0][0].data.archivedAt).toBeNull();
+  });
+
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.setArchived('de-outro', true)).resolves.toBeNull();
+  });
+});

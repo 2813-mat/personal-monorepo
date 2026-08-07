@@ -1,0 +1,29 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">Editar categoria</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    <label class="label" for="cat-label">Nome</label>
+    <input id="cat-label" class="text-input" formControlName="label" />
+
+    <label class="label mt" for="cat-color">Cor</label>
+    <input id="cat-color" class="text-input" formControlName="color" placeholder="#7A4F1D" />
+
+    <label class="label mt" for="cat-budget">Orçamento por mês</label>
+    <input id="cat-budget" class="text-input" type="number" formControlName="budget" />
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint">{{ category().id }}</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
+      Salvar
+    </button>
+  </footer>
+</aside>

@@ -26,7 +26,6 @@
               <span class="card-sub">{{ data.categories().length }} ativas</span>
             </div>
             <div class="card-head-actions">
-              <button class="btn-ghost" disabled>Reordenar</button>
               <button
                 class="btn-primary"
                 type="button"
@@ -94,24 +93,32 @@
             </form>
           }
 
+          @if (vp.isDesktop()) {
           <div class="table-scroll">
             <table class="tbl">
               <thead>
                 <tr>
-                  <th style="width:24px"></th>
+                  <th style="width:84px"></th>
                   <th>Nome</th>
                   <th>Cor</th>
                   <th class="r" style="width:130px">Orçamento/mês</th>
                   <th class="r" style="width:110px">Lançamentos</th>
                   <th style="width:80px">Status</th>
-                  <th style="width:32px"></th>
+                  <th style="width:84px"></th>
                 </tr>
               </thead>
               <tbody>
                 @for (c of data.categories(); track c.id) {
                   <tr>
                     <td class="drag-cell">
-                      <cf-icon name="grid" [size]="10" color="var(--ink-4)" />
+                      <button type="button" class="icon-btn" (click)="moveCategory(c.id, -1)"
+                        [disabled]="!auth.canWrite() || isFirstCategory(c.id)" aria-label="Subir">
+                        <cf-icon name="arrowUp" [size]="11" />
+                      </button>
+                      <button type="button" class="icon-btn" (click)="moveCategory(c.id, 1)"
+                        [disabled]="!auth.canWrite() || isLastCategory(c.id)" aria-label="Descer">
+                        <cf-icon name="arrowDown" [size]="11" />
+                      </button>
                     </td>
                     <td>
                       <div class="name-cell">
@@ -134,13 +141,59 @@
                     <td class="r num">{{ catTxCount(c.id) }}/mês</td>
                     <td><span class="pill pos">Ativa</span></td>
                     <td class="gear-cell">
-                      <cf-icon name="settings" [size]="11" color="var(--ink-4)" />
+                      <button type="button" class="icon-btn" (click)="editingCategory.set(c)"
+                        [disabled]="!auth.canWrite()" aria-label="Editar categoria">
+                        <cf-icon name="settings" [size]="11" />
+                      </button>
+                      <button type="button" class="icon-btn btn-neg" (click)="askRemoveCategory(c.id)"
+                        [disabled]="!auth.canWrite()" aria-label="Excluir categoria">
+                        <cf-icon name="x" [size]="11" />
+                      </button>
                     </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
+          } @else {
+          <div class="st-cards">
+            @for (c of data.categories(); track c.id) {
+              <div class="st-card">
+                <div class="stc-main">
+                  <span class="stc-name">
+                    <cf-cat-dot [catId]="c.id" [size]="8" /> {{ c.label }}
+                  </span>
+                  <cf-money [value]="c.budget" [negColor]="false" size="sm" />
+                </div>
+                <div class="stc-meta">
+                  <span class="stc-tag mono">{{ c.id }}</span>
+                  <span class="stc-tag">
+                    <span class="color-swatch" [style.background]="c.color"></span>
+                    <span class="mono">{{ c.color }}</span>
+                  </span>
+                  <span class="stc-tag num">{{ catTxCount(c.id) }}/mês</span>
+                  <span class="pill pos">Ativa</span>
+                  <button type="button" class="stc-tag" (click)="editingCategory.set(c)"
+                    [disabled]="!auth.canWrite()">
+                    Editar
+                  </button>
+                  <button type="button" class="stc-tag neg" (click)="askRemoveCategory(c.id)"
+                    [disabled]="!auth.canWrite()">
+                    Excluir
+                  </button>
+                  <button type="button" class="icon-btn" (click)="moveCategory(c.id, -1)"
+                    [disabled]="!auth.canWrite() || isFirstCategory(c.id)" aria-label="Subir">
+                    <cf-icon name="arrowUp" [size]="11" />
+                  </button>
+                  <button type="button" class="icon-btn" (click)="moveCategory(c.id, 1)"
+                    [disabled]="!auth.canWrite() || isLastCategory(c.id)" aria-label="Descer">
+                    <cf-icon name="arrowDown" [size]="11" />
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+          }
 
           <div class="card-foot">
             <span class="foot-note">Categorias organizam orçamentos e relatórios.</span>
@@ -188,8 +241,19 @@
               <span class="card-title">Cartões</span>
               <span class="card-sub">{{ data.cards().length }} cadastrados</span>
             </div>
+            <div class="card-head-actions">
+              <button
+                class="btn-primary"
+                type="button"
+                [disabled]="!auth.canWrite()"
+                (click)="startNewCard()"
+              >
+                + Novo cartão
+              </button>
+            </div>
           </div>
 
+          @if (vp.isDesktop()) {
           <div class="table-scroll">
             <table class="tbl">
               <thead>
@@ -199,6 +263,7 @@
                   <th style="width:90px">Titular</th>
                   <th>Fatura</th>
                   <th class="r" style="width:130px">Limite</th>
+                  <th style="width:84px"></th>
                 </tr>
               </thead>
               <tbody>
@@ -209,18 +274,84 @@
                     </td>
                     <td>
                       <div class="name-stack">
-                        <span class="name-label">{{ c.bank }}</span>
+                        <span class="name-label">
+                          {{ c.bank }}
+                          @if (c.archived) {
+                            <span class="pill">Arquivado</span>
+                          }
+                        </span>
                         <span class="name-sub mono">···{{ c.last4 }}</span>
                       </div>
                     </td>
                     <td><cf-avatar [holder]="c.holder" [size]="22" /></td>
                     <td class="muted">fecha {{ c.closing }} · vence {{ c.due }}</td>
                     <td class="r num">R$ {{ formatNum(c.limit) }}</td>
+                    <td class="gear-cell">
+                      <button type="button" class="icon-btn" (click)="startEditCard(c)"
+                        [disabled]="!auth.canWrite()" aria-label="Editar cartão">
+                        <cf-icon name="settings" [size]="11" />
+                      </button>
+                      @if (c.archived) {
+                        <button type="button" class="icon-btn" (click)="data.archiveCard(c.id, false)"
+                          [disabled]="!auth.canWrite()" aria-label="Desarquivar cartão">
+                          <cf-icon name="repeat" [size]="11" />
+                        </button>
+                      } @else {
+                        <button type="button" class="icon-btn" (click)="data.archiveCard(c.id, true)"
+                          [disabled]="!auth.canWrite()" aria-label="Arquivar cartão">
+                          <cf-icon name="download" [size]="11" />
+                        </button>
+                        <button type="button" class="icon-btn btn-neg" (click)="askRemoveCard(c.id)"
+                          [disabled]="!auth.canWrite()" aria-label="Excluir cartão">
+                          <cf-icon name="x" [size]="11" />
+                        </button>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
+          } @else {
+          <div class="st-cards">
+            @for (c of data.cards(); track c.id) {
+              <div class="st-card">
+                <div class="stc-main">
+                  <span class="stc-name">
+                    <span class="bank-tag" [style.background]="c.color">{{ bankTag(c.bank) }}</span>
+                    {{ c.bank }}
+                  </span>
+                  <span class="num">R$ {{ formatNum(c.limit) }}</span>
+                </div>
+                <div class="stc-meta">
+                  <span class="stc-tag mono">···{{ c.last4 }}</span>
+                  <span class="stc-tag">{{ c.holder }}</span>
+                  <span class="stc-tag num">fecha {{ c.closing }} · vence {{ c.due }}</span>
+                  <button type="button" class="stc-tag" (click)="startEditCard(c)"
+                    [disabled]="!auth.canWrite()">
+                    Editar
+                  </button>
+                  @if (c.archived) {
+                    <span class="pill">Arquivado</span>
+                    <button type="button" class="stc-tag" (click)="data.archiveCard(c.id, false)"
+                      [disabled]="!auth.canWrite()">
+                      Desarquivar
+                    </button>
+                  } @else {
+                    <button type="button" class="stc-tag" (click)="data.archiveCard(c.id, true)"
+                      [disabled]="!auth.canWrite()">
+                      Arquivar
+                    </button>
+                    <button type="button" class="stc-tag neg" (click)="askRemoveCard(c.id)"
+                      [disabled]="!auth.canWrite()">
+                      Excluir
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          }
 
           <div class="card-foot">
             <span class="foot-note">Limites e datas de fechamento dos cartões.</span>
@@ -263,3 +394,43 @@
     }
   </section>
 </div>
+
+@if (editingCategory(); as c) {
+  <cf-category-edit-drawer [category]="c" (closed)="editingCategory.set(null)" />
+}
+
+@if (creatingCard() || editingCard()) {
+  <cf-card-edit-drawer [card]="editingCard()" (closed)="closeCardDrawer()" />
+}
+
+@if (confirmingCardRemoval()) {
+  <cf-confirm-modal
+    title="Excluir cartão?"
+    description="Só é possível excluir cartões sem lançamentos e sem faturas fechadas."
+    confirmLabel="Excluir"
+    [danger]="true"
+    (confirmed)="confirmRemoveCard()"
+    (cancelled)="cancelRemoveCard()"
+  />
+}
+
+@if (data.cardRemovalConflict(); as motivo) {
+  <cf-confirm-modal
+    title="Arquivar em vez de excluir?"
+    [description]="motivo + ' Arquivar tira o cartão dos seletores e mantém o histórico.'"
+    confirmLabel="Arquivar"
+    (confirmed)="archivePendingCard()"
+    (cancelled)="dismissCardConflict()"
+  />
+}
+
+@if (confirmingRemoval()) {
+  <cf-confirm-modal
+    title="Excluir categoria?"
+    description="Só é possível excluir categorias sem lançamentos e sem gastos fixos."
+    confirmLabel="Excluir"
+    [danger]="true"
+    (confirmed)="confirmRemoveCategory()"
+    (cancelled)="cancelRemoveCategory()"
+  />
+}

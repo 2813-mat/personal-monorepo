@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { FixedComponent } from './fixed.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
+import { AuthService } from '../../core/auth/auth.service';
 import type { FixedExpense, Transaction, Income, Category } from '@caixa-familia/shared-types';
 
 const FIXED: FixedExpense[] = [
@@ -12,11 +14,11 @@ const FIXED: FixedExpense[] = [
 
 const TRANSACTIONS: Transaction[] = [
   // recurring, value matches f1
-  { id: 't1', date: '2026-05-05', label: 'Conta A', value: 100, cat: 'casa',  holder: 'shared', method: 'pix', installments: null, recurring: true },
+  { id: 't1', date: '2026-05-05', label: 'Conta A', value: 100, cat: 'casa',  holder: 'shared', method: 'pix', installments: null, recurring: true, reviewed: false },
   // recurring, value does NOT match any fixed item
-  { id: 't2', date: '2026-05-10', label: 'Spotify', value: 32,  cat: 'assin', holder: 'Mateus', method: 'pix', installments: null, recurring: true },
+  { id: 't2', date: '2026-05-10', label: 'Spotify', value: 32,  cat: 'assin', holder: 'Mateus', method: 'pix', installments: null, recurring: true, reviewed: false },
   // recurring, value coincidentally matches f2 — must NOT make it paid
-  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null, recurring: true },
+  { id: 't3', date: '2026-05-12', label: 'Compra',  value: 200, cat: 'lazer', holder: 'shared', method: 'nu-t', installments: null, recurring: true, reviewed: false },
 ];
 
 const INCOMES: Income[] = [
@@ -24,9 +26,9 @@ const INCOMES: Income[] = [
 ];
 
 const CAT_BY: Record<string, Category> = {
-  casa:  { id: 'casa',  label: 'Casa',       color: '#7A4F1D', budget: 500 },
-  assin: { id: 'assin', label: 'Assinaturas', color: '#0F2D4F', budget: 150 },
-  educ:  { id: 'educ',  label: 'Educação',   color: '#3F2C7A', budget: 920 },
+  casa:  { id: 'casa',  label: 'Casa',       color: '#7A4F1D', budget: 500, order: 1 },
+  assin: { id: 'assin', label: 'Assinaturas', color: '#0F2D4F', budget: 150, order: 1 },
+  educ:  { id: 'educ',  label: 'Educação',   color: '#3F2C7A', budget: 920, order: 1 },
 };
 
 function mockDataService() {
@@ -44,7 +46,10 @@ describe('FixedComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FixedComponent],
-      providers: [{ provide: AppDataService, useValue: mockDataService() }],
+      providers: [
+        { provide: AppDataService, useValue: mockDataService() },
+        { provide: AuthService, useValue: { canWrite: signal(true) } },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(FixedComponent);
@@ -105,5 +110,81 @@ describe('FixedComponent', () => {
       expect(component.formatDay(5)).toBe('05/mai');
       expect(component.formatDay(25)).toBe('25/mai');
     });
+  });
+});
+
+function buildResponsive(isDesktop: boolean) {
+  TestBed.configureTestingModule({
+    imports: [FixedComponent],
+    providers: [
+      { provide: AppDataService, useValue: mockDataService() },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(FixedComponent);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('FixedComponent — responsive rendering', () => {
+  it('renders both tables on desktop and no card lists', () => {
+    const el = buildResponsive(true);
+    expect(el.querySelectorAll('table.tx-table').length).toBe(2);
+    expect(el.querySelector('.fx-cards')).toBeNull();
+  });
+
+  it('renders both card lists on mobile and no tables', () => {
+    const el = buildResponsive(false);
+    expect(el.querySelectorAll('.fx-cards').length).toBe(2);
+    expect(el.querySelector('table.tx-table')).toBeNull();
+  });
+
+  it('splits the cards between pending and paid', () => {
+    const el = buildResponsive(false);
+    // o mock tem f1 pago e f2/f3 a vencer
+    const lists = el.querySelectorAll('.fx-cards');
+    expect(lists[0].querySelectorAll('.fx-card').length).toBe(2);
+    expect(lists[1].querySelectorAll('.fx-card').length).toBe(1);
+  });
+});
+
+/** No molde do buildResponsive acima, mas devolvendo o mock para as asserções. */
+function buildFixed() {
+  const data = { ...mockDataService(), removeFixed: jest.fn() };
+  TestBed.configureTestingModule({
+    imports: [FixedComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(FixedComponent);
+  fixture.detectChanges();
+  return { fixture, component: fixture.componentInstance, data };
+}
+
+describe('FixedComponent — remover', () => {
+  it('pede confirmação antes de remover', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    expect(component.confirmingRemoval()).toBe('f1');
+    expect(data.removeFixed).not.toHaveBeenCalled();
+  });
+
+  it('remove ao confirmar', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    component.confirmRemove();
+    expect(data.removeFixed).toHaveBeenCalledWith('f1');
+    expect(component.confirmingRemoval()).toBeNull();
+  });
+
+  it('não remove ao cancelar', () => {
+    const { component, data } = buildFixed();
+    component.askRemove('f1');
+    component.cancelRemove();
+    expect(data.removeFixed).not.toHaveBeenCalled();
+    expect(component.confirmingRemoval()).toBeNull();
   });
 });

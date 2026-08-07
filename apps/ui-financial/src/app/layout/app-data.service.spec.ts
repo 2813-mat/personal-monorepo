@@ -25,6 +25,7 @@ const wire: TransactionWire = {
   method: 'PIX',
   cardId: null,
   recurring: false,
+  reviewed: false,
   installments: null,
 };
 
@@ -253,7 +254,7 @@ describe('AppDataService.addContribution', () => {
 describe('AppDataService.createCategory', () => {
   it('posts the domain id as the slug and reloads the catalog', () => {
     const { svc, catApi } = setup();
-    svc.createCategory({ id: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300 });
+    svc.createCategory({ id: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300, order: 1 });
     expect(catApi.createCategory).toHaveBeenCalledWith({
       slug: 'farmacia',
       label: 'Farmácia',

@@ -1,0 +1,41 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">Editar meta</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    <label class="label" for="goal-label">Nome</label>
+    <input id="goal-label" class="text-input" formControlName="label" />
+
+    <label class="label mt" for="goal-subtitle">Descrição</label>
+    <input id="goal-subtitle" class="text-input" formControlName="subtitle" />
+
+    <label class="label mt" for="goal-target">Objetivo</label>
+    <input id="goal-target" class="text-input" type="number" formControlName="target" />
+
+    <label class="label mt" for="goal-monthly">Aporte por mês</label>
+    <input id="goal-monthly" class="text-input" type="number" formControlName="monthly" />
+
+    <label class="label mt" for="goal-color">Cor</label>
+    <input id="goal-color" class="text-input" formControlName="color" />
+
+    <label class="label mt" for="goal-type">Tipo</label>
+    <select id="goal-type" class="text-input" formControlName="type">
+      <option value="sonho">Sonho</option>
+      <option value="emergencia">Emergência</option>
+    </select>
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint">{{ goal().id }}</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
+      Salvar
+    </button>
+  </footer>
+</aside>

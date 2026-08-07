@@ -2,7 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import type { FixedExpenseWire, CreateFixedExpenseWire } from './wire.types';
+import type {
+  FixedExpenseWire,
+  CreateFixedExpenseWire,
+  UpdateFixedExpenseWire,
+} from './wire.types';
 
 @Injectable({ providedIn: 'root' })
 export class FixedApiService {
@@ -16,5 +20,13 @@ export class FixedApiService {
 
   create(body: CreateFixedExpenseWire): Observable<FixedExpenseWire> {
     return this.http.post<FixedExpenseWire>(this.base, body);
+  }
+
+  update(id: string, body: UpdateFixedExpenseWire): Observable<FixedExpenseWire> {
+    return this.http.patch<FixedExpenseWire>(`${this.base}/${id}`, body);
+  }
+
+  remove(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

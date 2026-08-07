@@ -58,6 +58,7 @@
       <span class="card-meta">ordenado por vencimento</span>
     </div>
 
+    @if (vp.isDesktop()) {
     <table class="tx-table">
       <thead>
         <tr>
@@ -66,6 +67,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
+          <th style="width:84px"></th>
         </tr>
       </thead>
       <tbody>
@@ -108,15 +110,60 @@
             <td class="r num">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
+            <td class="act-cell">
+              <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
+                [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemove(f.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover gasto fixo">
+                <cf-icon name="x" [size]="11" />
+              </button>
+            </td>
           </tr>
         }
         @if (pendingItems().length === 0) {
           <tr>
-            <td colspan="5" class="empty-cell">Todos os fixos foram pagos</td>
+            <td colspan="6" class="empty-cell">Todos os fixos foram pagos</td>
           </tr>
         }
       </tbody>
     </table>
+    } @else {
+    <div class="fx-cards">
+      @for (f of pendingItems(); track f.id) {
+        <div class="fx-card">
+          <div class="fxc-main">
+            <span class="fxc-label">{{ f.label }}</span>
+            <cf-money [value]="f.value" [negColor]="false" />
+          </div>
+          <div class="fxc-meta">
+            <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
+            <span class="fxc-tag num">{{ formatDaysAway(f.due) }}</span>
+            <span class="fxc-tag">
+              <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
+            </span>
+            <span class="fxc-tag">
+              {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
+            </span>
+            @if (daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
+              <span class="pill warn">urgente</span>
+            }
+            @if (daysAway(f.due) < 0) {
+              <span class="pill neg">vencido</span>
+            }
+            <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
+              [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
+          </div>
+        </div>
+      }
+      @if (pendingItems().length === 0) {
+        <p class="fxc-empty">Todos os fixos foram pagos</p>
+      }
+    </div>
+    }
 
     <div class="card-foot">
       <span>{{ pendingItems().length }} contas</span>
@@ -134,6 +181,7 @@
       <span class="card-meta">automático via boleto/PIX</span>
     </div>
 
+    @if (vp.isDesktop()) {
     <table class="tx-table">
       <thead>
         <tr>
@@ -142,6 +190,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
+          <th style="width:84px"></th>
         </tr>
       </thead>
       <tbody>
@@ -178,10 +227,47 @@
             <td class="r num paid-value">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
+            <td class="act-cell">
+              <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
+                [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemove(f.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover gasto fixo">
+                <cf-icon name="x" [size]="11" />
+              </button>
+            </td>
           </tr>
         }
       </tbody>
     </table>
+    } @else {
+    <div class="fx-cards">
+      @for (f of paidItems(); track f.id) {
+        <div class="fx-card">
+          <div class="fxc-main">
+            <span class="fxc-label">
+              <cf-icon name="check" [size]="11" color="var(--pos)" /> {{ f.label }}
+            </span>
+            <cf-money [value]="f.value" [negColor]="false" />
+          </div>
+          <div class="fxc-meta">
+            <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
+            <span class="fxc-tag">
+              <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
+            </span>
+            <span class="fxc-tag">
+              {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
+            </span>
+            <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
+              [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
+          </div>
+        </div>
+      }
+    </div>
+    }
 
     <div class="card-foot">
       <span>{{ paidItems().length }} contas</span>
@@ -189,3 +275,18 @@
     </div>
   </div>
 </div>
+
+@if (editingFixed(); as f) {
+  <cf-fixed-edit-drawer [fixed]="f" (closed)="editingFixed.set(null)" />
+}
+
+@if (confirmingRemoval()) {
+  <cf-confirm-modal
+    title="Remover gasto fixo?"
+    description="Os lançamentos já registrados continuam no histórico — apenas deixam de estar vinculados a este gasto fixo."
+    confirmLabel="Remover"
+    [danger]="true"
+    (confirmed)="confirmRemove()"
+    (cancelled)="cancelRemove()"
+  />
+}

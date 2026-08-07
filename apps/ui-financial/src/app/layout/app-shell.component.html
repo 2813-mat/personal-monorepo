@@ -1,10 +1,17 @@
 <div class="shell">
   <cf-sidebar class="shell__sidebar" />
   <div class="shell__main">
-    <cf-topbar />
+    <cf-topbar (newExpense)="openExpenseDrawer()" />
     <div class="shell__content">
       <router-outlet />
     </div>
   </div>
 </div>
+
+@if (expenseDrawerOpen()) {
+  <cf-expense-drawer (closed)="expenseDrawerOpen.set(false)" />
+}
+
+<cf-bottom-nav (newExpense)="openExpenseDrawer()" />
+
 <cf-toast-container />

@@ -3,7 +3,13 @@ import { PrismaService } from '../../../../infrastructure/prisma/prisma.service'
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
 import { billingCycleFor } from '../../../../shared-kernel/billing-cycle';
-import { CardRepository, OpenInvoice } from '../domain/card.repository';
+import {
+  CardRepository,
+  CardUsage,
+  CreateCardData,
+  OpenInvoice,
+  UpdateCardData,
+} from '../domain/card.repository';
 import { toDomain } from './card.mapper';
 
 @Injectable()
@@ -28,6 +34,103 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
         return toDomain(c, Number(agg._sum.value ?? 0));
       }),
     );
+  }
+
+  /**
+   * `holder` não é coluna: vira `ownerMemberId` por nome, como o repositório de
+   * transação já faz. 'shared' é ausência de dono, não um membro chamado shared.
+   */
+  private async memberIdFor(holder: string): Promise<string | null> {
+    if (holder === 'shared') return null;
+    const member = await this.prisma.member.findFirst({
+      where: { householdId: this.householdId, name: holder },
+    });
+    return member?.id ?? null;
+  }
+
+  async create(data: CreateCardData) {
+    const ownerMemberId = await this.memberIdFor(data.holder);
+    const row = await this.prisma.card.create({
+      data: {
+        householdId: this.householdId,
+        ownerMemberId,
+        name: data.name,
+        bank: data.bank,
+        color: data.color,
+        closingDay: data.closingDay,
+        dueDay: data.dueDay,
+        creditLimit: data.creditLimit,
+        last4: data.last4,
+      },
+      include: { owner: true },
+    });
+    // Cartão novo não tem lançamento, então a fatura do ciclo é zero.
+    return toDomain(row, 0);
+  }
+
+  /** Fatura do ciclo corrente. Recalculada a cada escrita porque mudar o dia de
+   * fechamento muda o ciclo. */
+  private async currentFor(cardId: string, closingDay: number): Promise<number> {
+    const { start, end } = billingCycleFor(closingDay);
+    const agg = await this.prisma.transaction.aggregate({
+      _sum: { value: true },
+      where: { householdId: this.householdId, cardId, date: { gt: start, lte: end } },
+    });
+    return Number(agg._sum.value ?? 0);
+  }
+
+  async update(id: string, data: UpdateCardData) {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return null;
+    // `ownerMemberId` só entra no update se `holder` veio no corpo: um PATCH que
+    // não fala de titular não pode zerar o dono do cartão.
+    const owner =
+      data.holder === undefined ? {} : { ownerMemberId: await this.memberIdFor(data.holder) };
+    const row = await this.prisma.card.update({
+      where: { id: existing.id },
+      data: {
+        name: data.name,
+        bank: data.bank,
+        color: data.color,
+        closingDay: data.closingDay,
+        dueDay: data.dueDay,
+        creditLimit: data.creditLimit,
+        last4: data.last4,
+        ...owner,
+      },
+      include: { owner: true },
+    });
+    return toDomain(row, await this.currentFor(row.id, row.closingDay));
+  }
+
+  async countUsage(id: string): Promise<CardUsage | null> {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return null;
+    const [transactions, invoices] = await Promise.all([
+      this.prisma.transaction.count({ where: this.scoped({ cardId: existing.id }) }),
+      this.prisma.invoiceHistory.count({ where: this.scoped({ cardId: existing.id }) }),
+    ]);
+    return { transactions, invoices };
+  }
+
+  async remove(id: string): Promise<boolean> {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return false;
+    await this.prisma.card.delete({ where: { id: existing.id } });
+    return true;
+  }
+
+  async setArchived(id: string, archived: boolean) {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return null;
+    const row = await this.prisma.card.update({
+      where: { id: existing.id },
+      data: { archivedAt: archived ? new Date() : null },
+      include: { owner: true },
+    });
+    // Cartão arquivado não recebe lançamento novo, mas o ciclo corrente pode ter
+    // compras anteriores ao arquivamento — o total continua sendo o real.
+    return toDomain(row, await this.currentFor(row.id, row.closingDay));
   }
 
   async openInvoice(cardId: string): Promise<OpenInvoice> {

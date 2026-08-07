@@ -23,7 +23,39 @@ export interface OpenInvoice {
   month: number;
 }
 
+export interface CreateCardData {
+  name: string;
+  bank: string;
+  color: string;
+  closingDay: number;
+  dueDay: number;
+  creditLimit: number;
+  last4: string;
+  holder: string;
+}
+
+export interface UpdateCardData {
+  name?: string;
+  bank?: string;
+  color?: string;
+  closingDay?: number;
+  dueDay?: number;
+  creditLimit?: number;
+  last4?: string;
+  holder?: string;
+}
+
+export interface CardUsage {
+  transactions: number;
+  invoices: number;
+}
+
 export abstract class CardRepository {
   abstract findAll(): Promise<Card[]>;
   abstract openInvoice(cardId: string): Promise<OpenInvoice>;
+  abstract create(data: CreateCardData): Promise<Card>;
+  abstract update(id: string, data: UpdateCardData): Promise<Card | null>;
+  abstract countUsage(id: string): Promise<CardUsage | null>;
+  abstract remove(id: string): Promise<boolean>;
+  abstract setArchived(id: string, archived: boolean): Promise<Card | null>;
 }

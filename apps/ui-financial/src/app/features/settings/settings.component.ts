@@ -2,12 +2,16 @@ import { Component, inject, computed, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { slugify } from '@caixa-familia/shared-utils';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
-import type { Holder } from '@caixa-familia/shared-types';
+import { CategoryEditDrawerComponent } from './category-edit-drawer.component';
+import { CardEditDrawerComponent } from './card-edit-drawer.component';
+import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
+import type { Card, Category, Holder } from '@caixa-familia/shared-types';
 
 type SectionId = 'cats' | 'people' | 'cards' | 'rules' | 'import' | 'notif' | 'backup';
 
@@ -27,15 +31,27 @@ interface Person {
 @Component({
   selector: 'cf-settings',
   standalone: true,
-  imports: [ReactiveFormsModule, MoneyComponent, CatDotComponent, AvatarComponent, IconComponent],
+  imports: [
+    ReactiveFormsModule,
+    MoneyComponent,
+    CatDotComponent,
+    AvatarComponent,
+    IconComponent,
+    CategoryEditDrawerComponent,
+    CardEditDrawerComponent,
+    ConfirmModalComponent,
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
   protected auth = inject(AuthService);
 
   protected activeSection = signal<SectionId>('cats');
+
+  protected editingCategory = signal<Category | null>(null);
 
   /** Paleta fixa — garante um hex válido para o @IsHexColor do backend. */
   readonly palette = [
@@ -77,8 +93,103 @@ export class SettingsComponent {
       label: v.label,
       color: v.color,
       budget: Number(v.budget),
+      // O backend atribui a posição real (último + 1) e o recarregamento a traz.
+      order: 0,
     });
     this.cancelNewCategory();
+  }
+
+  /**
+   * `delta` é -1 para subir e 1 para descer. Manda a lista completa: o
+   * PATCH /categories/order rejeita lista parcial com 400 — é o contrato.
+   */
+  moveCategory(slug: string, delta: -1 | 1): void {
+    const slugs = this.data.categories().map((c) => c.id);
+    const from = slugs.indexOf(slug);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= slugs.length) return;
+    const next = [...slugs];
+    [next[from], next[to]] = [next[to], next[from]];
+    this.data.reorderCategories(next);
+  }
+
+  isFirstCategory(slug: string): boolean {
+    return this.data.categories()[0]?.id === slug;
+  }
+
+  isLastCategory(slug: string): boolean {
+    const list = this.data.categories();
+    return list[list.length - 1]?.id === slug;
+  }
+
+  // ─── Cartões ───────────────────────────────────────────────────────────────
+  readonly editingCard = signal<Card | null>(null);
+  readonly creatingCard = signal(false);
+
+  startNewCard(): void {
+    this.editingCard.set(null);
+    this.creatingCard.set(true);
+  }
+
+  startEditCard(c: Card): void {
+    this.creatingCard.set(false);
+    this.editingCard.set(c);
+  }
+
+  closeCardDrawer(): void {
+    this.creatingCard.set(false);
+    this.editingCard.set(null);
+  }
+
+  readonly confirmingCardRemoval = signal<string | null>(null);
+
+  /**
+   * Sobrevive ao DELETE porque o 409 chega depois: é ele que diz qual cartão
+   * arquivar quando a exclusão não pôde acontecer.
+   */
+  readonly pendingCardId = signal<string | null>(null);
+
+  askRemoveCard(id: string): void {
+    this.confirmingCardRemoval.set(id);
+  }
+
+  confirmRemoveCard(): void {
+    const id = this.confirmingCardRemoval();
+    this.confirmingCardRemoval.set(null);
+    if (!id) return;
+    this.pendingCardId.set(id);
+    this.data.removeCard(id);
+  }
+
+  cancelRemoveCard(): void {
+    this.confirmingCardRemoval.set(null);
+  }
+
+  archivePendingCard(): void {
+    const id = this.pendingCardId();
+    if (id) this.data.archiveCard(id, true);
+    this.dismissCardConflict();
+  }
+
+  dismissCardConflict(): void {
+    this.pendingCardId.set(null);
+    this.data.clearCardRemovalConflict();
+  }
+
+  readonly confirmingRemoval = signal<string | null>(null);
+
+  askRemoveCategory(slug: string): void {
+    this.confirmingRemoval.set(slug);
+  }
+
+  confirmRemoveCategory(): void {
+    const slug = this.confirmingRemoval();
+    if (slug) this.data.removeCategory(slug);
+    this.confirmingRemoval.set(null);
+  }
+
+  cancelRemoveCategory(): void {
+    this.confirmingRemoval.set(null);
   }
 
   cancelNewCategory(): void {
@@ -87,18 +198,18 @@ export class SettingsComponent {
   }
 
   protected navItems: NavItem[] = [
-    { id: 'cats',   label: 'Categorias',     icon: 'target' },
-    { id: 'people', label: 'Pessoas',        icon: 'list' },
-    { id: 'cards',  label: 'Cartões',        icon: 'card' },
-    { id: 'rules',  label: 'Recorrências',   icon: 'repeat' },
-    { id: 'import', label: 'Importar',       icon: 'upload' },
-    { id: 'notif',  label: 'Notificações',   icon: 'bell' },
-    { id: 'backup', label: 'Backup',         icon: 'download' },
+    { id: 'cats', label: 'Categorias', icon: 'target' },
+    { id: 'people', label: 'Pessoas', icon: 'list' },
+    { id: 'cards', label: 'Cartões', icon: 'card' },
+    { id: 'rules', label: 'Recorrências', icon: 'repeat' },
+    { id: 'import', label: 'Importar', icon: 'upload' },
+    { id: 'notif', label: 'Notificações', icon: 'bell' },
+    { id: 'backup', label: 'Backup', icon: 'download' },
   ];
 
   protected people: Person[] = [
-    { name: 'Mateus', email: 'mateus@email.com', role: 'Admin',  tag: '#1F4E79' },
-    { name: 'Thais',  email: 'thais@email.com',  role: 'Editor', tag: '#7A1F3D' },
+    { name: 'Mateus', email: 'mateushas.advir@gmail.com', role: 'Admin', tag: '#1F4E79' },
+    { name: 'Thais', email: 'thaisdfontes@hotmail.com', role: 'Admin', tag: '#7A1F3D' },
   ];
 
   protected totalBudget = computed(() =>

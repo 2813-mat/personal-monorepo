@@ -101,6 +101,7 @@
     <span class="panel-title">Últimos lançamentos</span>
     <a class="panel-meta" routerLink="/transactions">Ver todos →</a>
   </div>
+  @if (vp.isDesktop()) {
   <table class="tx-table">
     <thead>
       <tr>
@@ -156,4 +157,30 @@
       }
     </tbody>
   </table>
+  } @else {
+  <div class="dsh-cards">
+    @for (tx of recentTx(); track tx.id) {
+      <div class="dsh-card">
+        <div class="dshc-main">
+          <span class="dshc-label">{{ tx.label }}</span>
+          <cf-money [value]="tx.value" [negColor]="false" />
+        </div>
+        <div class="dshc-meta">
+          <span class="dshc-tag num">{{ formatDate(tx.date) }}</span>
+          <span class="dshc-tag">
+            <cf-cat-dot [catId]="tx.cat" [size]="6" /> {{ catLabel(tx.cat) }}
+          </span>
+          @if (cardOf(tx.method); as card) {
+            <span class="dshc-tag num">···{{ card.last4 }}</span>
+          } @else {
+            <span class="dshc-tag">Pix</span>
+          }
+          <span class="dshc-tag">
+            {{ tx.holder === 'shared' ? 'Compartilhado' : tx.holder }}
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+  }
 </div>

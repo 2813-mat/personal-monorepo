@@ -11,6 +11,7 @@ export interface CardViewInput {
   last4: string;
   current: number;
   holder?: string | null;
+  archived: boolean;
 }
 
 export const toCardView = (c: CardViewInput): Card => ({
@@ -24,4 +25,5 @@ export const toCardView = (c: CardViewInput): Card => ({
   current: c.current,
   limit: c.creditLimit,
   last4: c.last4,
+  archived: c.archived,
 });

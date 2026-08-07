@@ -1,0 +1,44 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">Editar receita do mês</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    @if (isFromTemplate()) {
+      <p class="scope-note">
+        Esta linha veio de uma receita recorrente. A alteração vale só para este mês —
+        para um aumento permanente, edite o cadastro em <strong>Recorrentes</strong>.
+      </p>
+    }
+
+    <label class="label" for="inc-label">Descrição</label>
+    <input id="inc-label" class="text-input" formControlName="label" />
+
+    <label class="label mt" for="inc-value">Valor</label>
+    <input id="inc-value" class="text-input" type="number" min="0" step="0.01"
+      formControlName="value" />
+
+    <label class="label mt" for="inc-date">Data</label>
+    <input id="inc-date" class="text-input" type="date" formControlName="date" />
+
+    <label class="label mt" for="inc-holder">Titular</label>
+    <select id="inc-holder" class="text-input" formControlName="holder">
+      <option value="shared">Compartilhado</option>
+      <option value="Mateus">Mateus</option>
+      <option value="Thais">Thais</option>
+    </select>
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint">{{ isFromTemplate() ? 'só este mês' : 'avulsa' }}</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
+      Salvar
+    </button>
+  </footer>
+</aside>

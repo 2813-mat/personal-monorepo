@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { ReportsComponent } from './reports.component';
 import { AppDataService } from '../../layout/app-data.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { MonthEntry } from '../../core/api/report.mapper';
 
 function mockDataService(history: MonthEntry[], incomeHistory: MonthEntry[], year = 2026) {
@@ -216,5 +217,67 @@ describe('ReportsComponent — close month', () => {
     component.cancelCloseMonth();
     expect(data.closeMonth).not.toHaveBeenCalled();
     expect(component.confirmingClose()).toBe(false);
+  });
+});
+
+const series = (n: number): MonthEntry[] =>
+  Array.from({ length: n }, (_, i) => ({
+    m: `M${i + 1}`,
+    year: 2026,
+    month: i + 1,
+    total: 100 * (i + 1),
+    perCategory: {},
+  }));
+
+function buildChart(isDesktop: boolean, months = 12) {
+  const data = mockDataService(series(months), series(months));
+  TestBed.configureTestingModule({
+    imports: [ReportsComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { isAdmin: signal(true), canWrite: signal(true) } },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(ReportsComponent);
+  fixture.detectChanges();
+  return fixture.componentInstance;
+}
+
+describe('ReportsComponent — chart window', () => {
+  it('caps the chart at the last 6 months on mobile', () => {
+    expect(buildChart(false).chartModel().bars.length).toBe(6);
+  });
+
+  it('keeps the whole series on desktop', () => {
+    expect(buildChart(true).chartModel().bars.length).toBe(12);
+  });
+
+  it('windows the tail, not the head', () => {
+    // a série vai de 100 a 1200; os últimos 6 meses começam em M7
+    expect(buildChart(false).chartModel().bars[0].m).toBe('M7');
+  });
+
+  it('narrows the viewBox on mobile so the bars are not squeezed', () => {
+    expect(buildChart(false).chartModel().width).toBe(400);
+  });
+
+  it('keeps the wide viewBox on desktop', () => {
+    expect(buildChart(true).chartModel().width).toBe(1100);
+  });
+
+  it('counts the months actually plotted, not the whole history', () => {
+    // o título dizia "12 meses" enquanto o gráfico mostrava 6 no celular
+    expect(buildChart(false).chartMonthCount()).toBe(6);
+  });
+
+  it('counts the whole history on desktop', () => {
+    expect(buildChart(true).chartMonthCount()).toBe(12);
+  });
+
+  it('spreads the windowed bars across the full width', () => {
+    // 6 barras em 400 de largura: sem o piso ajustado sobrariam 50% vazios
+    const bars = buildChart(false).chartModel().bars;
+    expect(bars[bars.length - 1].labelX).toBeGreaterThan(330);
   });
 });

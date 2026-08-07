@@ -14,8 +14,10 @@
         <span class="goal-subtitle">{{ goal.subtitle }}</span>
       </div>
       <div class="goal-header-actions">
-        <button class="btn-ghost" disabled>Editar</button>
-        <button class="btn-colored" [style.background]="goal.color" disabled>
+        <button type="button" class="btn-ghost" [disabled]="!auth.canWrite()"
+          (click)="editing.set(true)">Editar</button>
+        <button type="button" class="btn-colored" [style.background]="goal.color"
+          [disabled]="!auth.canWrite()" (click)="contributing.set(true)">
           <cf-icon name="plus" [size]="11" /> Aporte extra
         </button>
       </div>
@@ -61,3 +63,11 @@
 
   </div>
 </div>
+
+@if (editing()) {
+  <cf-goal-edit-drawer [goal]="goal" (closed)="editing.set(false)" />
+}
+
+@if (contributing()) {
+  <cf-expense-drawer [presetGoal]="goal.id" (closed)="contributing.set(false)" />
+}

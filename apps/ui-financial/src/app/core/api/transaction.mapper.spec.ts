@@ -1,4 +1,4 @@
-import { wireToTransaction, transactionToCreateWire } from './transaction.mapper';
+import { wireToTransaction, transactionToCreateWire, transactionToUpdateWire } from './transaction.mapper';
 import type { TransactionWire } from './wire.types';
 import type { Transaction } from '@caixa-familia/shared-types';
 
@@ -12,6 +12,7 @@ const cardWire: TransactionWire = {
   method: 'CARD',
   cardId: 'card-db-1',
   recurring: false,
+  reviewed: false,
   installments: { n: 1, of: 3 },
 };
 
@@ -58,5 +59,42 @@ describe('transactionToCreateWire', () => {
       installments: { n: 1, of: 3 },
     } as Transaction);
     expect(w).toMatchObject({ method: 'CARD', cardId: 'card-db-1', installments: { n: 1, of: 3 } });
+  });
+});
+
+describe('wireToTransaction — reviewed', () => {
+  it('traz reviewed do wire', () => {
+    const w = { ...cardWire, reviewed: true } as TransactionWire;
+    expect(wireToTransaction(w).reviewed).toBe(true);
+  });
+
+  it('traz false quando não conferido', () => {
+    const w = { ...cardWire, reviewed: false } as TransactionWire;
+    expect(wireToTransaction(w).reviewed).toBe(false);
+  });
+});
+
+describe('transactionToUpdateWire', () => {
+  const tx: Transaction = {
+    id: 't1', date: '2026-05-05', label: 'Mercado', value: 240, cat: 'casa',
+    holder: 'Mateus', method: 'pix', installments: null, reviewed: false,
+  };
+
+  it('desdobra method pix em PIX sem cardId', () => {
+    expect(transactionToUpdateWire(tx)).toMatchObject({ method: 'PIX', cardId: null });
+  });
+
+  it('desdobra um cardId em CARD com o cartão', () => {
+    expect(transactionToUpdateWire({ ...tx, method: 'nu-t' })).toMatchObject({
+      method: 'CARD', cardId: 'nu-t',
+    });
+  });
+
+  it('não envia parcelamento — o PATCH não aceita alterá-lo', () => {
+    expect(transactionToUpdateWire(tx)).not.toHaveProperty('installments');
+  });
+
+  it('leva o reviewed', () => {
+    expect(transactionToUpdateWire({ ...tx, reviewed: true })).toMatchObject({ reviewed: true });
   });
 });

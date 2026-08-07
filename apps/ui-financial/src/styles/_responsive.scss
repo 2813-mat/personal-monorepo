@@ -1,0 +1,10 @@
+// Breakpoint único do projeto. Mobile-first: o corpo do seletor é o celular
+// e este mixin devolve o layout de desktop. Não adicionar outros breakpoints
+// sem atualizar a spec 2026-08-06-responsividade-mobile-design.md.
+$bp-desktop: 768px;
+
+@mixin desktop {
+  @media (min-width: $bp-desktop) {
+    @content;
+  }
+}

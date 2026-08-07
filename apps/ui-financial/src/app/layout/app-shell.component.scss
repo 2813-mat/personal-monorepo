@@ -1,23 +1,46 @@
+@use 'responsive' as r;
+
+/* Base = celular: coluna única, sem sidebar, rodapé reservado para a bottom-nav. */
 .shell {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  height: 100vh;
+  display: block;
   width: 100%;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 .shell__sidebar {
-  grid-row: 1;
+  display: none;
 }
+
 .shell__main {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
 }
 .shell__content {
   flex: 1;
-  overflow-y: auto;
   background: var(--bg);
-  padding: 16px 20px;
+  padding: 12px 12px calc(64px + env(safe-area-inset-bottom));
+}
+
+/* No celular a rolagem é do documento, não de um contêiner interno — é o que
+   faz a barra de endereço do navegador retrair. Por isso overflow fica só aqui. */
+@include r.desktop {
+  .shell {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .shell__sidebar {
+    display: block;
+    grid-row: 1;
+  }
+  .shell__main {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .shell__content {
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
 }

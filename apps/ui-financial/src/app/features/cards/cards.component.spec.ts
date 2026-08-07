@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { CardsComponent } from './cards.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { InvoiceHistoryEntry } from '../../core/api/invoice.mapper';
 import type { Card } from '@caixa-familia/shared-types';
 
@@ -40,10 +41,15 @@ const entry = (year: number, month: number, total: number): InvoiceHistoryEntry 
   perCategory: {},
 });
 
-function build(byCard: Record<string, InvoiceHistoryEntry[]>) {
+function build(
+  byCard: Record<string, InvoiceHistoryEntry[]>,
+  cards: Card[] = CARDS,
+  activeCards: Card[] = cards,
+) {
   const data = {
-    cards: signal(CARDS),
-    cardBy: signal(Object.fromEntries(CARDS.map((c) => [c.id, c]))),
+    cards: signal(cards),
+    activeCards: signal(activeCards),
+    cardBy: signal(Object.fromEntries(cards.map((c) => [c.id, c]))),
     transactions: signal([]),
     catBy: signal({}),
     currentMonth: signal({ year: 2026, month: 7, label: 'Julho 2026', short: 'Jul/26' }),
@@ -95,5 +101,60 @@ describe('CardsComponent — invoice history column', () => {
   it('does not invent values from the card id', () => {
     // o defeito antigo: a série saía de um seed do id e nunca era vazia
     expect(build({}).historyOf(CARDS[0])).not.toHaveLength(6);
+  });
+});
+
+function buildResponsive(isDesktop: boolean) {
+  const data = {
+    cards: signal(CARDS),
+    activeCards: signal(CARDS),
+    cardBy: signal(Object.fromEntries(CARDS.map((c) => [c.id, c]))),
+    transactions: signal([]),
+    catBy: signal({}),
+    currentMonth: signal({ year: 2026, month: 7, label: 'Julho 2026', short: 'Jul/26' }),
+    invoiceHistoryByCard: signal({}),
+  };
+  TestBed.configureTestingModule({
+    imports: [CardsComponent],
+    providers: [
+      provideRouter([]),
+      { provide: AppDataService, useValue: data },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(CardsComponent);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('CardsComponent — responsive rendering', () => {
+  it('renders the table on desktop and no card list', () => {
+    const el = buildResponsive(true);
+    expect(el.querySelector('table.cards-table')).not.toBeNull();
+    expect(el.querySelector('.cd-cards')).toBeNull();
+  });
+
+  it('renders the card list on mobile and no table', () => {
+    const el = buildResponsive(false);
+    expect(el.querySelector('.cd-cards')).not.toBeNull();
+    expect(el.querySelector('table.cards-table')).toBeNull();
+  });
+
+  it('keeps each card linking to its invoice on mobile', () => {
+    const links = buildResponsive(false).querySelectorAll('a.cd-card');
+    // ordenação é de sortedCards() e tem teste próprio — aqui só importa
+    // que todo cartão vira um link para a sua fatura
+    expect(Array.from(links).map((a) => (a as HTMLAnchorElement).getAttribute('href')).sort()).toEqual([
+      '/cards/it-m/invoice',
+      '/cards/nu-t/invoice',
+    ]);
+  });
+});
+
+describe('CardsComponent — arquivados', () => {
+  it('soma só o limite dos cartões ativos', () => {
+    const arquivado = { ...CARDS[1], archived: true };
+    const component = build({}, [CARDS[0], arquivado], [CARDS[0]]);
+    expect(component.totalLimit()).toBe(4500);
   });
 });

@@ -9,6 +9,7 @@ export interface TransactionWire {
   cardId: string | null;
   note?: string;
   recurring: boolean;
+  reviewed: boolean;
   fixedExpenseId?: string;
   installments: { n: number; of: number } | null;
 }
@@ -26,12 +27,25 @@ export interface CreateTransactionWire {
   installments?: { n: number; of: number };
 }
 
+export interface UpdateTransactionWire {
+  date?: string;
+  label?: string;
+  value?: number;
+  categorySlug?: string;
+  holder?: string;
+  method?: 'PIX' | 'CARD';
+  cardId?: string | null;
+  note?: string;
+  reviewed?: boolean;
+}
+
 export interface CategoryWire {
   id: string;
   slug: string;
   label: string;
   color: string;
   budget: number;
+  order: number;
 }
 
 export interface CreateCategoryWire {
@@ -41,6 +55,12 @@ export interface CreateCategoryWire {
   budget: number;
 }
 
+export interface UpdateCategoryWire {
+  label?: string;
+  color?: string;
+  budget?: number;
+}
+
 export interface IncomeWire {
   id: string;
   label: string;
@@ -48,7 +68,36 @@ export interface IncomeWire {
   value: number;
   date: string;
   recurring: boolean;
+  recurringIncomeId?: string;
 }
+
+export interface RecurringIncomeWire {
+  id: string;
+  label: string;
+  holder: string;
+  value: number;
+  day: number;
+  startDate: string;
+}
+
+export interface CreateRecurringIncomeWire {
+  label: string;
+  holder: string;
+  value: number;
+  day: number;
+  startDate?: string;
+}
+
+export type UpdateRecurringIncomeWire = Partial<
+  Pick<CreateRecurringIncomeWire, 'label' | 'holder' | 'value' | 'day'>
+>;
+
+export type UpdateIncomeWire = Partial<{
+  label: string;
+  holder: string;
+  value: number;
+  date: string;
+}>;
 
 export interface OpenInvoiceItemWire {
   id: string;
@@ -104,6 +153,37 @@ export interface GoalWire {
   history: number[];
 }
 
+export interface CreateCardWire {
+  name: string;
+  bank: string;
+  color: string;
+  closingDay: number;
+  dueDay: number;
+  creditLimit: number;
+  last4: string;
+  holder: string;
+}
+
+export interface UpdateCardWire {
+  name?: string;
+  bank?: string;
+  color?: string;
+  closingDay?: number;
+  dueDay?: number;
+  creditLimit?: number;
+  last4?: string;
+  holder?: string;
+}
+
+export interface UpdateGoalWire {
+  label?: string;
+  target?: number;
+  monthly?: number;
+  color?: string;
+  subtitle?: string;
+  type?: 'SONHO' | 'EMERGENCIA';
+}
+
 export interface CreateContributionWire {
   amount: number;
   date: string;
@@ -125,6 +205,14 @@ export interface CreateFixedExpenseWire {
   dueDay: number;
   categorySlug: string;
   holder: string;
+}
+
+export interface UpdateFixedExpenseWire {
+  label?: string;
+  value?: number;
+  dueDay?: number;
+  categorySlug?: string;
+  holder?: string;
 }
 
 export interface CreateIncomeWire {

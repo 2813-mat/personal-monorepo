@@ -1,6 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -8,6 +9,7 @@ import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
+import { matchesHolder } from '@caixa-familia/shared-utils';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
@@ -20,17 +22,30 @@ const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov
 })
 export class DashboardAComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
+
+  // O segmento da topbar vale para todo número desta aba: filtrar o gasto sem
+  // filtrar a receita afunda o saldo de quem está selecionado.
+  private txs = computed(() =>
+    this.data.transactions().filter(t => matchesHolder(this.data.holderFilter(), t.holder)),
+  );
+  private incs = computed(() =>
+    this.data.incomes().filter(i => matchesHolder(this.data.holderFilter(), i.holder)),
+  );
+  private fixos = computed(() =>
+    this.data.fixed().filter(f => matchesHolder(this.data.holderFilter(), f.holder)),
+  );
 
   kpis = computed(() => {
-    const income = this.data.incomes().reduce((s, i) => s + i.value, 0);
-    const spent = this.data.transactions().reduce((s, t) => s + t.value, 0);
-    const fixed = this.data.fixed().reduce((s, f) => s + f.value, 0);
+    const income = this.incs().reduce((s, i) => s + i.value, 0);
+    const spent = this.txs().reduce((s, t) => s + t.value, 0);
+    const fixed = this.fixos().reduce((s, f) => s + f.value, 0);
     const sos = this.data.goals().find(g => g.id === 'sos');
     const saldo = income - spent;
     return [
-      { label: 'Receita',  value: income,         sub: '2 fontes',                     color: 'var(--pos)'   },
-      { label: 'Gastos',   value: spent,          sub: `${this.data.transactions().length} lançamentos`, color: 'var(--neg)' },
-      { label: 'Fixos',    value: fixed,          sub: '10 contas',                    color: undefined      },
+      { label: 'Receita',  value: income,         sub: `${this.incs().length} fontes`, color: 'var(--pos)'   },
+      { label: 'Gastos',   value: spent,          sub: `${this.txs().length} lançamentos`, color: 'var(--neg)' },
+      { label: 'Fixos',    value: fixed,          sub: `${this.fixos().length} contas`, color: undefined      },
       { label: 'Reserva',  value: sos?.balance ?? 0, sub: `/ R$ ${this.formatShort(sos?.target ?? 0)}`, color: 'var(--brand)' },
       { label: 'Saldo',    value: saldo,          sub: 'livre p/ mês',                 color: saldo > 0 ? 'var(--pos)' : 'var(--neg)' },
     ];
@@ -41,7 +56,7 @@ export class DashboardAComponent {
   historyLast = computed(() => { const h = this.data.history(); return h[h.length - 1]?.m ?? ''; });
 
   topTx = computed(() =>
-    [...this.data.transactions()]
+    [...this.txs()]
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 16)
   );
@@ -50,7 +65,7 @@ export class DashboardAComponent {
 
   catSpend = computed(() => {
     const spend: Record<string, number> = {};
-    for (const t of this.data.transactions()) {
+    for (const t of this.txs()) {
       spend[t.cat] = (spend[t.cat] ?? 0) + t.value;
     }
     return this.data.categories()

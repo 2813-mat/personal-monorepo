@@ -1,4 +1,4 @@
-import { wireToFixed, fixedToCreateWire } from './fixed.mapper';
+import { wireToFixed, fixedToCreateWire, fixedToUpdateWire } from './fixed.mapper';
 import type { FixedExpenseWire } from './wire.types';
 import type { FixedExpense } from '@caixa-familia/shared-types';
 
@@ -52,5 +52,25 @@ describe('fixedToCreateWire', () => {
       categorySlug: 'casa',
       holder: 'Mateus',
     });
+  });
+});
+
+describe('fixedToUpdateWire', () => {
+  const f: FixedExpense = {
+    id: 'f1',
+    label: 'Luz',
+    value: 200,
+    due: 10,
+    cat: 'casa',
+    holder: 'shared',
+    paidThisMonth: false,
+  };
+
+  it('traduz due para dueDay e cat para categorySlug', () => {
+    expect(fixedToUpdateWire(f)).toMatchObject({ dueDay: 10, categorySlug: 'casa' });
+  });
+
+  it('não envia paidThisMonth — é derivado', () => {
+    expect(fixedToUpdateWire(f)).not.toHaveProperty('paidThisMonth');
   });
 });

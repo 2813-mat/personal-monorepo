@@ -9,6 +9,8 @@ import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { TxDetailDrawerComponent } from '../tx-detail-drawer/tx-detail-drawer.component';
+import { ViewportService } from '../../core/viewport.service';
+import { matchesHolder } from '@caixa-familia/shared-utils';
 import type { Transaction } from '@caixa-familia/shared-types';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -42,22 +44,34 @@ interface TxGroup {
 })
 export class TransactionsComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
   searchQuery = signal('');
-  selectedTx = signal<Transaction | null>(null);
+  selectedTxId = signal<string | null>(null);
+
+  /**
+   * Deriva da lista em vez de guardar o objeto: depois de um PATCH o
+   * AppDataService recarrega, e um snapshot deixaria o drawer mostrando o
+   * valor antigo enquanto a lista já mostra o novo.
+   */
+  selectedTx = computed(
+    () => this.data.transactions().find((t) => t.id === this.selectedTxId()) ?? null,
+  );
   selectedCat = signal<string | null>(null);
   sortCol = signal<SortCol>('date');
   sortDir = signal<SortDir>('desc');
   groupMode = signal<'category' | 'date'>('category');
+  onlyUnreviewed = signal(false);
 
   private filteredTx = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const cat = this.selectedCat();
     const filter = this.data.holderFilter();
     return this.data.transactions()
-      .filter(t => filter === 'todos' || t.holder === filter || (filter !== 'shared' && t.holder === 'shared'))
+      .filter(t => matchesHolder(filter, t.holder))
       .filter(t => !cat || t.cat === cat)
-      .filter(t => !query || t.label.toLowerCase().includes(query));
+      .filter(t => !query || t.label.toLowerCase().includes(query))
+      .filter(t => !this.onlyUnreviewed() || !t.reviewed);
   });
 
   flatSorted = computed(() => {
@@ -87,6 +101,19 @@ export class TransactionsComponent {
         total: items.reduce((s, t) => s + t.value, 0),
       }))
       .sort((a, b) => b.total - a.total);
+  });
+
+  // Cards do celular, com quebra por dia. Agrupamento consecutivo: depende de
+  // flatSorted() vir ordenado por data — que é o default (sortCol='date') e o
+  // único estado possível no celular, onde o cabeçalho ordenável não é renderizado.
+  dayGroups = computed(() => {
+    const groups: { key: string; label: string; items: Transaction[] }[] = [];
+    for (const tx of this.flatSorted()) {
+      const last = groups[groups.length - 1];
+      if (last?.key === tx.date) last.items.push(tx);
+      else groups.push({ key: tx.date, label: this.formatDate(tx.date), items: [tx] });
+    }
+    return groups;
   });
 
   filteredCount = computed(() => this.filteredTx().length);

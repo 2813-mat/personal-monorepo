@@ -1,6 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
@@ -9,6 +10,7 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 import { IconComponent } from '../../ui/icon/icon.component';
 import { DonutComponent } from '../../ui/donut/donut.component';
 import type { DonutSegment } from '../../ui/donut/donut.component';
+import { matchesHolder } from '@caixa-familia/shared-utils';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
@@ -21,12 +23,22 @@ const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov
 })
 export class DashboardBComponent {
   protected data = inject(AppDataService);
+  protected vp = inject(ViewportService);
 
-  totalSpent = computed(() => this.data.transactions().reduce((s, t) => s + t.value, 0));
+  // O segmento da topbar vale para todo número desta aba: filtrar o gasto sem
+  // filtrar a receita afunda o saldo de quem está selecionado.
+  private txs = computed(() =>
+    this.data.transactions().filter(t => matchesHolder(this.data.holderFilter(), t.holder)),
+  );
+  private incs = computed(() =>
+    this.data.incomes().filter(i => matchesHolder(this.data.holderFilter(), i.holder)),
+  );
+
+  totalSpent = computed(() => this.txs().reduce((s, t) => s + t.value, 0));
   totalFaturas = computed(() => this.data.cards().reduce((s, c) => s + c.current, 0));
 
   kpiCards = computed(() => {
-    const income = this.data.incomes().reduce((s, i) => s + i.value, 0);
+    const income = this.incs().reduce((s, i) => s + i.value, 0);
     const spent = this.totalSpent();
     const saldo = income - spent;
     const sos = this.data.goals().find(g => g.id === 'sos');
@@ -40,16 +52,23 @@ export class DashboardBComponent {
     const incomeDelta = ((income - prevIncome) / prevIncome * 100).toFixed(1);
     const spentDelta = ((spent - prevSpent) / prevSpent * 100).toFixed(1);
 
+    // O histórico mensal vem agregado por household, sem recorte por titular.
+    // Comparar um mês filtrado contra um mês inteiro daria uma variação
+    // inventada, então sob filtro o delta some em vez de mentir.
+    const comparavel = this.data.holderFilter() === 'todos';
+
     return [
       {
         label: 'Receita do mês', value: income, color: 'var(--pos)',
-        delta: Math.abs(+incomeDelta), deltaUp: +incomeDelta >= 0,
+        delta: comparavel ? Math.abs(+incomeDelta) : undefined,
+        deltaUp: comparavel ? +incomeDelta >= 0 : undefined,
         sub: 'Salários + extras', bar: undefined,
       },
       {
         label: 'Gastos do mês', value: spent, color: 'var(--neg)',
-        delta: Math.abs(+spentDelta), deltaUp: +spentDelta < 0,
-        sub: `${this.data.transactions().length} lançamentos`, bar: undefined,
+        delta: comparavel ? Math.abs(+spentDelta) : undefined,
+        deltaUp: comparavel ? +spentDelta < 0 : undefined,
+        sub: `${this.txs().length} lançamentos`, bar: undefined,
       },
       {
         label: 'Saldo livre', value: saldo, color: saldo >= 0 ? 'var(--brand)' : 'var(--neg)',
@@ -67,7 +86,7 @@ export class DashboardBComponent {
 
   donutSegments = computed((): DonutSegment[] => {
     const spend: Record<string, number> = {};
-    for (const t of this.data.transactions()) {
+    for (const t of this.txs()) {
       spend[t.cat] = (spend[t.cat] ?? 0) + t.value;
     }
     return this.data.categories()
@@ -77,7 +96,7 @@ export class DashboardBComponent {
   });
 
   recentTx = computed(() =>
-    [...this.data.transactions()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 9)
+    [...this.txs()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 9)
   );
 
   pct(value: number) {

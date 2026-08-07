@@ -1,0 +1,23 @@
+<nav class="bn" aria-label="Navegação principal">
+  @for (item of items; track item.id) {
+    <a class="bn-item" [routerLink]="item.route" routerLinkActive="active">
+      <cf-icon [name]="item.icon" [size]="18" />
+      <span class="bn-label">{{ item.label }}</span>
+    </a>
+  }
+
+  @if (auth.canWrite()) {
+    <button class="bn-fab" (click)="newExpense.emit()" aria-label="Lançar gasto">
+      <cf-icon name="plus" [size]="20" />
+    </button>
+  }
+
+  <button class="bn-item bn-more" (click)="moreOpen.set(!moreOpen())">
+    <cf-icon name="grid" [size]="18" />
+    <span class="bn-label">Mais</span>
+  </button>
+</nav>
+
+@if (moreOpen()) {
+  <cf-more-sheet (closed)="moreOpen.set(false)" />
+}

@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { BudgetsComponent } from './budgets.component';
 import { AppDataService } from '../../layout/app-data.service';
+import { ViewportService } from '../../core/viewport.service';
 import type { MonthEntry } from '../../core/api/report.mapper';
 import type { Category } from '@caixa-familia/shared-types';
 
 const CATEGORIES: Category[] = [
-  { id: 'mercado', label: 'Mercado', color: '#2E7D5B', budget: 1000 },
-  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500 },
+  { id: 'mercado', label: 'Mercado', color: '#2E7D5B', budget: 1000, order: 1 },
+  { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 },
 ];
 
 const month = (m: number, perCategory: Record<string, number>): MonthEntry => ({
@@ -86,5 +87,44 @@ describe('BudgetsComponent — per-category history', () => {
   it('does not invent a series from the category id', () => {
     // o defeito antigo: a série saía de um seed do catId e nunca era vazia
     expect(rowOf(build([]), 'mercado').history).not.toHaveLength(6);
+  });
+});
+
+function buildResponsive(isDesktop: boolean) {
+  const data = {
+    categories: signal(CATEGORIES),
+    transactions: signal([]),
+    history: signal([] as MonthEntry[]),
+    catBy: signal(Object.fromEntries(CATEGORIES.map((c) => [c.id, c]))),
+    cardBy: signal({}),
+    currentMonth: signal({ year: 2026, month: 7, label: 'Julho 2026', short: 'Jul/26' }),
+  };
+  TestBed.configureTestingModule({
+    imports: [BudgetsComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(BudgetsComponent);
+  fixture.detectChanges();
+  return fixture.nativeElement;
+}
+
+describe('BudgetsComponent — responsive rendering', () => {
+  it('renders the table on desktop and no card list', () => {
+    const el = buildResponsive(true);
+    expect(el.querySelector('table.bud-table')).not.toBeNull();
+    expect(el.querySelector('.bd-cards')).toBeNull();
+  });
+
+  it('renders the card list on mobile and no table', () => {
+    const el = buildResponsive(false);
+    expect(el.querySelector('.bd-cards')).not.toBeNull();
+    expect(el.querySelector('table.bud-table')).toBeNull();
+  });
+
+  it('shows one card per category on mobile', () => {
+    expect(buildResponsive(false).querySelectorAll('.bd-card').length).toBe(2);
   });
 });

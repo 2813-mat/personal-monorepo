@@ -32,3 +32,26 @@ describe('TransactionApiService', () => {
     req.flush(null);
   });
 });
+
+describe('TransactionApiService — update', () => {
+  let service: TransactionApiService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [TransactionApiService, provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(TransactionApiService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('PATCHes a transaction', () => {
+    service.update('t1', { reviewed: true }).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/transactions/t1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ reviewed: true });
+    req.flush({});
+  });
+});
