@@ -23,7 +23,19 @@ export interface OpenInvoice {
   month: number;
 }
 
+export interface CreateCardData {
+  name: string;
+  bank: string;
+  color: string;
+  closingDay: number;
+  dueDay: number;
+  creditLimit: number;
+  last4: string;
+  holder: string;
+}
+
 export abstract class CardRepository {
   abstract findAll(): Promise<Card[]>;
   abstract openInvoice(cardId: string): Promise<OpenInvoice>;
+  abstract create(data: CreateCardData): Promise<Card>;
 }

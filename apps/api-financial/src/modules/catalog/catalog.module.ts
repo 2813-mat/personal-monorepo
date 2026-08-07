@@ -10,6 +10,7 @@ import { CategoryPrismaRepository } from './category/infrastructure/category.pri
 import { CardController } from './card/interface/card.controller';
 import { ListCardsUseCase } from './card/application/list-cards.usecase';
 import { GetOpenInvoiceUseCase } from './card/application/get-open-invoice.usecase';
+import { CreateCardUseCase } from './card/application/create-card.usecase';
 import { CardRepository } from './card/domain/card.repository';
 import { CardPrismaRepository } from './card/infrastructure/card.prisma.repository';
 
@@ -24,6 +25,7 @@ import { CardPrismaRepository } from './card/infrastructure/card.prisma.reposito
     { provide: CategoryRepository, useClass: CategoryPrismaRepository },
     ListCardsUseCase,
     GetOpenInvoiceUseCase,
+    CreateCardUseCase,
     { provide: CardRepository, useClass: CardPrismaRepository },
   ],
 })

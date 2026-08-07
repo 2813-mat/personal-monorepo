@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../infrastructure/prisma/prisma.service'
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
 import { billingCycleFor } from '../../../../shared-kernel/billing-cycle';
-import { CardRepository, OpenInvoice } from '../domain/card.repository';
+import { CardRepository, CreateCardData, OpenInvoice } from '../domain/card.repository';
 import { toDomain } from './card.mapper';
 
 @Injectable()
@@ -28,6 +28,38 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
         return toDomain(c, Number(agg._sum.value ?? 0));
       }),
     );
+  }
+
+  /**
+   * `holder` não é coluna: vira `ownerMemberId` por nome, como o repositório de
+   * transação já faz. 'shared' é ausência de dono, não um membro chamado shared.
+   */
+  private async memberIdFor(holder: string): Promise<string | null> {
+    if (holder === 'shared') return null;
+    const member = await this.prisma.member.findFirst({
+      where: { householdId: this.householdId, name: holder },
+    });
+    return member?.id ?? null;
+  }
+
+  async create(data: CreateCardData) {
+    const ownerMemberId = await this.memberIdFor(data.holder);
+    const row = await this.prisma.card.create({
+      data: {
+        householdId: this.householdId,
+        ownerMemberId,
+        name: data.name,
+        bank: data.bank,
+        color: data.color,
+        closingDay: data.closingDay,
+        dueDay: data.dueDay,
+        creditLimit: data.creditLimit,
+        last4: data.last4,
+      },
+      include: { owner: true },
+    });
+    // Cartão novo não tem lançamento, então a fatura do ciclo é zero.
+    return toDomain(row, 0);
   }
 
   async openInvoice(cardId: string): Promise<OpenInvoice> {
