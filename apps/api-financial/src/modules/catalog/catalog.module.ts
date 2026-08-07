@@ -12,6 +12,8 @@ import { ListCardsUseCase } from './card/application/list-cards.usecase';
 import { GetOpenInvoiceUseCase } from './card/application/get-open-invoice.usecase';
 import { CreateCardUseCase } from './card/application/create-card.usecase';
 import { UpdateCardUseCase } from './card/application/update-card.usecase';
+import { RemoveCardUseCase } from './card/application/remove-card.usecase';
+import { ArchiveCardUseCase } from './card/application/archive-card.usecase';
 import { CardRepository } from './card/domain/card.repository';
 import { CardPrismaRepository } from './card/infrastructure/card.prisma.repository';
 
@@ -28,6 +30,8 @@ import { CardPrismaRepository } from './card/infrastructure/card.prisma.reposito
     GetOpenInvoiceUseCase,
     CreateCardUseCase,
     UpdateCardUseCase,
+    RemoveCardUseCase,
+    ArchiveCardUseCase,
     { provide: CardRepository, useClass: CardPrismaRepository },
   ],
 })
