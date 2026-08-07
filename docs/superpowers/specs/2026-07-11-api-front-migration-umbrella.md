@@ -152,11 +152,16 @@ botão central de novo gasto, 9 das 14 tabelas viram cards no celular, drawers e
 Fechamento: **225 testes**, lint e build verdes, e validação visual em 375/768/1280 com
 `scrollWidth == clientWidth` nas 8 rotas.
 
-**Dívidas da fatia de ações de escrita (2026-08-07):**
-- `app-data.service.ts` passou de 400 linhas. Continua coeso, mas vale quebrar por recurso
-  numa fatia própria.
-- Os três drawers de edição (`category`, `goal`, `fixed`) compartilham a mesma folha de estilo
-  **copiada**. Agora que os três existem, extrair um `.scss` comum é refactor barato.
+**Dívidas da fatia de ações de escrita (2026-08-07) — as duas pagas no mesmo dia:**
+- ~~`app-data.service.ts` passou de 400 linhas~~ — **resolvido**: sete stores em
+  `core/state/` (catalog, transaction, income, fixed, goal, invoice, report), mais
+  `ViewContextService` (mês corrente e filtro de titular) e `FailureReporter` (o par
+  sinal-de-erro + toast que estava duplicado em cada `error:`). `AppDataService` continua
+  como fachada — reexporta sinais e delega métodos, superfície pública idêntica. A fachada
+  fica porque ~15 componentes a injetam e 15 specs a mockam. Os 288 testes passaram sem uma
+  linha de spec alterada, o que é a prova de que nada mudou de comportamento.
+- ~~Os três drawers de edição compartilham a mesma folha de estilo **copiada**~~ —
+  **resolvido**: `styles/_edit-drawer.scss`, com os três fazendo `@use 'edit-drawer'`.
 - `tsc -p tsconfig.spec.json --noEmit` segue como disciplina manual, fora do target `test` do
   Nx. Ele pegou dois erros reais que a suíte verde escondia (um mock de `Income` com `reviewed`,
   campo que `Income` não tem).
