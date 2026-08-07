@@ -1,22 +1,35 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
+import type { FixedExpense } from '@caixa-familia/shared-types';
 import { AppDataService } from '../../layout/app-data.service';
 import { ViewportService } from '../../core/viewport.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
+import { FixedEditDrawerComponent } from './fixed-edit-drawer.component';
 
 @Component({
   selector: 'cf-fixed',
   standalone: true,
-  imports: [MoneyComponent, AvatarComponent, CatDotComponent, IconComponent, ProgressBarComponent],
+  imports: [
+    MoneyComponent,
+    AvatarComponent,
+    CatDotComponent,
+    IconComponent,
+    ProgressBarComponent,
+    FixedEditDrawerComponent,
+  ],
   templateUrl: './fixed.component.html',
   styleUrl: './fixed.component.scss',
 })
 export class FixedComponent {
   protected data = inject(AppDataService);
   protected vp = inject(ViewportService);
+  protected auth = inject(AuthService);
+
+  protected editingFixed = signal<FixedExpense | null>(null);
 
   pendingItems = computed(() =>
     this.data.fixed()

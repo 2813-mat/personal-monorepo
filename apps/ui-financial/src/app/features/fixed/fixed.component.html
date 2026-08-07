@@ -67,6 +67,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
+          <th style="width:36px"></th>
         </tr>
       </thead>
       <tbody>
@@ -109,11 +110,17 @@
             <td class="r num">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
+            <td>
+              <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
+                [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+            </td>
           </tr>
         }
         @if (pendingItems().length === 0) {
           <tr>
-            <td colspan="5" class="empty-cell">Todos os fixos foram pagos</td>
+            <td colspan="6" class="empty-cell">Todos os fixos foram pagos</td>
           </tr>
         }
       </tbody>
@@ -141,6 +148,8 @@
             @if (daysAway(f.due) < 0) {
               <span class="pill neg">vencido</span>
             }
+            <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
+              [disabled]="!auth.canWrite()">Editar</button>
           </div>
         </div>
       }
@@ -175,6 +184,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
+          <th style="width:36px"></th>
         </tr>
       </thead>
       <tbody>
@@ -211,6 +221,12 @@
             <td class="r num paid-value">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
+            <td>
+              <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
+                [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+            </td>
           </tr>
         }
       </tbody>
@@ -233,6 +249,8 @@
             <span class="fxc-tag">
               {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
             </span>
+            <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
+              [disabled]="!auth.canWrite()">Editar</button>
           </div>
         </div>
       }
@@ -245,3 +263,7 @@
     </div>
   </div>
 </div>
+
+@if (editingFixed(); as f) {
+  <cf-fixed-edit-drawer [fixed]="f" (closed)="editingFixed.set(null)" />
+}

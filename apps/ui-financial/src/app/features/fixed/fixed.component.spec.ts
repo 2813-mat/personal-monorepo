@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { FixedComponent } from './fixed.component';
 import { AppDataService } from '../../layout/app-data.service';
 import { ViewportService } from '../../core/viewport.service';
+import { AuthService } from '../../core/auth/auth.service';
 import type { FixedExpense, Transaction, Income, Category } from '@caixa-familia/shared-types';
 
 const FIXED: FixedExpense[] = [
@@ -45,7 +46,10 @@ describe('FixedComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FixedComponent],
-      providers: [{ provide: AppDataService, useValue: mockDataService() }],
+      providers: [
+        { provide: AppDataService, useValue: mockDataService() },
+        { provide: AuthService, useValue: { canWrite: signal(true) } },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(FixedComponent);
@@ -115,6 +119,7 @@ function buildResponsive(isDesktop: boolean) {
     providers: [
       { provide: AppDataService, useValue: mockDataService() },
       { provide: ViewportService, useValue: { isDesktop: signal(isDesktop) } },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
     ],
   });
   const fixture = TestBed.createComponent(FixedComponent);

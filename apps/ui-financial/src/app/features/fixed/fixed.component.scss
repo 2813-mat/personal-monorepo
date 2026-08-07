@@ -189,7 +189,24 @@
 }
 .fxc-empty { padding: 20px; text-align: center; color: var(--ink-3); }
 
+/* Editar/Excluir no card mobile reusam a pílula; como <button> precisam zerar o chrome. */
+button.fxc-tag {
+  border: 0; font-family: inherit; cursor: pointer;
+  min-height: 30px; padding: 4px 12px;
+}
+button.fxc-tag:disabled { opacity: 0.5; cursor: default; }
+.fxc-tag.neg { color: var(--neg); }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+}
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.icon-btn.btn-neg { color: var(--neg); }
+
 @include r.desktop {
   .kpi-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
   .tables-grid { grid-template-columns: 1fr 1fr; }
+  .icon-btn { min-width: 26px; min-height: 26px; }
 }
