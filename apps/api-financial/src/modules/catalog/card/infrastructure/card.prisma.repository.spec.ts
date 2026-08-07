@@ -192,3 +192,38 @@ describe('CardPrismaRepository.update', () => {
     expect(prisma.card.update.mock.calls[0][0].data.ownerMemberId).toBe('m-mateus');
   });
 });
+
+describe('CardPrismaRepository.countUsage', () => {
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.countUsage('de-outro')).resolves.toBeNull();
+  });
+
+  it('conta lançamentos e faturas do cartão', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.transaction.count.mockResolvedValue(47);
+    prisma.invoiceHistory.count.mockResolvedValue(8);
+    await expect(repo.countUsage('c1')).resolves.toEqual({ transactions: 47, invoices: 8 });
+  });
+});
+
+describe('CardPrismaRepository.setArchived', () => {
+  it('grava a data ao arquivar', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.setArchived('c1', true);
+    expect(prisma.card.update.mock.calls[0][0].data.archivedAt).toBeInstanceOf(Date);
+  });
+
+  it('limpa a data ao desarquivar', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.setArchived('c1', false);
+    expect(prisma.card.update.mock.calls[0][0].data.archivedAt).toBeNull();
+  });
+
+  it('devolve null quando o cartão não é do household', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.card.findFirst.mockResolvedValue(null);
+    await expect(repo.setArchived('de-outro', true)).resolves.toBeNull();
+  });
+});

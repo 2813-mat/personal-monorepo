@@ -5,6 +5,7 @@ import { TenantRepository } from '../../../../infrastructure/auth/tenant-reposit
 import { billingCycleFor } from '../../../../shared-kernel/billing-cycle';
 import {
   CardRepository,
+  CardUsage,
   CreateCardData,
   OpenInvoice,
   UpdateCardData,
@@ -99,6 +100,36 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
       },
       include: { owner: true },
     });
+    return toDomain(row, await this.currentFor(row.id, row.closingDay));
+  }
+
+  async countUsage(id: string): Promise<CardUsage | null> {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return null;
+    const [transactions, invoices] = await Promise.all([
+      this.prisma.transaction.count({ where: this.scoped({ cardId: existing.id }) }),
+      this.prisma.invoiceHistory.count({ where: this.scoped({ cardId: existing.id }) }),
+    ]);
+    return { transactions, invoices };
+  }
+
+  async remove(id: string): Promise<boolean> {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return false;
+    await this.prisma.card.delete({ where: { id: existing.id } });
+    return true;
+  }
+
+  async setArchived(id: string, archived: boolean) {
+    const existing = await this.prisma.card.findFirst({ where: this.scoped({ id }) });
+    if (!existing) return null;
+    const row = await this.prisma.card.update({
+      where: { id: existing.id },
+      data: { archivedAt: archived ? new Date() : null },
+      include: { owner: true },
+    });
+    // Cartão arquivado não recebe lançamento novo, mas o ciclo corrente pode ter
+    // compras anteriores ao arquivamento — o total continua sendo o real.
     return toDomain(row, await this.currentFor(row.id, row.closingDay));
   }
 
