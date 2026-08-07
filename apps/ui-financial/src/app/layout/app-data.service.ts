@@ -5,6 +5,7 @@ import type {
   FixedExpense,
   Goal,
   Income,
+  RecurringIncome,
   Transaction,
 } from '@caixa-familia/shared-types';
 import type { NewCard } from '../core/api/card.mapper';
@@ -12,6 +13,7 @@ import { CatalogStore } from '../core/state/catalog.store';
 import { FixedStore } from '../core/state/fixed.store';
 import { GoalStore } from '../core/state/goal.store';
 import { IncomeStore } from '../core/state/income.store';
+import { RecurringIncomeStore } from '../core/state/recurring-income.store';
 import { InvoiceStore } from '../core/state/invoice.store';
 import { ReportStore } from '../core/state/report.store';
 import { TransactionStore } from '../core/state/transaction.store';
@@ -30,6 +32,7 @@ export class AppDataService {
   private catalog = inject(CatalogStore);
   private tx = inject(TransactionStore);
   private income = inject(IncomeStore);
+  private recurringIncome = inject(RecurringIncomeStore);
   private fix = inject(FixedStore);
   private goal = inject(GoalStore);
   private invoice = inject(InvoiceStore);
@@ -107,12 +110,33 @@ export class AppDataService {
   readonly incomes = this.income.incomes;
   readonly incomesLoading = this.income.loading;
   readonly incomesError = this.income.error;
+  readonly recurringIncomes = this.recurringIncome.templates;
+  readonly recurringIncomesError = this.recurringIncome.error;
 
   loadIncomes(): void {
     this.income.load();
   }
   createIncome(i: Income): void {
     this.income.create(i);
+  }
+  updateIncome(i: Income): void {
+    this.income.update(i);
+  }
+  removeIncome(id: string): void {
+    this.income.remove(id);
+  }
+
+  loadRecurringIncomes(): void {
+    this.recurringIncome.load();
+  }
+  createRecurringIncome(r: RecurringIncome): void {
+    this.recurringIncome.create(r);
+  }
+  updateRecurringIncome(r: RecurringIncome): void {
+    this.recurringIncome.update(r);
+  }
+  removeRecurringIncome(id: string): void {
+    this.recurringIncome.remove(id);
   }
 
   // ─── Gastos fixos ──────────────────────────────────────────────────────────

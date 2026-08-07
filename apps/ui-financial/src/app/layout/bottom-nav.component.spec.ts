@@ -60,6 +60,13 @@ describe('BottomNavComponent', () => {
     const hrefs = Array.from(
       fixture.nativeElement.querySelectorAll('cf-more-sheet a.ms-item'),
     ).map((a) => (a as HTMLAnchorElement).getAttribute('href'));
-    expect(hrefs).toEqual(['/fixed', '/budgets', '/goals', '/reports', '/settings']);
+    expect(hrefs).toEqual([
+      '/incomes',
+      '/fixed',
+      '/budgets',
+      '/goals',
+      '/reports',
+      '/settings',
+    ]);
   });
 });

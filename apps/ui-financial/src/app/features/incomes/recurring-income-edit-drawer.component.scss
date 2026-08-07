@@ -1,0 +1,20 @@
+// Anatomia comum aos drawers de edição: styles/_edit-drawer.scss.
+@use 'edit-drawer';
+
+/* O alcance da edição é a pergunta que este drawer sempre levanta. */
+.scope-note {
+  margin: 0 0 16px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--brand);
+  background: var(--surface-sunk);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-3);
+}

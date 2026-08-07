@@ -41,7 +41,7 @@ export class AppShellComponent {
     effect(() => {
       if (this.auth.isAuthenticated()) {
         this.data.loadCatalog();
-        this.data.loadIncomes();
+        this.data.loadRecurringIncomes();
         this.data.loadGoals();
         this.data.loadMonthlyHistory();
         this.data.loadAllInvoiceHistory();
@@ -50,12 +50,14 @@ export class AppShellComponent {
 
     // (Re)load month-scoped resources when authenticated and whenever the month
     // changes. Fixed expenses belong here because paidThisMonth is relative to
-    // the month being viewed.
+    // the month being viewed. Incomes joined this effect quando passaram a ser
+    // escopadas por mês — e é esta chamada que materializa os salários do mês.
     effect(() => {
       if (!this.auth.isAuthenticated()) return;
       this.data.currentMonth();
       this.data.loadTransactions();
       this.data.loadFixed();
+      this.data.loadIncomes();
     });
   }
 }

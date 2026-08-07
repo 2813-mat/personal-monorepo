@@ -1,0 +1,48 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">{{ isEditing() ? 'Editar recorrente' : 'Nova receita recorrente' }}</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    <p class="scope-note">
+      @if (isEditing()) {
+        A alteração vale do mês atual em diante. Os meses já lançados guardam o valor
+        que de fato entrou.
+      } @else {
+        Lança sozinha todo mês, a partir do mês atual.
+      }
+    </p>
+
+    <label class="label" for="ri-label">Descrição</label>
+    <input id="ri-label" class="text-input" formControlName="label"
+      placeholder="Ex.: Salário Mateus" />
+
+    <label class="label mt" for="ri-value">Valor</label>
+    <input id="ri-value" class="text-input" type="number" min="0" step="0.01"
+      formControlName="value" />
+
+    <label class="label mt" for="ri-day">Cai no dia</label>
+    <input id="ri-day" class="text-input" type="number" min="1" max="31" formControlName="day" />
+    <span class="field-hint">Meses mais curtos usam o último dia.</span>
+
+    <label class="label mt" for="ri-holder">Titular</label>
+    <select id="ri-holder" class="text-input" formControlName="holder">
+      <option value="shared">Compartilhado</option>
+      <option value="Mateus">Mateus</option>
+      <option value="Thais">Thais</option>
+    </select>
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint">{{ isEditing() ? 'daqui em diante' : 'nova' }}</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
+      Salvar
+    </button>
+  </footer>
+</aside>

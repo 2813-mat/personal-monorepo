@@ -68,7 +68,36 @@ export interface IncomeWire {
   value: number;
   date: string;
   recurring: boolean;
+  recurringIncomeId?: string;
 }
+
+export interface RecurringIncomeWire {
+  id: string;
+  label: string;
+  holder: string;
+  value: number;
+  day: number;
+  startDate: string;
+}
+
+export interface CreateRecurringIncomeWire {
+  label: string;
+  holder: string;
+  value: number;
+  day: number;
+  startDate?: string;
+}
+
+export type UpdateRecurringIncomeWire = Partial<
+  Pick<CreateRecurringIncomeWire, 'label' | 'holder' | 'value' | 'day'>
+>;
+
+export type UpdateIncomeWire = Partial<{
+  label: string;
+  holder: string;
+  value: number;
+  date: string;
+}>;
 
 export interface OpenInvoiceItemWire {
   id: string;

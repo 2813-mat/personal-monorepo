@@ -1,0 +1,255 @@
+<div class="kpi-grid">
+  <div class="card summary-card">
+    <div class="summary-header">
+      <div class="summary-left">
+        <div class="kpi-label">Receita de {{ data.monthLabel() }}</div>
+        <cf-money [value]="totalDoMes()" [negColor]="false" size="xl" />
+      </div>
+      <div class="summary-right">
+        <span class="pill brand">{{ doMes().length }} lançamentos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">Recorrente</div>
+    <div class="kpi-value pos"><cf-money [value]="totalRecorrente()" [negColor]="false" /></div>
+    <div class="kpi-meta">{{ recorrentes().length }} cadastros</div>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">Avulso no mês</div>
+    <div class="kpi-value"><cf-money [value]="totalAvulso()" [negColor]="false" /></div>
+    <div class="kpi-meta">fora dos recorrentes</div>
+  </div>
+</div>
+
+<div class="tables-grid">
+  <!-- Receitas do mês -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <span class="card-title">Receitas de {{ data.monthLabel() }}</span>
+        <span class="pill pos">{{ doMes().length }}</span>
+      </div>
+      <span class="card-meta">editar aqui vale só para este mês</span>
+    </div>
+
+    @if (vp.isDesktop()) {
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:80px">Data</th>
+          <th>Descrição</th>
+          <th style="width:60px">Quem</th>
+          <th class="r" style="width:110px">Valor</th>
+          <th style="width:84px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (i of doMes(); track i.id) {
+          <tr class="tx-row">
+            <td><span class="num date-label">{{ formatDate(i.date) }}</span></td>
+            <td>
+              <div class="desc-cell">
+                @if (i.recurringIncomeId) {
+                  <cf-icon name="repeat" [size]="11" color="var(--ink-4)" />
+                }
+                <span>{{ i.label }}</span>
+              </div>
+            </td>
+            <td>
+              @if (i.holder === 'shared') {
+                <div class="shared-avatars">
+                  <cf-avatar holder="Mateus" [size]="16" />
+                  <cf-avatar holder="Thais" [size]="16" />
+                </div>
+              } @else {
+                <cf-avatar [holder]="i.holder" [size]="18" />
+              }
+            </td>
+            <td class="r num"><cf-money [value]="i.value" [negColor]="false" /></td>
+            <td class="act-cell">
+              <button type="button" class="icon-btn" (click)="editingIncome.set(i)"
+                [disabled]="!auth.canWrite()" aria-label="Editar receita">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemoveIncome(i.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover receita">
+                <cf-icon name="x" [size]="11" />
+              </button>
+            </td>
+          </tr>
+        }
+        @if (doMes().length === 0) {
+          <tr><td colspan="5" class="empty-cell">Nenhuma receita neste mês</td></tr>
+        }
+      </tbody>
+    </table>
+    } @else {
+    <div class="inc-cards">
+      @for (i of doMes(); track i.id) {
+        <div class="inc-card">
+          <div class="incc-main">
+            <span class="incc-label">
+              @if (i.recurringIncomeId) {
+                <cf-icon name="repeat" [size]="11" color="var(--ink-4)" />
+              }
+              {{ i.label }}
+            </span>
+            <cf-money [value]="i.value" [negColor]="false" />
+          </div>
+          <div class="incc-meta">
+            <span class="incc-tag num">{{ formatDate(i.date) }}</span>
+            <span class="incc-tag">{{ i.holder === 'shared' ? 'Compartilhado' : i.holder }}</span>
+            <button type="button" class="incc-tag" (click)="editingIncome.set(i)"
+              [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="incc-tag neg" (click)="askRemoveIncome(i.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
+          </div>
+        </div>
+      }
+      @if (doMes().length === 0) {
+        <p class="incc-empty">Nenhuma receita neste mês</p>
+      }
+    </div>
+    }
+
+    <div class="card-foot">
+      <span>{{ doMes().length }} lançamentos</span>
+      <cf-money [value]="totalDoMes()" [negColor]="false" size="sm" />
+    </div>
+  </div>
+
+  <!-- Recorrentes -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <span class="card-title">Recorrentes</span>
+        <span class="pill brand">{{ recorrentes().length }}</span>
+      </div>
+      <button type="button" class="head-btn" (click)="openNewTemplate()"
+        [disabled]="!auth.canWrite()">
+        <cf-icon name="plus" [size]="11" /> Nova
+      </button>
+    </div>
+
+    @if (vp.isDesktop()) {
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width:80px">Cai</th>
+          <th>Descrição</th>
+          <th style="width:60px">Quem</th>
+          <th class="r" style="width:110px">Valor</th>
+          <th style="width:84px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of recorrentes(); track r.id) {
+          <tr class="tx-row">
+            <td><span class="num date-label">{{ formatDay(r.day) }}</span></td>
+            <td>
+              <div class="desc-cell">
+                <cf-icon name="repeat" [size]="11" color="var(--brand)" />
+                <span>{{ r.label }}</span>
+              </div>
+            </td>
+            <td>
+              @if (r.holder === 'shared') {
+                <div class="shared-avatars">
+                  <cf-avatar holder="Mateus" [size]="16" />
+                  <cf-avatar holder="Thais" [size]="16" />
+                </div>
+              } @else {
+                <cf-avatar [holder]="r.holder" [size]="18" />
+              }
+            </td>
+            <td class="r num"><cf-money [value]="r.value" [negColor]="false" /></td>
+            <td class="act-cell">
+              <button type="button" class="icon-btn" (click)="editingTemplate.set(r)"
+                [disabled]="!auth.canWrite()" aria-label="Editar receita recorrente">
+                <cf-icon name="settings" [size]="11" />
+              </button>
+              <button type="button" class="icon-btn btn-neg" (click)="askRemoveTemplate(r.id)"
+                [disabled]="!auth.canWrite()" aria-label="Remover receita recorrente">
+                <cf-icon name="x" [size]="11" />
+              </button>
+            </td>
+          </tr>
+        }
+        @if (recorrentes().length === 0) {
+          <tr>
+            <td colspan="5" class="empty-cell">
+              Nenhuma receita recorrente. Cadastre o salário aqui e ele passa a lançar sozinho.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    } @else {
+    <div class="inc-cards">
+      @for (r of recorrentes(); track r.id) {
+        <div class="inc-card">
+          <div class="incc-main">
+            <span class="incc-label">
+              <cf-icon name="repeat" [size]="11" color="var(--brand)" /> {{ r.label }}
+            </span>
+            <cf-money [value]="r.value" [negColor]="false" />
+          </div>
+          <div class="incc-meta">
+            <span class="incc-tag num">{{ formatDay(r.day) }}</span>
+            <span class="incc-tag">{{ r.holder === 'shared' ? 'Compartilhado' : r.holder }}</span>
+            <button type="button" class="incc-tag" (click)="editingTemplate.set(r)"
+              [disabled]="!auth.canWrite()">Editar</button>
+            <button type="button" class="incc-tag neg" (click)="askRemoveTemplate(r.id)"
+              [disabled]="!auth.canWrite()">Remover</button>
+          </div>
+        </div>
+      }
+      @if (recorrentes().length === 0) {
+        <p class="incc-empty">
+          Nenhuma receita recorrente. Cadastre o salário aqui e ele passa a lançar sozinho.
+        </p>
+      }
+    </div>
+    }
+
+    <div class="card-foot">
+      <span>{{ recorrentes().length }} cadastros</span>
+      <cf-money [value]="totalRecorrente()" [negColor]="false" size="sm" />
+    </div>
+  </div>
+</div>
+
+@if (editingIncome(); as i) {
+  <cf-income-edit-drawer [income]="i" (closed)="editingIncome.set(null)" />
+}
+
+@if (editingTemplate(); as t) {
+  <cf-recurring-income-edit-drawer [template]="t" (closed)="closeTemplateDrawer()" />
+} @else if (creatingTemplate()) {
+  <cf-recurring-income-edit-drawer (closed)="closeTemplateDrawer()" />
+}
+
+@if (confirmingIncome()) {
+  <cf-confirm-modal
+    title="Remover esta receita?"
+    description="Some só deste mês. Se ela veio de uma receita recorrente, o cadastro continua e os próximos meses seguem lançando."
+    confirmLabel="Remover"
+    [danger]="true"
+    (confirmed)="confirmRemoveIncome()"
+    (cancelled)="confirmingIncome.set(null)"
+  />
+}
+
+@if (confirmingTemplate()) {
+  <cf-confirm-modal
+    title="Encerrar esta receita recorrente?"
+    description="Para de lançar a partir de agora. As receitas já lançadas continuam no histórico de cada mês."
+    confirmLabel="Encerrar"
+    [danger]="true"
+    (confirmed)="confirmRemoveTemplate()"
+    (cancelled)="confirmingTemplate.set(null)"
+  />
+}

@@ -28,6 +28,23 @@ export interface Income {
   value: number;
   date: IsoDate;
   recurring: boolean;
+  /** Presente quando a linha nasceu de um template de receita recorrente. */
+  recurringIncomeId?: Id;
+}
+
+/**
+ * Salário e afins: o cadastro perene que gera uma linha de `Income` por mês.
+ * Editar aqui vale do mês corrente em diante — o histórico já materializado
+ * guarda o valor que o mês de fato recebeu.
+ */
+export interface RecurringIncome {
+  id: Id;
+  label: string;
+  holder: Holder;
+  value: number;
+  /** Dia do mês em que cai. Meses curtos truncam para o último dia. */
+  day: number;
+  startDate: IsoDate;
 }
 
 export interface Category {
