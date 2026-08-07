@@ -17,7 +17,12 @@ import { GoalApiService } from '../core/api/goal-api.service';
 import { InvoiceApiService } from '../core/api/invoice-api.service';
 import { ReportApiService } from '../core/api/report-api.service';
 import { wireToTransaction, transactionToCreateWire, transactionToUpdateWire } from '../core/api/transaction.mapper';
-import { wireToCategory, categoryToCreateWire } from '../core/api/catalog.mapper';
+import {
+  wireToCategory,
+  categoryToCreateWire,
+  categoryToUpdateWire,
+} from '../core/api/catalog.mapper';
+import { categoryConflictMessage } from '../core/api/category-conflict';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
 import { wireToGoal } from '../core/api/goal.mapper';
@@ -330,6 +335,28 @@ export class AppDataService {
     this.catApi.createCategory(categoryToCreateWire(c)).subscribe({
       next: () => this.loadCatalog(),
       error: () => this.fail('Falha ao criar categoria', this.categoriesError),
+    });
+  }
+
+  updateCategory(c: Category): void {
+    this.catApi.updateCategory(c.id, categoryToUpdateWire(c)).subscribe({
+      next: () => this.loadCatalog(),
+      error: () => this.fail('Falha ao salvar categoria', this.categoriesError),
+    });
+  }
+
+  removeCategory(slug: string): void {
+    this.catApi.removeCategory(slug).subscribe({
+      next: () => this.loadCatalog(),
+      error: (err) => this.fail(categoryConflictMessage(err), this.categoriesError),
+    });
+  }
+
+  /** Adota a lista da resposta, não o estado otimista: duas abas não divergem. */
+  reorderCategories(slugs: string[]): void {
+    this.catApi.reorderCategories(slugs).subscribe({
+      next: (rows) => this.categories.set(rows.map(wireToCategory)),
+      error: () => this.fail('Falha ao reordenar categorias', this.categoriesError),
     });
   }
 

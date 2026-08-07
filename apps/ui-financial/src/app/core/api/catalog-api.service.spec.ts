@@ -40,4 +40,27 @@ describe('CatalogApiService', () => {
     expect(req.request.body).toEqual(body);
     req.flush({ id: 'cuid-1', ...body });
   });
+
+  it('PATCHes a category', () => {
+    service.updateCategory('casa', { budget: 600 }).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/categories/casa`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ budget: 600 });
+    req.flush({});
+  });
+
+  it('DELETEs a category', () => {
+    service.removeCategory('casa').subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/categories/casa`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({});
+  });
+
+  it('PATCHes the whole order in one call', () => {
+    service.reorderCategories(['saude', 'casa']).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/categories/order`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ slugs: ['saude', 'casa'] });
+    req.flush([]);
+  });
 });

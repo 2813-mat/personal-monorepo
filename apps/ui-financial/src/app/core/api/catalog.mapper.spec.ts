@@ -1,4 +1,4 @@
-import { wireToCategory, categoryToCreateWire } from './catalog.mapper';
+import { wireToCategory, categoryToCreateWire, categoryToUpdateWire } from './catalog.mapper';
 
 describe('wireToCategory', () => {
   it('uses slug as the id so transaction.cat lookups resolve', () => {
@@ -25,6 +25,20 @@ describe('categoryToCreateWire', () => {
         order: 2,
       }),
     ).toEqual({ slug: 'farmacia', label: 'Farmácia', color: '#2E7D5B', budget: 300 });
+  });
+});
+
+describe('categoryToUpdateWire', () => {
+  it('manda os campos editáveis e deixa o slug de fora', () => {
+    expect(
+      categoryToUpdateWire({
+        id: 'casa',
+        label: 'Casa',
+        color: '#7A4F1D',
+        budget: 600,
+        order: 1,
+      }),
+    ).toEqual({ label: 'Casa', color: '#7A4F1D', budget: 600 });
   });
 });
 

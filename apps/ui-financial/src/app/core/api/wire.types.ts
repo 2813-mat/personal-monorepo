@@ -55,6 +55,12 @@ export interface CreateCategoryWire {
   budget: number;
 }
 
+export interface UpdateCategoryWire {
+  label?: string;
+  color?: string;
+  budget?: number;
+}
+
 export interface IncomeWire {
   id: string;
   label: string;
