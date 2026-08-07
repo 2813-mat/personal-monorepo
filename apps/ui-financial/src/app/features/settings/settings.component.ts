@@ -9,6 +9,7 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { CategoryEditDrawerComponent } from './category-edit-drawer.component';
+import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
 import type { Category, Holder } from '@caixa-familia/shared-types';
 
 type SectionId = 'cats' | 'people' | 'cards' | 'rules' | 'import' | 'notif' | 'backup';
@@ -36,6 +37,7 @@ interface Person {
     AvatarComponent,
     IconComponent,
     CategoryEditDrawerComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
@@ -93,6 +95,22 @@ export class SettingsComponent {
       order: 0,
     });
     this.cancelNewCategory();
+  }
+
+  readonly confirmingRemoval = signal<string | null>(null);
+
+  askRemoveCategory(slug: string): void {
+    this.confirmingRemoval.set(slug);
+  }
+
+  confirmRemoveCategory(): void {
+    const slug = this.confirmingRemoval();
+    if (slug) this.data.removeCategory(slug);
+    this.confirmingRemoval.set(null);
+  }
+
+  cancelRemoveCategory(): void {
+    this.confirmingRemoval.set(null);
   }
 
   cancelNewCategory(): void {

@@ -118,6 +118,51 @@ function buildResponsive(isDesktop: boolean, section: 'cats' | 'cards' = 'cats')
   return fixture.nativeElement;
 }
 
+function buildSettings(categories: Category[] = CATEGORIES) {
+  const data = {
+    ...mockDataService(),
+    categories: signal(categories),
+    catBy: signal(Object.fromEntries(categories.map((c) => [c.id, c]))),
+    removeCategory: jest.fn(),
+  };
+  TestBed.configureTestingModule({
+    imports: [SettingsComponent],
+    providers: [
+      { provide: AppDataService, useValue: data },
+      { provide: AuthService, useValue: { canWrite: signal(true) } },
+      { provide: ViewportService, useValue: { isDesktop: signal(true) } },
+    ],
+  });
+  const fixture = TestBed.createComponent(SettingsComponent);
+  fixture.detectChanges();
+  return { fixture, component: fixture.componentInstance, data };
+}
+
+describe('SettingsComponent — excluir categoria', () => {
+  it('pede confirmação antes de excluir', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCategory('casa');
+    expect(component.confirmingRemoval()).toBe('casa');
+    expect(data.removeCategory).not.toHaveBeenCalled();
+  });
+
+  it('exclui ao confirmar', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCategory('casa');
+    component.confirmRemoveCategory();
+    expect(data.removeCategory).toHaveBeenCalledWith('casa');
+    expect(component.confirmingRemoval()).toBeNull();
+  });
+
+  it('não exclui ao cancelar', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCategory('casa');
+    component.cancelRemoveCategory();
+    expect(data.removeCategory).not.toHaveBeenCalled();
+    expect(component.confirmingRemoval()).toBeNull();
+  });
+});
+
 describe('SettingsComponent — responsive rendering', () => {
   it('renders the categories table on desktop and no card list', () => {
     const el = buildResponsive(true, 'cats');
