@@ -135,7 +135,10 @@
                     <td class="r num">{{ catTxCount(c.id) }}/mês</td>
                     <td><span class="pill pos">Ativa</span></td>
                     <td class="gear-cell">
-                      <cf-icon name="settings" [size]="11" color="var(--ink-4)" />
+                      <button type="button" class="icon-btn" (click)="editingCategory.set(c)"
+                        [disabled]="!auth.canWrite()" aria-label="Editar categoria">
+                        <cf-icon name="settings" [size]="11" />
+                      </button>
                     </td>
                   </tr>
                 }
@@ -160,6 +163,10 @@
                   </span>
                   <span class="stc-tag num">{{ catTxCount(c.id) }}/mês</span>
                   <span class="pill pos">Ativa</span>
+                  <button type="button" class="stc-tag" (click)="editingCategory.set(c)"
+                    [disabled]="!auth.canWrite()">
+                    Editar
+                  </button>
                 </div>
               </div>
             }
@@ -308,3 +315,7 @@
     }
   </section>
 </div>
+
+@if (editingCategory(); as c) {
+  <cf-category-edit-drawer [category]="c" (closed)="editingCategory.set(null)" />
+}

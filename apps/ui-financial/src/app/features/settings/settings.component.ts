@@ -8,7 +8,8 @@ import { MoneyComponent } from '../../ui/money/money.component';
 import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
-import type { Holder } from '@caixa-familia/shared-types';
+import { CategoryEditDrawerComponent } from './category-edit-drawer.component';
+import type { Category, Holder } from '@caixa-familia/shared-types';
 
 type SectionId = 'cats' | 'people' | 'cards' | 'rules' | 'import' | 'notif' | 'backup';
 
@@ -28,7 +29,14 @@ interface Person {
 @Component({
   selector: 'cf-settings',
   standalone: true,
-  imports: [ReactiveFormsModule, MoneyComponent, CatDotComponent, AvatarComponent, IconComponent],
+  imports: [
+    ReactiveFormsModule,
+    MoneyComponent,
+    CatDotComponent,
+    AvatarComponent,
+    IconComponent,
+    CategoryEditDrawerComponent,
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -38,6 +46,8 @@ export class SettingsComponent {
   protected auth = inject(AuthService);
 
   protected activeSection = signal<SectionId>('cats');
+
+  protected editingCategory = signal<Category | null>(null);
 
   /** Paleta fixa — garante um hex válido para o @IsHexColor do backend. */
   readonly palette = [
