@@ -124,6 +124,15 @@ export interface GoalWire {
   history: number[];
 }
 
+export interface UpdateGoalWire {
+  label?: string;
+  target?: number;
+  monthly?: number;
+  color?: string;
+  subtitle?: string;
+  type?: 'SONHO' | 'EMERGENCIA';
+}
+
 export interface CreateContributionWire {
   amount: number;
   date: string;

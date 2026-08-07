@@ -25,7 +25,7 @@ import {
 import { categoryConflictMessage } from '../core/api/category-conflict';
 import { wireToIncome, incomeToCreateWire } from '../core/api/income.mapper';
 import { wireToFixed, fixedToCreateWire } from '../core/api/fixed.mapper';
-import { wireToGoal } from '../core/api/goal.mapper';
+import { wireToGoal, goalToUpdateWire } from '../core/api/goal.mapper';
 import {
   wireToInvoiceHistory,
   wireToOpenInvoiceItem,
@@ -357,6 +357,13 @@ export class AppDataService {
     this.catApi.reorderCategories(slugs).subscribe({
       next: (rows) => this.categories.set(rows.map(wireToCategory)),
       error: () => this.fail('Falha ao reordenar categorias', this.categoriesError),
+    });
+  }
+
+  updateGoal(g: Goal): void {
+    this.goalApi.update(g.id, goalToUpdateWire(g)).subscribe({
+      next: () => this.loadGoals(),
+      error: () => this.fail('Falha ao salvar meta', this.goalsError),
     });
   }
 

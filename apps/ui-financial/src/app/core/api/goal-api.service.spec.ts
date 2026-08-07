@@ -33,4 +33,12 @@ describe('GoalApiService', () => {
     expect(req.request.body).toEqual(body);
     req.flush(null);
   });
+
+  it('PATCHes a goal', () => {
+    service.update('sos', { monthly: 900 }).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/goals/sos`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ monthly: 900 });
+    req.flush({});
+  });
 });
