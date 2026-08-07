@@ -7,6 +7,8 @@ import {
   categoryToUpdateWire,
 } from '../api/catalog.mapper';
 import { categoryConflictMessage } from '../api/category-conflict';
+import { cardConflictMessage } from '../api/card-conflict';
+import { cardToCreateWire, cardToUpdateWire, type NewCard } from '../api/card.mapper';
 import { FailureReporter } from './failure.reporter';
 
 @Injectable({ providedIn: 'root' })
@@ -26,6 +28,15 @@ export class CatalogStore {
   readonly cardBy = computed<Record<string, Card>>(() =>
     Object.fromEntries(this.cards().map((c) => [c.id, c])),
   );
+
+  /** Cartão arquivado sai dos seletores, mas continua em `cards` e no `cardBy`. */
+  readonly activeCards = computed(() => this.cards().filter((c) => !c.archived));
+
+  /**
+   * Mensagem do 409 do DELETE. Não vira toast: a tela usa isto para abrir o
+   * modal que oferece arquivar, transformando o erro em caminho de saída.
+   */
+  readonly cardRemovalConflict = signal<string | null>(null);
 
   load(): void {
     this.categoriesError.set(null);
@@ -59,6 +70,46 @@ export class CatalogStore {
       next: () => this.load(),
       error: (err) => this.failure.report(categoryConflictMessage(err), this.categoriesError),
     });
+  }
+
+  createCard(c: NewCard): void {
+    this.api.createCard(cardToCreateWire(c)).subscribe({
+      next: () => this.load(),
+      error: () => this.failure.report('Falha ao criar cartão', this.cardsError),
+    });
+  }
+
+  updateCard(c: Card): void {
+    this.api.updateCard(c.id, cardToUpdateWire(c)).subscribe({
+      next: () => this.load(),
+      error: () => this.failure.report('Falha ao salvar cartão', this.cardsError),
+    });
+  }
+
+  removeCard(id: string): void {
+    this.cardRemovalConflict.set(null);
+    this.api.removeCard(id).subscribe({
+      next: () => this.load(),
+      error: (err) => {
+        if (err.status === 409) this.cardRemovalConflict.set(cardConflictMessage(err));
+        else this.failure.report('Falha ao excluir cartão', this.cardsError);
+      },
+    });
+  }
+
+  archiveCard(id: string, archived: boolean): void {
+    this.api.archiveCard(id, archived).subscribe({
+      next: () => this.load(),
+      error: () =>
+        this.failure.report(
+          archived ? 'Falha ao arquivar cartão' : 'Falha ao desarquivar cartão',
+          this.cardsError,
+        ),
+    });
+  }
+
+  clearCardRemovalConflict(): void {
+    this.cardRemovalConflict.set(null);
   }
 
   /** Adota a lista da resposta, não o estado otimista: duas abas não divergem. */

@@ -1,5 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import type { Category, FixedExpense, Goal, Income, Transaction } from '@caixa-familia/shared-types';
+import type {
+  Card,
+  Category,
+  FixedExpense,
+  Goal,
+  Income,
+  Transaction,
+} from '@caixa-familia/shared-types';
+import type { NewCard } from '../core/api/card.mapper';
 import { CatalogStore } from '../core/state/catalog.store';
 import { FixedStore } from '../core/state/fixed.store';
 import { GoalStore } from '../core/state/goal.store';
@@ -31,10 +39,12 @@ export class AppDataService {
   // ─── Catálogo ──────────────────────────────────────────────────────────────
   readonly categories = this.catalog.categories;
   readonly cards = this.catalog.cards;
+  readonly activeCards = this.catalog.activeCards;
   readonly catBy = this.catalog.catBy;
   readonly cardBy = this.catalog.cardBy;
   readonly categoriesError = this.catalog.categoriesError;
   readonly cardsError = this.catalog.cardsError;
+  readonly cardRemovalConflict = this.catalog.cardRemovalConflict;
 
   loadCatalog(): void {
     this.catalog.load();
@@ -50,6 +60,21 @@ export class AppDataService {
   }
   reorderCategories(slugs: string[]): void {
     this.catalog.reorderCategories(slugs);
+  }
+  createCard(c: NewCard): void {
+    this.catalog.createCard(c);
+  }
+  updateCard(c: Card): void {
+    this.catalog.updateCard(c);
+  }
+  removeCard(id: string): void {
+    this.catalog.removeCard(id);
+  }
+  archiveCard(id: string, archived: boolean): void {
+    this.catalog.archiveCard(id, archived);
+  }
+  clearCardRemovalConflict(): void {
+    this.catalog.clearCardRemovalConflict();
   }
 
   // ─── Contexto de navegação ─────────────────────────────────────────────────

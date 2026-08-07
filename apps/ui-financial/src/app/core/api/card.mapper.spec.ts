@@ -1,4 +1,4 @@
-import { cardToCreateWire, cardToUpdateWire } from './card.mapper';
+import { cardToCreateWire, cardToUpdateWire, type NewCard } from './card.mapper';
 import type { Card } from '@caixa-familia/shared-types';
 
 const CARD: Card = {
@@ -15,10 +15,21 @@ const CARD: Card = {
   archived: false,
 };
 
+/** O que o drawer entrega ao criar: sem id, sem fatura e sem arquivamento. */
+const NOVO: NewCard = {
+  name: 'Nubank',
+  holder: 'Thais',
+  bank: 'Nubank',
+  color: '#820AD1',
+  closing: 5,
+  due: 12,
+  limit: 4500,
+  last4: '4421',
+};
+
 describe('cardToCreateWire', () => {
   it('traduz closing/due/limit para os nomes do wire', () => {
-    const { id: _id, current: _current, archived: _archived, ...novo } = CARD;
-    expect(cardToCreateWire(novo)).toEqual({
+    expect(cardToCreateWire(NOVO)).toEqual({
       name: 'Nubank',
       bank: 'Nubank',
       color: '#820AD1',
