@@ -21,7 +21,7 @@ const TRANSACTIONS: Transaction[] = [
 ];
 
 const INCOMES: Income[] = [
-  { id: 'i1', label: 'Salário', holder: 'Mateus', value: 1000, date: '2026-05-05', recurring: true, reviewed: false },
+  { id: 'i1', label: 'Salário', holder: 'Mateus', value: 1000, date: '2026-05-05', recurring: true },
 ];
 
 const CAT_BY: Record<string, Category> = {
