@@ -4,7 +4,22 @@ import { SettingsComponent } from './settings.component';
 import { AppDataService } from '../../layout/app-data.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ViewportService } from '../../core/viewport.service';
-import type { Category } from '@caixa-familia/shared-types';
+import type { Card, Category } from '@caixa-familia/shared-types';
+
+const CARTAO = (over: Partial<Card> = {}): Card => ({
+  id: 'c1',
+  name: 'Nubank',
+  holder: 'Thais',
+  bank: 'Nubank',
+  color: '#820AD1',
+  closing: 5,
+  due: 12,
+  current: 0,
+  limit: 4500,
+  last4: '4421',
+  archived: false,
+  ...over,
+});
 
 const CATEGORIES: Category[] = [{ id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 }];
 
@@ -16,6 +31,15 @@ function mockDataService() {
     catBy: signal(Object.fromEntries(CATEGORIES.map((c) => [c.id, c]))),
     cardBy: signal({}),
     createCategory: jest.fn(),
+    // O template lê estes em toda renderização da tela, não só na seção de
+    // cartões — precisam existir em todo fixture.
+    activeCards: signal([] as Card[]),
+    cardRemovalConflict: signal<string | null>(null),
+    createCard: jest.fn(),
+    updateCard: jest.fn(),
+    removeCard: jest.fn(),
+    archiveCard: jest.fn(),
+    clearCardRemovalConflict: jest.fn(),
   };
 }
 
@@ -125,6 +149,7 @@ function buildSettings(categories: Category[] = CATEGORIES) {
     catBy: signal(Object.fromEntries(categories.map((c) => [c.id, c]))),
     removeCategory: jest.fn(),
     reorderCategories: jest.fn(),
+    cards: signal([] as Card[]),
   };
   TestBed.configureTestingModule({
     imports: [SettingsComponent],
@@ -224,5 +249,81 @@ describe('SettingsComponent — responsive rendering', () => {
     const el = buildResponsive(false, 'cards');
     expect(el.querySelector('table.tbl')).toBeNull();
     expect(el.querySelectorAll('.st-card').length).toBe(1);
+  });
+});
+
+describe('SettingsComponent — cartões', () => {
+  it('abre o drawer vazio para criar', () => {
+    const { component } = buildSettings();
+    component.startNewCard();
+    expect(component.creatingCard()).toBe(true);
+    expect(component.editingCard()).toBeNull();
+  });
+
+  it('abre o drawer preenchido para editar', () => {
+    const { component } = buildSettings();
+    const card = CARTAO();
+    component.startEditCard(card);
+    expect(component.editingCard()).toBe(card);
+    expect(component.creatingCard()).toBe(false);
+  });
+
+  it('fecha os dois modos de uma vez', () => {
+    const { component } = buildSettings();
+    component.startNewCard();
+    component.closeCardDrawer();
+    expect(component.creatingCard()).toBe(false);
+    expect(component.editingCard()).toBeNull();
+  });
+});
+
+describe('SettingsComponent — excluir cartão', () => {
+  it('pede confirmação antes de excluir', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCard('c1');
+    expect(component.confirmingCardRemoval()).toBe('c1');
+    expect(data.removeCard).not.toHaveBeenCalled();
+  });
+
+  it('exclui ao confirmar', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCard('c1');
+    component.confirmRemoveCard();
+    expect(data.removeCard).toHaveBeenCalledWith('c1');
+    expect(component.confirmingCardRemoval()).toBeNull();
+  });
+
+  it('guarda o cartão para poder arquivar se vier 409', () => {
+    const { component } = buildSettings();
+    component.askRemoveCard('c1');
+    component.confirmRemoveCard();
+    expect(component.pendingCardId()).toBe('c1');
+  });
+
+  it('arquiva o cartão do conflito e limpa o estado', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCard('c1');
+    component.confirmRemoveCard();
+    component.archivePendingCard();
+    expect(data.archiveCard).toHaveBeenCalledWith('c1', true);
+    expect(component.pendingCardId()).toBeNull();
+    expect(data.clearCardRemovalConflict).toHaveBeenCalled();
+  });
+
+  it('desiste do conflito sem arquivar', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCard('c1');
+    component.confirmRemoveCard();
+    component.dismissCardConflict();
+    expect(data.archiveCard).not.toHaveBeenCalled();
+    expect(component.pendingCardId()).toBeNull();
+  });
+
+  it('não exclui ao cancelar', () => {
+    const { component, data } = buildSettings();
+    component.askRemoveCard('c1');
+    component.cancelRemoveCard();
+    expect(data.removeCard).not.toHaveBeenCalled();
+    expect(component.confirmingCardRemoval()).toBeNull();
   });
 });

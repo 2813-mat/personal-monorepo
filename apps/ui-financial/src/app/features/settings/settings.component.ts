@@ -9,8 +9,9 @@ import { CatDotComponent } from '../../ui/cat-dot/cat-dot.component';
 import { AvatarComponent } from '../../ui/avatar/avatar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { CategoryEditDrawerComponent } from './category-edit-drawer.component';
+import { CardEditDrawerComponent } from './card-edit-drawer.component';
 import { ConfirmModalComponent } from '../../ui/confirm-modal/confirm-modal.component';
-import type { Category, Holder } from '@caixa-familia/shared-types';
+import type { Card, Category, Holder } from '@caixa-familia/shared-types';
 
 type SectionId = 'cats' | 'people' | 'cards' | 'rules' | 'import' | 'notif' | 'backup';
 
@@ -37,6 +38,7 @@ interface Person {
     AvatarComponent,
     IconComponent,
     CategoryEditDrawerComponent,
+    CardEditDrawerComponent,
     ConfirmModalComponent,
   ],
   templateUrl: './settings.component.html',
@@ -118,6 +120,60 @@ export class SettingsComponent {
   isLastCategory(slug: string): boolean {
     const list = this.data.categories();
     return list[list.length - 1]?.id === slug;
+  }
+
+  // ─── Cartões ───────────────────────────────────────────────────────────────
+  readonly editingCard = signal<Card | null>(null);
+  readonly creatingCard = signal(false);
+
+  startNewCard(): void {
+    this.editingCard.set(null);
+    this.creatingCard.set(true);
+  }
+
+  startEditCard(c: Card): void {
+    this.creatingCard.set(false);
+    this.editingCard.set(c);
+  }
+
+  closeCardDrawer(): void {
+    this.creatingCard.set(false);
+    this.editingCard.set(null);
+  }
+
+  readonly confirmingCardRemoval = signal<string | null>(null);
+
+  /**
+   * Sobrevive ao DELETE porque o 409 chega depois: é ele que diz qual cartão
+   * arquivar quando a exclusão não pôde acontecer.
+   */
+  readonly pendingCardId = signal<string | null>(null);
+
+  askRemoveCard(id: string): void {
+    this.confirmingCardRemoval.set(id);
+  }
+
+  confirmRemoveCard(): void {
+    const id = this.confirmingCardRemoval();
+    this.confirmingCardRemoval.set(null);
+    if (!id) return;
+    this.pendingCardId.set(id);
+    this.data.removeCard(id);
+  }
+
+  cancelRemoveCard(): void {
+    this.confirmingCardRemoval.set(null);
+  }
+
+  archivePendingCard(): void {
+    const id = this.pendingCardId();
+    if (id) this.data.archiveCard(id, true);
+    this.dismissCardConflict();
+  }
+
+  dismissCardConflict(): void {
+    this.pendingCardId.set(null);
+    this.data.clearCardRemovalConflict();
   }
 
   readonly confirmingRemoval = signal<string | null>(null);
