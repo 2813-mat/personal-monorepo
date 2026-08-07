@@ -1,0 +1,51 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">{{ isEditing() ? 'Editar cartão' : 'Novo cartão' }}</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    <label class="label" for="card-name">Nome</label>
+    <input id="card-name" class="text-input" formControlName="name" placeholder="Ex.: Nubank" />
+
+    <label class="label mt" for="card-bank">Banco</label>
+    <input id="card-bank" class="text-input" formControlName="bank" />
+
+    <label class="label mt" for="card-color">Cor</label>
+    <input id="card-color" class="text-input" formControlName="color" placeholder="#820AD1" />
+
+    <label class="label mt" for="card-last4">Últimos 4 dígitos</label>
+    <input id="card-last4" class="text-input" formControlName="last4" inputmode="numeric"
+      maxlength="4" placeholder="4421" />
+
+    <label class="label mt" for="card-limit">Limite</label>
+    <input id="card-limit" class="text-input" type="number" formControlName="limit" />
+
+    <label class="label mt" for="card-closing">Fecha no dia</label>
+    <input id="card-closing" class="text-input" type="number" min="1" max="31"
+      formControlName="closing" />
+
+    <label class="label mt" for="card-due">Vence no dia</label>
+    <input id="card-due" class="text-input" type="number" min="1" max="31"
+      formControlName="due" />
+
+    <label class="label mt" for="card-holder">Titular</label>
+    <select id="card-holder" class="text-input" formControlName="holder">
+      <option value="shared">Compartilhado</option>
+      <option value="Mateus">Mateus</option>
+      <option value="Thais">Thais</option>
+    </select>
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint">{{ isEditing() ? '···' + form.controls.last4.value : 'novo' }}</span>
+    <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
+      Salvar
+    </button>
+  </footer>
+</aside>
