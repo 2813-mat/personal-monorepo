@@ -197,6 +197,10 @@ button.fxc-tag {
 button.fxc-tag:disabled { opacity: 0.5; cursor: default; }
 .fxc-tag.neg { color: var(--neg); }
 
+/* Sem isto os dois botões quebram para linhas separadas e esticam a linha. */
+.act-cell { white-space: nowrap; }
+.act-cell .icon-btn + .icon-btn { margin-left: 4px; }
+
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 44px; min-height: 44px;

@@ -67,7 +67,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
-          <th style="width:64px"></th>
+          <th style="width:84px"></th>
         </tr>
       </thead>
       <tbody>
@@ -110,7 +110,7 @@
             <td class="r num">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
-            <td>
+            <td class="act-cell">
               <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />
@@ -190,7 +190,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
-          <th style="width:64px"></th>
+          <th style="width:84px"></th>
         </tr>
       </thead>
       <tbody>
@@ -227,7 +227,7 @@
             <td class="r num paid-value">
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
-            <td>
+            <td class="act-cell">
               <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />

@@ -111,7 +111,10 @@
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
 .muted { color: var(--ink-3); }
 
-.drag-cell, .gear-cell { text-align: center; }
+/* Sem o nowrap os dois botões quebram para linhas separadas e esticam a linha. */
+.drag-cell, .gear-cell { text-align: center; white-space: nowrap; }
+.drag-cell .icon-btn + .icon-btn,
+.gear-cell .icon-btn + .icon-btn { margin-left: 4px; }
 
 .name-cell { display: flex; align-items: center; gap: 8px; }
 .name-stack { display: flex; flex-direction: column; gap: 1px; }
