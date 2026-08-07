@@ -1,29 +1,22 @@
-<div
-  class="backdrop"
-  role="button"
-  tabindex="0"
-  aria-label="Fechar"
-  (click)="onClose()"
-  (keydown.enter)="onClose()"
-  (keydown.space)="onClose()"
-></div>
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar" (click)="onClose()" (keydown.enter)="onClose()"
+  (keydown.space)="onClose()"></div>
 
 <div class="panel" [formGroup]="form">
   <!-- Header -->
   <header class="drawer-head">
     <div class="head-text">
       @if (isEditing()) {
-        <div class="head-title">Editar lançamento</div>
-        <span class="head-sub">{{ data.currentMonth().label }}</span>
+      <div class="head-title">Editar lançamento</div>
+      <span class="head-sub">{{ data.currentMonth().label }}</span>
       } @else if (form.controls.type.value === 'fixed') {
-        <div class="head-title">Novo gasto fixo</div>
-        <span class="head-sub">Todo mês</span>
+      <div class="head-title">Novo gasto fixo</div>
+      <span class="head-sub">Todo mês</span>
       } @else if (form.controls.type.value === 'contribution') {
-        <div class="head-title">Novo aporte</div>
-        <span class="head-sub">{{ data.currentMonth().label }}</span>
+      <div class="head-title">Novo aporte</div>
+      <span class="head-sub">{{ data.currentMonth().label }}</span>
       } @else {
-        <div class="head-title">Novo lançamento</div>
-        <span class="head-sub">{{ data.currentMonth().label }}</span>
+      <div class="head-title">Novo lançamento</div>
+      <span class="head-sub">{{ data.currentMonth().label }}</span>
       }
     </div>
     <button type="button" class="close-btn" (click)="onClose()" aria-label="Fechar">
@@ -36,40 +29,20 @@
     <!-- Tipo -->
     <div class="label">Tipo</div>
     <div class="seg seg-full seg-type">
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.type.value === 'expense'"
-        (click)="pick(form.controls.type, 'expense')"
-        [disabled]="isEditing()"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.type.value === 'expense'"
+        (click)="pick(form.controls.type, 'expense')" [disabled]="isEditing()">
         <cf-icon name="arrowDown" [size]="11" /> Despesa
       </button>
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.type.value === 'income'"
-        (click)="pick(form.controls.type, 'income')"
-        [disabled]="isEditing()"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.type.value === 'income'"
+        (click)="pick(form.controls.type, 'income')" [disabled]="isEditing()">
         <cf-icon name="arrowUp" [size]="11" /> Receita
       </button>
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.type.value === 'contribution'"
-        (click)="pick(form.controls.type, 'contribution')"
-        [disabled]="isEditing()"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.type.value === 'contribution'"
+        (click)="pick(form.controls.type, 'contribution')" [disabled]="isEditing()">
         <cf-icon name="target" [size]="11" /> Aporte
       </button>
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.type.value === 'fixed'"
-        (click)="pick(form.controls.type, 'fixed')"
-        [disabled]="isEditing()"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.type.value === 'fixed'"
+        (click)="pick(form.controls.type, 'fixed')" [disabled]="isEditing()">
         <cf-icon name="repeat" [size]="11" /> Fixo
       </button>
     </div>
@@ -78,85 +51,54 @@
     <div class="label mt">Valor</div>
     <div class="value-row">
       <span class="value-prefix">R$</span>
-      <input
-        type="number"
-        class="value-input num"
-        formControlName="value"
-        min="0"
-        step="0.01"
-        placeholder="0,00"
-      />
+      <input type="number" class="value-input num" formControlName="value" min="0" step="0.01" placeholder="0,00" />
     </div>
 
     <!-- Descrição -->
     <div class="label mt">Descrição</div>
-    <input
-      type="text"
-      class="text-input"
-      formControlName="label"
-      placeholder="Ex.: Mercado mensal Guanabara"
-    />
+    <input type="text" class="text-input" formControlName="label" placeholder="Ex.: Mercado mensal Guanabara" />
 
     @if (form.controls.type.value === 'contribution') {
-      <!-- Meta -->
-      <div class="label mt">Meta</div>
-      <div class="cat-grid">
-        @for (g of data.goals(); track g.id) {
-          <button
-            type="button"
-            class="cat-chip"
-            [class.active]="form.controls.goal.value === g.id"
-            (click)="pick(form.controls.goal, g.id)"
-          >
-            {{ g.label }}
-          </button>
-        }
-      </div>
+    <!-- Meta -->
+    <div class="label mt">Meta</div>
+    <div class="cat-grid">
+      @for (g of data.goals(); track g.id) {
+      <button type="button" class="cat-chip" [class.active]="form.controls.goal.value === g.id"
+        (click)="pick(form.controls.goal, g.id)">
+        {{ g.label }}
+      </button>
+      }
+    </div>
     } @else {
-      <!-- Categoria -->
-      <div class="label mt">Categoria</div>
-      <div class="cat-grid">
-        @for (cat of data.categories(); track cat.id) {
-          <button
-            type="button"
-            class="cat-chip"
-            [class.active]="form.controls.cat.value === cat.id"
-            (click)="pick(form.controls.cat, cat.id)"
-          >
-            <cf-cat-dot [catId]="cat.id" [size]="8" />
-            {{ cat.label }}
-          </button>
-        }
-      </div>
+    <!-- Categoria -->
+    <div class="label mt">Categoria</div>
+    <div class="cat-grid">
+      @for (cat of data.categories(); track cat.id) {
+      <button type="button" class="cat-chip" [class.active]="form.controls.cat.value === cat.id"
+        (click)="pick(form.controls.cat, cat.id)">
+        <cf-cat-dot [catId]="cat.id" [size]="8" />
+        {{ cat.label }}
+      </button>
+      }
+    </div>
     }
 
     @if (form.controls.type.value === 'fixed') {
-      <!-- Vencimento -->
-      <div class="label mt">Vence todo dia</div>
-      <input
-        type="number"
-        class="text-input num"
-        formControlName="dueDay"
-        min="1"
-        max="31"
-        placeholder="Ex.: 10"
-      />
+    <!-- Vencimento -->
+    <div class="label mt">Vence todo dia</div>
+    <input type="number" class="text-input num" formControlName="dueDay" min="1" max="31" placeholder="Ex.: 10" />
     } @else {
-      <!-- Data -->
-      <div class="label mt">Data</div>
-      <input type="date" class="text-input num" formControlName="date" />
+    <!-- Data -->
+    <div class="label mt">Data</div>
+    <input type="date" class="text-input num" formControlName="date" />
     }
 
     @if (form.controls.type.value !== 'fixed' && form.controls.type.value !== 'contribution') {
     <!-- Método -->
     <div class="label mt">Método de pagamento</div>
     <div class="method-list">
-      <button
-        type="button"
-        class="method-row"
-        [class.active]="form.controls.method.value === 'pix'"
-        (click)="pick(form.controls.method, 'pix')"
-      >
+      <button type="button" class="method-row" [class.active]="form.controls.method.value === 'pix'"
+        (click)="pick(form.controls.method, 'pix')">
         <span class="method-main">
           <cf-icon name="pix" [size]="13" color="var(--brand)" />
           <span class="method-text">
@@ -165,28 +107,24 @@
           </span>
         </span>
         @if (form.controls.method.value === 'pix') {
-          <cf-icon name="check" [size]="13" color="var(--brand)" />
+        <cf-icon name="check" [size]="13" color="var(--brand)" />
         }
       </button>
 
       @for (c of data.activeCards(); track c.id) {
-        <button
-          type="button"
-          class="method-row"
-          [class.active]="form.controls.method.value === c.id"
-          (click)="pick(form.controls.method, c.id)"
-        >
-          <span class="method-main">
-            <cf-card-chip [cardId]="c.id" size="md" />
-            <span class="method-text">
-              <span class="method-name">{{ c.bank }} ···{{ c.last4 }}</span>
-              <span class="method-sub num">fatura {{ c.current }}</span>
-            </span>
+      <button type="button" class="method-row" [class.active]="form.controls.method.value === c.id"
+        (click)="pick(form.controls.method, c.id)">
+        <span class="method-main">
+          <cf-card-chip [cardId]="c.id" size="md" />
+          <span class="method-text">
+            <span class="method-name">{{ c.bank }} ···{{ c.last4 }}</span>
+            <span class="method-sub num">fatura {{ c.current }}</span>
           </span>
-          @if (form.controls.method.value === c.id) {
-            <cf-icon name="check" [size]="13" color="var(--brand)" />
-          }
-        </button>
+        </span>
+        @if (form.controls.method.value === c.id) {
+        <cf-icon name="check" [size]="13" color="var(--brand)" />
+        }
+      </button>
       }
     </div>
     }
@@ -194,36 +132,24 @@
     <!-- Quem fez o gasto -->
     <div class="label mt">Quem fez o gasto</div>
     <div class="seg seg-full">
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.holder.value === 'Mateus'"
-        (click)="pick(form.controls.holder, 'Mateus')"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.holder.value === 'Mateus'"
+        (click)="pick(form.controls.holder, 'Mateus')">
         <cf-avatar holder="Mateus" [size]="14" /> Mateus
       </button>
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.holder.value === 'Thais'"
-        (click)="pick(form.controls.holder, 'Thais')"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.holder.value === 'Thais'"
+        (click)="pick(form.controls.holder, 'Thais')">
         <cf-avatar holder="Thais" [size]="14" /> Thais
       </button>
-      <button
-        type="button"
-        class="seg-btn"
-        [class.active]="form.controls.holder.value === 'shared'"
-        (click)="pick(form.controls.holder, 'shared')"
-      >
+      <button type="button" class="seg-btn" [class.active]="form.controls.holder.value === 'shared'"
+        (click)="pick(form.controls.holder, 'shared')">
         Compartilhado
       </button>
     </div>
 
     @if (
-      !isEditing() &&
-      form.controls.type.value !== 'fixed' &&
-      form.controls.type.value !== 'contribution'
+    !isEditing() &&
+    form.controls.type.value !== 'fixed' &&
+    form.controls.type.value !== 'contribution'
     ) {
     <!-- Toggles -->
     <div class="toggle-grid mt" formGroupName="installments">
@@ -234,23 +160,23 @@
     </div>
 
     @if (form.controls.installments.controls.enabled.value) {
-      <div class="installments-detail">
-        <span class="label brand">Parcelado em</span>
-        <div class="stepper" formGroupName="installments">
-          <button type="button" class="step-btn" (click)="stepInstallments(-1)" aria-label="Menos">
-            <cf-icon name="arrowLeft" [size]="9" />
-          </button>
-          <span class="step-value num">{{ form.controls.installments.controls.total.value }}×</span>
-          <button type="button" class="step-btn" (click)="stepInstallments(1)" aria-label="Mais">
-            <cf-icon name="arrowRight" [size]="9" />
-          </button>
-        </div>
+    <div class="installments-detail">
+      <span class="label brand">Parcelado em</span>
+      <div class="stepper" formGroupName="installments">
+        <button type="button" class="step-btn" (click)="stepInstallments(-1)" aria-label="Menos">
+          <cf-icon name="arrowLeft" [size]="9" />
+        </button>
+        <span class="step-value num">{{ form.controls.installments.controls.total.value }}×</span>
+        <button type="button" class="step-btn" (click)="stepInstallments(1)" aria-label="Mais">
+          <cf-icon name="arrowRight" [size]="9" />
+        </button>
       </div>
+    </div>
     }
 
     <div class="toggle-grid mt">
       <label class="toggle-row">
-        <span class="toggle-label">Recorrente (gasto fixo)</span>
+        <span class="toggle-label">Recorrente</span>
         <input type="checkbox" class="toggle-check" formControlName="recurring" />
       </label>
     </div>
@@ -263,9 +189,9 @@
     <button type="button" class="save-btn" [disabled]="form.invalid" (click)="save()">
       <cf-icon name="check" [size]="11" />
       @switch (form.controls.type.value) {
-        @case ('fixed') { Salvar gasto fixo }
-        @case ('contribution') { Salvar aporte }
-        @default { Salvar lançamento }
+      @case ('fixed') { Salvar gasto fixo }
+      @case ('contribution') { Salvar aporte }
+      @default { Salvar lançamento }
       }
     </button>
   </footer>

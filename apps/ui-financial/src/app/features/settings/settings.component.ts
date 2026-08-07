@@ -198,18 +198,18 @@ export class SettingsComponent {
   }
 
   protected navItems: NavItem[] = [
-    { id: 'cats',   label: 'Categorias',     icon: 'target' },
-    { id: 'people', label: 'Pessoas',        icon: 'list' },
-    { id: 'cards',  label: 'Cartões',        icon: 'card' },
-    { id: 'rules',  label: 'Recorrências',   icon: 'repeat' },
-    { id: 'import', label: 'Importar',       icon: 'upload' },
-    { id: 'notif',  label: 'Notificações',   icon: 'bell' },
-    { id: 'backup', label: 'Backup',         icon: 'download' },
+    { id: 'cats', label: 'Categorias', icon: 'target' },
+    { id: 'people', label: 'Pessoas', icon: 'list' },
+    { id: 'cards', label: 'Cartões', icon: 'card' },
+    { id: 'rules', label: 'Recorrências', icon: 'repeat' },
+    { id: 'import', label: 'Importar', icon: 'upload' },
+    { id: 'notif', label: 'Notificações', icon: 'bell' },
+    { id: 'backup', label: 'Backup', icon: 'download' },
   ];
 
   protected people: Person[] = [
-    { name: 'Mateus', email: 'mateus@email.com', role: 'Admin',  tag: '#1F4E79' },
-    { name: 'Thais',  email: 'thais@email.com',  role: 'Editor', tag: '#7A1F3D' },
+    { name: 'Mateus', email: 'mateushas.advir@gmail.com', role: 'Admin', tag: '#1F4E79' },
+    { name: 'Thais', email: 'thaisdfontes@hotmail.com', role: 'Admin', tag: '#7A1F3D' },
   ];
 
   protected totalBudget = computed(() =>
