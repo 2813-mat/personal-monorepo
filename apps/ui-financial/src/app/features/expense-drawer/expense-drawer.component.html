@@ -35,12 +35,13 @@
   <div class="drawer-body">
     <!-- Tipo -->
     <div class="label">Tipo</div>
-    <div class="seg seg-full">
+    <div class="seg seg-full seg-type">
       <button
         type="button"
         class="seg-btn"
         [class.active]="form.controls.type.value === 'expense'"
         (click)="form.controls.type.setValue('expense')"
+        [disabled]="isEditing()"
       >
         <cf-icon name="arrowDown" [size]="11" /> Despesa
       </button>
@@ -49,6 +50,7 @@
         class="seg-btn"
         [class.active]="form.controls.type.value === 'income'"
         (click)="form.controls.type.setValue('income')"
+        [disabled]="isEditing()"
       >
         <cf-icon name="arrowUp" [size]="11" /> Receita
       </button>
@@ -57,6 +59,7 @@
         class="seg-btn"
         [class.active]="form.controls.type.value === 'contribution'"
         (click)="form.controls.type.setValue('contribution')"
+        [disabled]="isEditing()"
       >
         <cf-icon name="target" [size]="11" /> Aporte
       </button>
@@ -65,6 +68,7 @@
         class="seg-btn"
         [class.active]="form.controls.type.value === 'fixed'"
         (click)="form.controls.type.setValue('fixed')"
+        [disabled]="isEditing()"
       >
         <cf-icon name="repeat" [size]="11" /> Fixo
       </button>

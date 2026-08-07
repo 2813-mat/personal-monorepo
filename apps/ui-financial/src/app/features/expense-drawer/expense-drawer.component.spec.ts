@@ -252,4 +252,20 @@ describe('ExpenseDrawerComponent — modo edição', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.form.controls.type.disabled).toBe(true);
   });
+
+  it('desabilita os botões de tipo na edição', () => {
+    const { fixture } = buildDrawer();
+    fixture.componentRef.setInput('editing', TX_EDIT);
+    fixture.detectChanges();
+    const chips: HTMLButtonElement[] = [...fixture.nativeElement.querySelectorAll('.seg-type .seg-btn')];
+    expect(chips.length).toBeGreaterThan(0);
+    expect(chips.every((b) => b.disabled)).toBe(true);
+  });
+
+  it('mantém os botões de tipo clicáveis ao criar', () => {
+    const { fixture } = buildDrawer();
+    fixture.detectChanges();
+    const chips: HTMLButtonElement[] = [...fixture.nativeElement.querySelectorAll('.seg-type .seg-btn')];
+    expect(chips.some((b) => b.disabled)).toBe(false);
+  });
 });

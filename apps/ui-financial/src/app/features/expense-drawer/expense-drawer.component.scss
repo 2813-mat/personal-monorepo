@@ -83,6 +83,9 @@
 }
 .seg-btn:last-child { border-right: 0; }
 .seg-btn.active { background: var(--ink-1); color: #fff; }
+/* Na edição o tipo é fixo: o chip ativo continua legível, os outros apagam. */
+.seg-btn:disabled { cursor: default; opacity: 0.4; }
+.seg-btn.active:disabled { opacity: 0.75; }
 
 /* Value */
 .value-row { display: flex; align-items: baseline; gap: 6px; border-bottom: 2px solid var(--brand); padding-bottom: 4px; }
