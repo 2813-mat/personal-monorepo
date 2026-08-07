@@ -2286,8 +2286,62 @@ A Task 1 é bloqueante para tudo: é ela que põe `archived` no tipo compartilha
 tocam os mesmos quatro arquivos do módulo `card`, então são sequenciais, não paralelas. A Task
 11 depende só da Task 7 e pode vir antes da 8 se for conveniente.
 
-## Estado da execução
+## Estado da execução (2026-08-07)
 
-| Task | Commit | Estado |
-|---|---|---|
-| 1 a 12 | — | pendente |
+**Fatia 1 entregue.** `api-financial` **119 → 143 testes**, `ui-financial` **288 → 330**, lint
+e build verdes nos dois.
+
+| Task | Estado |
+|---|---|
+| 1 — `archived` do banco ao tipo compartilhado | ✅ migration `20260807150602_add_card_archived_at` |
+| 2 a 5 — `POST`, `PATCH`, `DELETE` + 409, `archive` | ✅ |
+| 6 a 7 — wire, mapper, 409 traduzido, store | ✅ |
+| 8 a 11 — drawer, Configurações, dois passos, arquivados | ✅ |
+| — chips não marcavam `dirty`; arquivar sem caminho próprio | ✅ (achados no teste manual) |
+| 12 — verificação e registro | ✅ |
+
+### Desvios do plano
+
+1. **`card.mapper.spec.ts` não existia** — o plano dizia "Modify", era "Create". Em compensação
+   havia um `card.view.spec.ts` que o plano não mencionava, e é lá que mora o teste do
+   `archived` até o wire.
+2. **Sete cartões em `MOCK_CARDS`, não seis.**
+3. **Duas fixtures quebraram** ao tornar `archived` obrigatório (`card.view.spec.ts` e
+   `list-cards.usecase.spec.ts`) — efeito esperado do campo obrigatório, não previsto no plano.
+4. **`api-financial` não tem target de `lint`.** O gate do plano manda rodar e o comando falha
+   com "Cannot find configuration".
+5. **O `setup` do spec de repositório é afinado para `openInvoice`** e não serve para escrita.
+   Foi criado um `setupWrite` ao lado, com argumentos tipados — sem o tipo, `mock.calls[0][0]`
+   não compila.
+
+### Dois defeitos que só o teste manual pegou
+
+A suíte estava verde em 325 testes e não pegava nenhum dos dois, porque os testes chamavam
+`save()` direto em vez de clicar no DOM.
+
+1. **`setValue` não marca o form como `dirty`.** Como o Salvar do modo edição é
+   `[disabled]="form.pristine"`, dava para trocar o cartão de um lançamento e o botão nunca
+   habilitava. Valia também para chips de categoria e segmentos de titular. Os 11 handlers
+   passam agora por `pick()`, que marca `dirty` junto.
+2. **Arquivar não tinha caminho próprio.** O desenho só oferecia arquivar como saída de um
+   `DELETE` que falhava com 409 — cartão sem histórico era excluído e ninguém descobria o
+   arquivamento. Cada cartão ativo ganhou botão de Arquivar.
+
+### Verificação no navegador
+
+Oito fluxos em 1280px, todos verdes: cadastrar (7→8 cartões) · aparece no seletor de método ·
+editar limite 2.500→3.300 · excluir zerado (volta a 7) · excluir com histórico → **409 com
+contagem real de 11 lançamentos** → arquivar · some do seletor e de `/cards` · os 11
+lançamentos de maio continuam mostrando `Nub. ···4421` · desarquivar devolve ao seletor.
+
+Em 375px, via `iframe` na mesma origem: ramo mobile renderiza cards com Editar/Arquivar/Excluir,
+o drawer ocupa a largura toda sem vazar, e as **oito rotas** com `scrollWidth == clientWidth`.
+
+> O loop que percorre as oito rotas de uma vez estoura o timeout de 45s do CDP. Rodar em blocos
+> de três.
+
+### O que esta fatia não resolve
+
+`substituir` continua pendente e depende das Fatias 2 e 3 — parcelas futuras materializadas e
+`cardId` no gasto fixo. Trocar o cartão de **um** lançamento já funciona (foi o defeito 1 acima);
+o que não existe é migrar compromissos futuros de um cartão para outro.

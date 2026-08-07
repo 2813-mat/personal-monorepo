@@ -121,6 +121,7 @@ build verde, e fumaça de ponta a ponta atrás do guard do Keycloak nos sete.
 | Editar transação | `features/tx-detail-drawer` | `PATCH /transactions/:id` | **ligado** |
 | Marcar como conferido | `features/tx-detail-drawer` | `PATCH /transactions/:id` (`reviewed`) | **ligado** |
 | Editar/remover gasto fixo | `features/fixed` | `PATCH`/`DELETE /fixed-expenses/:id` | **ligado** |
+| Cadastro de cartão | `features/settings` | `POST`/`PATCH`/`DELETE`/`archive /cards` | **ligado** |
 | Convidar pessoa | `features/settings` | módulo de membros inteiro | fora de escopo |
 | Boleto, Pagar agora | `features/invoice` | integração de pagamento | fora de escopo |
 
@@ -151,6 +152,19 @@ produto (implementar ou remover): "Importar" (`topbar.component.html`) e "Export
 botão central de novo gasto, 9 das 14 tabelas viram cards no celular, drawers em tela cheia.
 Fechamento: **225 testes**, lint e build verdes, e validação visual em 375/768/1280 com
 `scrollWidth == clientWidth` nas 8 rotas.
+
+**Cadastro de cartão entregue em 2026-08-07.** Spec em `2026-08-07-cards-crud-design.md`, plano
+em `../plans/2026-08-07-cards-crud.md`. Produção já não depende de `INSERT` na mão: dá para
+criar, editar, arquivar e excluir cartão pela tela. `Card` ganhou `archived`; excluir cartão em
+uso responde 409 com as contagens e a UI oferece arquivar. Fechamento: **api-financial 143
+testes**, **ui-financial 330**, e os oito fluxos percorridos em 1280px e 375px.
+
+É a **primeira de três fatias**. O "substituir cartão" pedido — passado fica no antigo, futuro
+migra para o novo — depende de dado que ainda não existe: uma compra em 12× grava só a parcela
+atual, e `FixedExpense` não tem coluna de cartão. Restam:
+
+- **Fatia 2:** materializar o cronograma de parcelas, com o cartão no `InstallmentPlan`;
+- **Fatia 3:** `cardId` no gasto fixo e `POST /cards/:id/replace` com a migração.
 
 **Dívidas da fatia de ações de escrita (2026-08-07) — as duas pagas no mesmo dia:**
 - ~~`app-data.service.ts` passou de 400 linhas~~ — **resolvido**: sete stores em
