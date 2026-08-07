@@ -124,6 +124,28 @@ export interface GoalWire {
   history: number[];
 }
 
+export interface CreateCardWire {
+  name: string;
+  bank: string;
+  color: string;
+  closingDay: number;
+  dueDay: number;
+  creditLimit: number;
+  last4: string;
+  holder: string;
+}
+
+export interface UpdateCardWire {
+  name?: string;
+  bank?: string;
+  color?: string;
+  closingDay?: number;
+  dueDay?: number;
+  creditLimit?: number;
+  last4?: string;
+  holder?: string;
+}
+
 export interface UpdateGoalWire {
   label?: string;
   target?: number;

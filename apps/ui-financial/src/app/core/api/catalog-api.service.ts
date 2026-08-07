@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type { Card } from '@caixa-familia/shared-types';
 import { environment } from '../../../environments/environment';
-import type { CategoryWire, CreateCategoryWire, UpdateCategoryWire } from './wire.types';
+import type {
+  CategoryWire,
+  CreateCategoryWire,
+  UpdateCategoryWire,
+  CreateCardWire,
+  UpdateCardWire,
+} from './wire.types';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogApiService {
@@ -32,5 +38,21 @@ export class CatalogApiService {
 
   reorderCategories(slugs: string[]): Observable<CategoryWire[]> {
     return this.http.patch<CategoryWire[]>(`${this.base}/categories/order`, { slugs });
+  }
+
+  createCard(body: CreateCardWire): Observable<Card> {
+    return this.http.post<Card>(`${this.base}/cards`, body);
+  }
+
+  updateCard(id: string, body: UpdateCardWire): Observable<Card> {
+    return this.http.patch<Card>(`${this.base}/cards/${id}`, body);
+  }
+
+  removeCard(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/cards/${id}`);
+  }
+
+  archiveCard(id: string, archived: boolean): Observable<Card> {
+    return this.http.patch<Card>(`${this.base}/cards/${id}/archive`, { archived });
   }
 }
