@@ -16,7 +16,8 @@
       <div class="goal-header-actions">
         <button type="button" class="btn-ghost" [disabled]="!auth.canWrite()"
           (click)="editing.set(true)">Editar</button>
-        <button class="btn-colored" [style.background]="goal.color" disabled>
+        <button type="button" class="btn-colored" [style.background]="goal.color"
+          [disabled]="!auth.canWrite()" (click)="contributing.set(true)">
           <cf-icon name="plus" [size]="11" /> Aporte extra
         </button>
       </div>
@@ -65,4 +66,8 @@
 
 @if (editing()) {
   <cf-goal-edit-drawer [goal]="goal" (closed)="editing.set(false)" />
+}
+
+@if (contributing()) {
+  <cf-expense-drawer [presetGoal]="goal.id" (closed)="contributing.set(false)" />
 }

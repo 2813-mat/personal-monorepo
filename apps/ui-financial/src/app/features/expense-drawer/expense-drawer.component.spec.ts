@@ -176,3 +176,29 @@ describe('ExpenseDrawerComponent — contribution type', () => {
     expect(data.addContribution).not.toHaveBeenCalled();
   });
 });
+
+/** O arquivo constrói o drawer em cada `describe`; aqui basta um fixture cru. */
+function buildDrawer() {
+  TestBed.configureTestingModule({
+    imports: [ExpenseDrawerComponent],
+    providers: [{ provide: AppDataService, useValue: mockDataService() }],
+  });
+  return TestBed.createComponent(ExpenseDrawerComponent);
+}
+
+describe('ExpenseDrawerComponent — aporte pré-selecionado', () => {
+  it('abre no modo aporte com a meta escolhida', () => {
+    const fixture = buildDrawer();
+    fixture.componentRef.setInput('presetGoal', 'sos');
+    fixture.detectChanges();
+    const v = fixture.componentInstance.form.getRawValue();
+    expect(v.type).toBe('contribution');
+    expect(v.goal).toBe('sos');
+  });
+
+  it('abre no modo gasto quando não há meta', () => {
+    const fixture = buildDrawer();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.getRawValue().type).toBe('expense');
+  });
+});

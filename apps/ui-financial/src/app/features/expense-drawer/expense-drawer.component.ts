@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, effect, inject, input, output } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -43,6 +43,9 @@ export class ExpenseDrawerComponent {
 
   closed = output<void>();
 
+  /** Quando presente, o drawer abre no modo aporte já apontando para esta meta. */
+  readonly presetGoal = input<string | null>(null);
+
   form = new FormGroup({
     type: new FormControl<'expense' | 'income' | 'contribution' | 'fixed'>('expense', { nonNullable: true }),
     value: new FormControl<number>(0, { nonNullable: true, validators: [Validators.required, Validators.min(0.01)] }),
@@ -61,6 +64,12 @@ export class ExpenseDrawerComponent {
   });
 
   constructor() {
+    effect(() => {
+      const slug = this.presetGoal();
+      if (!slug) return;
+      this.form.patchValue({ type: 'contribution', goal: slug });
+    });
+
     this.form.controls.type.valueChanges.subscribe((type) => {
       const cat = this.form.controls.cat;
       if (type === 'income' || type === 'contribution') {

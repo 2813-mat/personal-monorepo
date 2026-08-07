@@ -6,6 +6,7 @@ import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.compone
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { GoalEditDrawerComponent } from './goal-edit-drawer.component';
+import { ExpenseDrawerComponent } from '../expense-drawer/expense-drawer.component';
 import { fmtShort } from './goal-format.utils';
 
 // ─── GoalCard (private subcomponent) ─────────────────────────────────────────
@@ -19,6 +20,7 @@ import { fmtShort } from './goal-format.utils';
     SparkbarsComponent,
     IconComponent,
     GoalEditDrawerComponent,
+    ExpenseDrawerComponent,
   ],
   templateUrl: './goal-card.component.html',
   styleUrl: './goal-card.component.scss',
@@ -29,6 +31,8 @@ export class GoalCardComponent {
   protected auth = inject(AuthService);
 
   protected editing = signal(false);
+
+  protected contributing = signal(false);
 
   protected readonly fmtShort = fmtShort;
 
