@@ -37,11 +37,27 @@ modo de edição dentro do `expense-drawer` para transação.
 | 14 — `fixed-edit-drawer` | (fixed) | ✅ |
 | 15 — remover gasto fixo | `653a19b` | ✅ |
 | 16 — modo edição de transação | `5ae339f` | ✅ |
-| 17 — fechamento | — | parcial: gate e registro feitos, **verificação visual pendente** |
+| 17 — fechamento | `57c0b3b` + correções abaixo | ✅ |
 
-Suítes no fechamento: **ui-financial 284**, `lint` e `build` verdes. O
+Suítes no fechamento: **ui-financial 288**, `lint` e `build` verdes. O
 `tsc -p tsconfig.spec.json --noEmit` não acusa nenhum erro novo — só as dívidas
 preexistentes de `reports.component.spec.ts`.
+
+### O que a verificação no navegador encontrou
+
+Os nove fluxos passaram em 1280px, mas a passagem revelou **quatro defeitos**, todos corrigidos:
+
+| Commit | Defeito |
+|---|---|
+| `c9ae90f` | `selectedTx` guardava uma cópia do lançamento. Depois de conferir ou editar, a lista atualizava e o drawer aberto não — e o botão de conferir podia ser clicado de novo, desfazendo a ação. Agora deriva da lista pelo id. Anterior a esta fatia (veio da Task 3), mas batia no fluxo de edição novo. |
+| `c282df7` | Os chips de tipo seguiam clicáveis na edição: o `FormControl` estava desabilitado, mas os botões chamam `setValue`, que funciona mesmo assim. |
+| `c2713b9` | `cursor: not-allowed` e `opacity` estavam gravados nas classes `.btn-ghost`/`.btn-primary`/`.btn-colored`, herança de quando eram stubs. Ligados, seguiam com cara de bloqueado. Passou para `:disabled`. |
+| `6dafaec` | Colunas de ação estreitas demais: os dois botões quebravam para linhas separadas, esticando a linha de 52px para 71px. |
+
+**Verificação em 375px:** a janela do Chrome não redimensionava, então a checagem foi feita
+num `iframe` de 375px na mesma origem — media query vale para o viewport do iframe. As oito
+rotas com `scrollWidth == clientWidth`, o ramo mobile renderizando (cards, não tabelas), os
+três drawers novos e o `confirm-modal` ocupando a largura toda sem vazar.
 
 ### Desvios do plano nas Fatias D, E e F
 

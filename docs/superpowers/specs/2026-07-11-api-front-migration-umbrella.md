@@ -129,7 +129,11 @@ build verde, e fumaça de ponta a ponta atrás do guard do Keycloak nos sete.
 drawers de edição novos (`category`, `goal`, `fixed`), modo edição dentro do `expense-drawer`
 para transação, reordenação de categorias por setas, exclusão com confirmação em categoria e
 gasto fixo, e o 409 de categoria em uso traduzido com as contagens que a API devolve.
-Fechamento: **284 testes** de `ui-financial`, lint e build verdes.
+Fechamento: **288 testes** de `ui-financial`, lint e build verdes, e os nove fluxos percorridos
+no Chrome em 1280px e 375px. A passagem visual pegou quatro defeitos que a suíte verde
+escondia — o drawer de detalhe defasado depois de um PATCH, os chips de tipo ainda clicáveis
+na edição, o `cursor: not-allowed` gravado na classe dos botões que deixaram de ser stubs, e
+as colunas de ação estreitas demais para dois botões.
 
 O que resta fora de escopo continua igual: módulo de membros ("Convidar pessoa"), integração
 de pagamento ("Boleto"/"Pagar agora"), e os dois botões mortos abaixo.
