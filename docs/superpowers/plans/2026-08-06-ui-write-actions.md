@@ -30,9 +30,36 @@ modo de edição dentro do `expense-drawer` para transação.
 | 8 — excluir categoria com o 409 traduzido | `ce27a16` | ✅ |
 | 9 — reordenar com setas | `14f9224` | ✅ |
 | — `reviewed` num mock de `Income` | `6266326` | ✅ (não estava no plano) |
-| 10 a 17 | — | pendente |
+| 10 — camada de dados de meta | `dd806a0` | ✅ |
+| 11 — `goal-edit-drawer` | (goals) | ✅ |
+| 12 — aporte extra pelo card | `65c3183` | ✅ |
+| 13 — camada de dados de gasto fixo | `1d676be` | ✅ |
+| 14 — `fixed-edit-drawer` | (fixed) | ✅ |
+| 15 — remover gasto fixo | `653a19b` | ✅ |
+| 16 — modo edição de transação | `5ae339f` | ✅ |
+| 17 — fechamento | — | parcial: gate e registro feitos, **verificação visual pendente** |
 
-Suítes no ponto de parada: **ui-financial 261**, `lint` e `build` verdes.
+Suítes no fechamento: **ui-financial 284**, `lint` e `build` verdes. O
+`tsc -p tsconfig.spec.json --noEmit` não acusa nenhum erro novo — só as dívidas
+preexistentes de `reports.component.spec.ts`.
+
+### Desvios do plano nas Fatias D, E e F
+
+1. **`GoalCardComponent` passou a injetar `AuthService`** e os botões Editar/Aporte extra
+   ficaram atrás de `auth.canWrite()`. O plano não pedia; a tela era a única com escrita sem
+   o gate que o resto do app usa.
+2. **`FixedComponent` também precisou de `AuthService`**, o que obrigou a acrescentar o
+   provider nos dois helpers de `fixed.component.spec.ts` — `AuthService` real depende de
+   `OidcSecurityService`, que não existe no TestBed.
+3. **`this.base` do `fixed-api.service` já inclui `/fixed-expenses`** — as URLs do plano
+   duplicavam o segmento. Mesma armadilha no `goal-api.service`.
+4. **`buildDrawer()` não existia** no `expense-drawer.component.spec.ts`, ao contrário do que
+   a Task 12 supunha; foi criado, e na Task 16 passou a devolver `{ fixture, data }`.
+5. **O `expense-drawer` não tem controle `note` nem `category`** — os nomes reais são `cat` e
+   nada para anotação. O `patchValue` e o ramo de update usam os nomes reais; `note`,
+   `recurring` e `installments` sobrevivem pelo espalhamento da transação original.
+6. **Botões de Editar/Remover também nos cards mobile** de gastos fixos, não só nas tabelas;
+   `button.fxc-tag` e `button.stc-tag` precisaram zerar o chrome de botão.
 
 ### Desvios do plano na Fatia C
 

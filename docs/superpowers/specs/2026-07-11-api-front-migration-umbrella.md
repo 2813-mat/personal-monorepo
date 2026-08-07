@@ -114,17 +114,25 @@ build verde, e fumaça de ponta a ponta atrás do guard do Keycloak nos sete.
 
 | Stub | Onde | Endpoint | Estado |
 |---|---|---|---|
-| Editar meta / aportar pelo card | `features/goals/goal-card.component.html` | `PATCH /goals/:slug` | **API pronta** |
-| Editar orçamento | `features/settings` | `PATCH /categories/:slug` | **API pronta** |
-| Reordenar categorias | `features/settings` | `PATCH /categories/order` | **API pronta** |
-| Editar transação | `features/tx-detail-drawer` | `PATCH /transactions/:id` | **API pronta** |
-| Marcar como conferido | `features/tx-detail-drawer` | `PATCH /transactions/:id` (`reviewed`) | **API pronta** |
-| Editar/remover gasto fixo | — | `PATCH`/`DELETE /fixed-expenses/:id` | **API pronta** |
+| Editar meta / aportar pelo card | `features/goals/goal-card.component.html` | `PATCH /goals/:slug` | **ligado** |
+| Editar orçamento | `features/settings` | `PATCH /categories/:slug` | **ligado** |
+| Reordenar categorias | `features/settings` | `PATCH /categories/order` | **ligado** |
+| Excluir categoria | `features/settings` | `DELETE /categories/:slug` | **ligado** |
+| Editar transação | `features/tx-detail-drawer` | `PATCH /transactions/:id` | **ligado** |
+| Marcar como conferido | `features/tx-detail-drawer` | `PATCH /transactions/:id` (`reviewed`) | **ligado** |
+| Editar/remover gasto fixo | `features/fixed` | `PATCH`/`DELETE /fixed-expenses/:id` | **ligado** |
 | Convidar pessoa | `features/settings` | módulo de membros inteiro | fora de escopo |
 | Boleto, Pagar agora | `features/invoice` | integração de pagamento | fora de escopo |
 
-**Resta o Projeto 3:** ligar esses sete stubs na UI. Nenhum arquivo de `ui-financial` foi
-tocado pela fatia de backend.
+**Projeto 3 entregue em 2026-08-07.** Spec em `2026-08-06-ui-write-actions-design.md`, plano em
+`../plans/2026-08-06-ui-write-actions.md`. Todos os stubs de escrita estão ligados: três
+drawers de edição novos (`category`, `goal`, `fixed`), modo edição dentro do `expense-drawer`
+para transação, reordenação de categorias por setas, exclusão com confirmação em categoria e
+gasto fixo, e o 409 de categoria em uso traduzido com as contagens que a API devolve.
+Fechamento: **284 testes** de `ui-financial`, lint e build verdes.
+
+O que resta fora de escopo continua igual: módulo de membros ("Convidar pessoa"), integração
+de pagamento ("Boleto"/"Pagar agora"), e os dois botões mortos abaixo.
 
 **Comportamento alterado de propósito:** `DELETE /transactions/:id` respondia 204 mesmo com id
 inexistente (usava `deleteMany` sem olhar o `count`). Agora responde **404**.
@@ -139,6 +147,17 @@ produto (implementar ou remover): "Importar" (`topbar.component.html`) e "Export
 botão central de novo gasto, 9 das 14 tabelas viram cards no celular, drawers em tela cheia.
 Fechamento: **225 testes**, lint e build verdes, e validação visual em 375/768/1280 com
 `scrollWidth == clientWidth` nas 8 rotas.
+
+**Dívidas da fatia de ações de escrita (2026-08-07):**
+- `app-data.service.ts` passou de 400 linhas. Continua coeso, mas vale quebrar por recurso
+  numa fatia própria.
+- Os três drawers de edição (`category`, `goal`, `fixed`) compartilham a mesma folha de estilo
+  **copiada**. Agora que os três existem, extrair um `.scss` comum é refactor barato.
+- `tsc -p tsconfig.spec.json --noEmit` segue como disciplina manual, fora do target `test` do
+  Nx. Ele pegou dois erros reais que a suíte verde escondia (um mock de `Income` com `reviewed`,
+  campo que `Income` não tem).
+- `reports.component.spec.ts` tem três fixtures de `MonthEntry` sem `year`/`month`/`perCategory`.
+  Preexistente; enquanto existirem, o `tsc` dos specs nasce com ruído.
 
 **Dívidas menores registradas:**
 - ~~`settings.component.scss` acima do budget de 4 kB~~ — **resolvido**: o budget
