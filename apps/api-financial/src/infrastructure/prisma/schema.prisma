@@ -93,6 +93,7 @@ model Card {
   dueDay      Int
   creditLimit Decimal @db.Decimal(12, 2)
   last4       String
+  archivedAt  DateTime?
   transactions   Transaction[]
   invoiceHistory InvoiceHistory[]
   @@index([householdId])

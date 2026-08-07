@@ -16,4 +16,5 @@ export const toDomain = (r: CardRow, current: number): Card =>
     ownerMemberId: r.ownerMemberId,
     current,
     holder: r.owner?.name ?? null,
+    archived: r.archivedAt !== null,
   });

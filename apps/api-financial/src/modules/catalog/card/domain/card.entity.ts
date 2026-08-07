@@ -10,6 +10,7 @@ export interface CardProps {
   ownerMemberId: string | null;
   current: number;
   holder?: string | null;
+  archived: boolean;
 }
 
 export class Card {

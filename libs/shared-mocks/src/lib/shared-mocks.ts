@@ -8,13 +8,13 @@ import type {
 } from '@caixa-familia/shared-types';
 
 export const MOCK_CARDS: Card[] = [
-  { id: 'nu-t',  name: 'Nubank',    holder: 'Thais',  bank: 'Nubank',    color: '#820AD1', closing: 5,  due: 12, current: 1895.00, limit: 4500, last4: '4421' },
-  { id: 'nu-m',  name: 'Nubank',    holder: 'Mateus', bank: 'Nubank',    color: '#820AD1', closing: 8,  due: 15, current: 1342.67, limit: 3800, last4: '7088' },
-  { id: 'pp-m',  name: 'PicPay',    holder: 'Mateus', bank: 'PicPay',    color: '#11C76F', closing: 14, due: 21, current:  591.08, limit: 2000, last4: '5510' },
-  { id: 'it-m',  name: 'Itaú',      holder: 'Mateus', bank: 'Itaú',      color: '#EC7000', closing: 18, due: 25, current:  452.53, limit: 5200, last4: '3367' },
-  { id: 'rn-t',  name: 'Renner',    holder: 'Thais',  bank: 'Renner',    color: '#1C1C1C', closing: 20, due: 28, current:  443.73, limit: 1500, last4: '1098' },
-  { id: 'sa-t',  name: 'Santander', holder: 'Thais',  bank: 'Santander', color: '#EC0000', closing: 28, due: 5,  current:   65.99, limit: 3000, last4: '2245' },
-  { id: 'in-t',  name: 'Inter',     holder: 'Thais',  bank: 'Inter',     color: '#FF7A00', closing: 1,  due: 8,  current:    0.00, limit: 1200, last4: '6634' },
+  { id: 'nu-t',  name: 'Nubank',    holder: 'Thais',  bank: 'Nubank',    color: '#820AD1', closing: 5,  due: 12, current: 1895.00, limit: 4500, last4: '4421', archived: false },
+  { id: 'nu-m',  name: 'Nubank',    holder: 'Mateus', bank: 'Nubank',    color: '#820AD1', closing: 8,  due: 15, current: 1342.67, limit: 3800, last4: '7088', archived: false },
+  { id: 'pp-m',  name: 'PicPay',    holder: 'Mateus', bank: 'PicPay',    color: '#11C76F', closing: 14, due: 21, current:  591.08, limit: 2000, last4: '5510', archived: false },
+  { id: 'it-m',  name: 'Itaú',      holder: 'Mateus', bank: 'Itaú',      color: '#EC7000', closing: 18, due: 25, current:  452.53, limit: 5200, last4: '3367', archived: false },
+  { id: 'rn-t',  name: 'Renner',    holder: 'Thais',  bank: 'Renner',    color: '#1C1C1C', closing: 20, due: 28, current:  443.73, limit: 1500, last4: '1098', archived: false },
+  { id: 'sa-t',  name: 'Santander', holder: 'Thais',  bank: 'Santander', color: '#EC0000', closing: 28, due: 5,  current:   65.99, limit: 3000, last4: '2245', archived: false },
+  { id: 'in-t',  name: 'Inter',     holder: 'Thais',  bank: 'Inter',     color: '#FF7A00', closing: 1,  due: 8,  current:    0.00, limit: 1200, last4: '6634', archived: false },
 ];
 
 export const MOCK_INCOMES: Income[] = [

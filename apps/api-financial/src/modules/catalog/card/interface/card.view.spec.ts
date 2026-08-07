@@ -11,6 +11,7 @@ const input: CardViewInput = {
   last4: '1234',
   current: 250,
   holder: 'Mateus',
+  archived: false,
 };
 
 describe('toCardView', () => {
@@ -26,10 +27,18 @@ describe('toCardView', () => {
       current: 250,
       limit: 5000,
       last4: '1234',
+      archived: false,
     });
   });
 
   it('defaults holder to "shared" when absent', () => {
     expect(toCardView({ ...input, holder: null }).holder).toBe('shared');
+  });
+
+  // É por aqui que `archived` chega ao GET /cards: sem isto a UI não teria como
+  // separar cartão ativo de arquivado.
+  it('carries archived through to the wire', () => {
+    expect(toCardView({ ...input, archived: true }).archived).toBe(true);
+    expect(toCardView({ ...input, archived: false }).archived).toBe(false);
   });
 });

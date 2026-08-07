@@ -17,6 +17,8 @@ export interface Card {
   current: number;
   limit: number;
   last4: string;
+  /** Cartão fora de uso: some dos seletores, continua no histórico. */
+  archived: boolean;
 }
 
 export interface Income {

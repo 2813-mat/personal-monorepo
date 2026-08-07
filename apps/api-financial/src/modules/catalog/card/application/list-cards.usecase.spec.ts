@@ -14,6 +14,7 @@ describe('ListCardsUseCase', () => {
       last4: '1234',
       ownerMemberId: null,
       current: 250,
+      archived: false,
     });
     const repo = { findAll: jest.fn(async () => [card]), openInvoice: jest.fn() };
     const res = await new ListCardsUseCase(repo as any).execute();
