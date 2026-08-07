@@ -335,8 +335,8 @@ describe('ExpenseDrawerComponent — trocar o cartão na edição', () => {
       ...fixture.nativeElement.querySelectorAll('.method-row'),
     ];
     const inter = linhas.find((b) => b.textContent?.includes('Inter'));
-    expect(inter).toBeTruthy();
-    inter!.click();
+    if (!inter) throw new Error('linha do cartão Inter não renderizou');
+    inter.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.form.pristine).toBe(false);
   });
@@ -346,7 +346,9 @@ describe('ExpenseDrawerComponent — trocar o cartão na edição', () => {
     const linhas: HTMLButtonElement[] = [
       ...fixture.nativeElement.querySelectorAll('.method-row'),
     ];
-    linhas.find((b) => b.textContent?.includes('Inter'))!.click();
+    const inter = linhas.find((b) => b.textContent?.includes('Inter'));
+    if (!inter) throw new Error('linha do cartão Inter não renderizou');
+    inter.click();
     fixture.detectChanges();
     fixture.componentInstance.save();
     expect(data.updateTransaction).toHaveBeenCalledWith(
