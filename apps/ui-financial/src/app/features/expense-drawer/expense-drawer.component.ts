@@ -197,7 +197,8 @@ export class ExpenseDrawerComponent {
         due: Number(v.dueDay),
         cat: v.cat,
         holder: v.holder,
-        paidThisMonth: false,
+        // Vazio = vigente a partir do mês corrente, decidido no servidor.
+        startDate: '',
       };
       this.data.createFixed(fixed);
       this.onClose();

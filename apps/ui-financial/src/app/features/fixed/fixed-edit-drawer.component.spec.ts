@@ -11,7 +11,7 @@ const FIXED: FixedExpense = {
   due: 10,
   cat: 'casa',
   holder: 'shared',
-  paidThisMonth: false,
+  startDate: '2026-03-01',
 };
 const CATEGORIES: Category[] = [
   { id: 'casa', label: 'Casa', color: '#7A4F1D', budget: 500, order: 1 },
@@ -39,6 +39,8 @@ describe('FixedEditDrawerComponent', () => {
       due: 10,
       cat: 'casa',
       holder: 'shared',
+      // O campo é `month`, então a vigência entra sem o dia.
+      startMonth: '2026-03',
     });
   });
 
@@ -54,5 +56,16 @@ describe('FixedEditDrawerComponent', () => {
     expect(data.updateFixed).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'f1', value: 300 }),
     );
+  });
+
+  it('devolve a vigência como data no dia 1, não como o mês cru do input', () => {
+    const { c, data } = build();
+    c.form.controls.startMonth.setValue('2026-09');
+    c.form.markAsDirty();
+    c.save();
+    expect(data.updateFixed).toHaveBeenCalledWith(
+      expect.objectContaining({ startDate: '2026-09-01' }),
+    );
+    expect(data.updateFixed.mock.calls[0][0]).not.toHaveProperty('startMonth');
   });
 });

@@ -56,6 +56,11 @@ export interface Category {
   order: number;
 }
 
+/**
+ * Compromisso mensal perene. Ao contrário do salário recorrente, não materializa
+ * uma linha por mês: é devido em todo mês a partir de `startDate`, e o pagamento
+ * é a transação que aponta de volta para ele.
+ */
 export interface FixedExpense {
   id: Id;
   label: string;
@@ -63,7 +68,15 @@ export interface FixedExpense {
   due: number;
   cat: Id;
   holder: Holder;
-  paidThisMonth: boolean;
+  /** Primeiro mês em que a conta passa a ser devida. */
+  startDate: IsoDate;
+  /**
+   * Data em que o pagamento do mês consultado foi lançado. Ausente = pendente —
+   * não existe um `paidThisMonth` separado justamente para os dois não divergirem.
+   */
+  paidAt?: IsoDate;
+  /** Valor efetivamente pago, quando difere do cadastro. */
+  paidValue?: number;
 }
 
 export interface Goal {

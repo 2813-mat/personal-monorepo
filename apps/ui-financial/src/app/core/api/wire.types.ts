@@ -207,7 +207,10 @@ export interface FixedExpenseWire {
   dueDay: number;
   categorySlug: string;
   holder: string;
-  paidThisMonth: boolean;
+  startDate: string;
+  /** Ausente = pendente no mês consultado. */
+  paidAt?: string;
+  paidValue?: number;
 }
 
 export interface CreateFixedExpenseWire {
@@ -216,6 +219,7 @@ export interface CreateFixedExpenseWire {
   dueDay: number;
   categorySlug: string;
   holder: string;
+  startDate?: string;
 }
 
 export interface UpdateFixedExpenseWire {
@@ -224,6 +228,14 @@ export interface UpdateFixedExpenseWire {
   dueDay?: number;
   categorySlug?: string;
   holder?: string;
+  startDate?: string;
+}
+
+export interface PayFixedExpenseWire {
+  date: string;
+  value?: number;
+  method: 'PIX' | 'CARD';
+  cardId?: string;
 }
 
 export interface CreateIncomeWire {

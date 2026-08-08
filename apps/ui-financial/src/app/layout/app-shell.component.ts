@@ -49,8 +49,9 @@ export class AppShellComponent {
     });
 
     // (Re)load month-scoped resources when authenticated and whenever the month
-    // changes. Fixed expenses belong here because paidThisMonth is relative to
-    // the month being viewed. Incomes joined this effect quando passaram a ser
+    // changes. Fixed expenses belong here because both the payment and whether
+    // the bill is due at all are relative to the month being viewed. Incomes
+    // joined this effect quando passaram a ser
     // escopadas por mês — e é esta chamada que materializa os salários do mês.
     effect(() => {
       if (!this.auth.isAuthenticated()) return;

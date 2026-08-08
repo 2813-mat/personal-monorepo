@@ -81,7 +81,7 @@ async function main() {
     const row = await prisma.fixedExpense.create({
       data: {
         householdId: hid, categoryId: catId[f.cat], memberId: holderToMemberId(f.holder, memberIds),
-        label: f.label, value: f.value, dueDay: f.due,
+        label: f.label, value: f.value, dueDay: f.due, startDate: new Date(f.startDate),
       },
     });
     fixedByLabel[f.label] = row.id;

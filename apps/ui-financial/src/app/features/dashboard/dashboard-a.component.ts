@@ -9,9 +9,18 @@ import { CardChipComponent } from '../../ui/card-chip/card-chip.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { SparkbarsComponent } from '../../ui/sparkbars/sparkbars.component';
-import { matchesHolder } from '@caixa-familia/shared-utils';
+import {
+  committedTotal,
+  matchesHolder,
+  monthRows,
+  pendingFixed,
+  spendByCategory,
+} from '@caixa-familia/shared-utils';
 
 const MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+/** Quantas linhas a tabela do mês mostra antes do "Ver todos". */
+const ROW_LIMIT = 16;
 
 @Component({
   selector: 'cf-dashboard-a',
@@ -35,19 +44,30 @@ export class DashboardAComponent {
   private fixos = computed(() =>
     this.data.fixed().filter(f => matchesHolder(this.data.holderFilter(), f.holder)),
   );
+  private pendentes = computed(() => pendingFixed(this.fixos()));
 
   kpis = computed(() => {
     const income = this.incs().reduce((s, i) => s + i.value, 0);
-    const spent = this.txs().reduce((s, t) => s + t.value, 0);
-    const fixed = this.fixos().reduce((s, f) => s + f.value, 0);
+    const realizado = this.txs().reduce((s, t) => s + t.value, 0);
+    const pendentes = this.pendentes();
+    const aPagar = pendentes.reduce((s, f) => s + f.value, 0);
+    // Só os pendentes entram: o fixo já pago virou transação e está no realizado.
+    const comprometido = committedTotal(this.txs(), pendentes);
+    const totalFixos = this.fixos().reduce((s, f) => s + f.value, 0);
     const sos = this.data.goals().find(g => g.id === 'sos');
-    const saldo = income - spent;
+    const saldo = income - comprometido;
     return [
-      { label: 'Receita',  value: income,         sub: `${this.incs().length} fontes`, color: 'var(--pos)'   },
-      { label: 'Gastos',   value: spent,          sub: `${this.txs().length} lançamentos`, color: 'var(--neg)' },
-      { label: 'Fixos',    value: fixed,          sub: `${this.fixos().length} contas`, color: undefined      },
+      { label: 'Receita',  value: income,      sub: `${this.incs().length} fontes`, color: 'var(--pos)'   },
+      {
+        label: 'Gastos', value: comprometido, color: 'var(--neg)',
+        sub: `R$ ${this.formatShort(realizado)} realizado + R$ ${this.formatShort(aPagar)} a pagar`,
+      },
+      {
+        label: 'Fixos a pagar', value: aPagar, color: undefined,
+        sub: `${pendentes.length} de ${this.fixos().length} contas · R$ ${this.formatShort(totalFixos)} no total`,
+      },
       { label: 'Reserva',  value: sos?.balance ?? 0, sub: `/ R$ ${this.formatShort(sos?.target ?? 0)}`, color: 'var(--brand)' },
-      { label: 'Saldo',    value: saldo,          sub: 'livre p/ mês',                 color: saldo > 0 ? 'var(--pos)' : 'var(--neg)' },
+      { label: 'Saldo',    value: saldo,       sub: 'livre p/ mês',                 color: saldo > 0 ? 'var(--pos)' : 'var(--neg)' },
     ];
   });
 
@@ -55,19 +75,17 @@ export class DashboardAComponent {
   historyFirst = computed(() => this.data.history()[0]?.m ?? '');
   historyLast = computed(() => { const h = this.data.history(); return h[h.length - 1]?.m ?? ''; });
 
-  topTx = computed(() =>
-    [...this.txs()]
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, 16)
+  /** Lançamentos do mês e fixos a pagar na mesma lista. */
+  private allRows = computed(() =>
+    monthRows(this.txs(), this.pendentes(), this.data.currentMonth()),
   );
+  topRows = computed(() => this.allRows().slice(0, ROW_LIMIT));
+  rowCount = computed(() => this.allRows().length);
 
   totalFaturas = computed(() => this.data.cards().reduce((s, c) => s + c.current, 0));
 
   catSpend = computed(() => {
-    const spend: Record<string, number> = {};
-    for (const t of this.txs()) {
-      spend[t.cat] = (spend[t.cat] ?? 0) + t.value;
-    }
+    const spend = spendByCategory(this.txs(), this.pendentes());
     return this.data.categories()
       .filter(c => spend[c.id])
       .map(c => ({ cat: c, spent: spend[c.id] }))

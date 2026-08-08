@@ -33,7 +33,7 @@ describe('FixedApiService', () => {
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/fixed-expenses`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(body);
-    req.flush({ id: 'f1', ...body, paidThisMonth: false });
+    req.flush({ id: 'f1', ...body, startDate: '2026-08-01' });
   });
 
   it('PATCHes a fixed expense', () => {
@@ -41,6 +41,26 @@ describe('FixedApiService', () => {
     const req = httpMock.expectOne(`${environment.apiBaseUrl}/fixed-expenses/f1`);
     expect(req.request.method).toBe('PATCH');
     expect(req.request.body).toEqual({ value: 300 });
+    req.flush({});
+  });
+
+  it('POSTs a payment to the pay sub-resource', () => {
+    const body = { date: '2026-08-06', value: 300, method: 'PIX' as const };
+    service.pay('f1', body).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/fixed-expenses/f1/pay`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(body);
+    req.flush({});
+  });
+
+  it('DELETEs a payment with year and month, never by omission', () => {
+    service.unpay('f1', { year: 2026, month: 8 }).subscribe();
+    const req = httpMock.expectOne(
+      (r) => r.url === `${environment.apiBaseUrl}/fixed-expenses/f1/pay`,
+    );
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.params.get('year')).toBe('2026');
+    expect(req.request.params.get('month')).toBe('8');
     req.flush({});
   });
 

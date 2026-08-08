@@ -1,0 +1,41 @@
+<div class="backdrop" role="button" tabindex="0" aria-label="Fechar"
+  (click)="closed.emit()" (keydown.enter)="closed.emit()" (keydown.space)="closed.emit()"></div>
+
+<aside class="panel" [formGroup]="form">
+  <header class="drawer-head">
+    <span class="head-title">Marcar como pago</span>
+    <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
+      <cf-icon name="x" [size]="14" />
+    </button>
+  </header>
+
+  <div class="drawer-body">
+    <p class="scope-note">
+      Isto lança <strong>{{ fixed().label }}</strong> como despesa do mês. O pagamento é
+      um lançamento normal: aparece no extrato e conta no gasto por categoria.
+    </p>
+
+    <label class="label" for="fp-date">Data do pagamento</label>
+    <input id="fp-date" class="text-input" type="date" formControlName="date" />
+    <span class="field-hint">O mês desta data é a competência do pagamento.</span>
+
+    <label class="label mt" for="fp-value">Valor pago</label>
+    <input id="fp-value" class="text-input" type="number" min="0" step="0.01" formControlName="value" />
+    <span class="field-hint">Cadastro: R$ {{ fixed().value }}. Ajuste se a conta veio diferente.</span>
+
+    <label class="label mt" for="fp-method">Forma de pagamento</label>
+    <select id="fp-method" class="text-input" formControlName="method">
+      <option value="pix">Pix / débito</option>
+      @for (c of data.activeCards(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+
+  <footer class="drawer-foot">
+    <span class="foot-hint"></span>
+    <button type="button" class="save-btn" [disabled]="form.invalid" (click)="save()">
+      Lançar pagamento
+    </button>
+  </footer>
+</aside>

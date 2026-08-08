@@ -6,6 +6,7 @@ import type {
   FixedExpenseWire,
   CreateFixedExpenseWire,
   UpdateFixedExpenseWire,
+  PayFixedExpenseWire,
 } from './wire.types';
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +25,15 @@ export class FixedApiService {
 
   update(id: string, body: UpdateFixedExpenseWire): Observable<FixedExpenseWire> {
     return this.http.patch<FixedExpenseWire>(`${this.base}/${id}`, body);
+  }
+
+  pay(id: string, body: PayFixedExpenseWire): Observable<FixedExpenseWire> {
+    return this.http.post<FixedExpenseWire>(`${this.base}/${id}/pay`, body);
+  }
+
+  unpay(id: string, params: { year: number; month: number }): Observable<FixedExpenseWire> {
+    const hp = new HttpParams().set('year', params.year).set('month', params.month);
+    return this.http.delete<FixedExpenseWire>(`${this.base}/${id}/pay`, { params: hp });
   }
 
   remove(id: string): Observable<void> {

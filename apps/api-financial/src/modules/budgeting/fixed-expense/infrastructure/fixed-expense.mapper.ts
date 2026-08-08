@@ -5,12 +5,23 @@ export type FixedExpenseRow = Prisma.FixedExpenseGetPayload<{
   include: { category: true; member: true };
 }>;
 
-export const toView = (r: FixedExpenseRow, paidThisMonth: boolean): FixedExpenseView => ({
+/** O lançamento que quitou o fixo no mês consultado, quando houver. */
+export interface FixedExpensePayment {
+  date: Date;
+  value: number;
+}
+
+export const toView = (
+  r: FixedExpenseRow,
+  payment: FixedExpensePayment | null,
+): FixedExpenseView => ({
   id: r.id,
   label: r.label,
   value: Number(r.value),
   dueDay: r.dueDay,
   categorySlug: r.category.slug,
   holder: r.member?.name ?? 'shared',
-  paidThisMonth,
+  startDate: r.startDate.toISOString().slice(0, 10),
+  paidAt: payment?.date.toISOString().slice(0, 10),
+  paidValue: payment?.value,
 });

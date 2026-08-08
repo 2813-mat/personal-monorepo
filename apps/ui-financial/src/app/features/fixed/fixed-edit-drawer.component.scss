@@ -1,3 +1,10 @@
 // Anatomia comum aos drawers de edição: styles/_edit-drawer.scss.
 // Os três nasceram como cópia byte a byte um do outro.
 @use 'edit-drawer';
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-3);
+}

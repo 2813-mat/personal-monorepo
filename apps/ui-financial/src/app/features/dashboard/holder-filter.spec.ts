@@ -109,9 +109,9 @@ describe('Filtro de titular — o compartilhado conta para os dois', () => {
   });
 
   it('aba B move os KPIs junto com o filtro', () => {
-    expect(build(DashboardBComponent, 'todos').totalSpent()).toBe(700);
-    expect(build(DashboardBComponent, 'Mateus').totalSpent()).toBe(500);
-    expect(build(DashboardBComponent, 'Thais').totalSpent()).toBe(600);
+    expect(build(DashboardBComponent, 'todos').totalCommitted()).toBe(700);
+    expect(build(DashboardBComponent, 'Mateus').totalCommitted()).toBe(500);
+    expect(build(DashboardBComponent, 'Thais').totalCommitted()).toBe(600);
   });
 
   it('aba B esconde a variação mensal sob filtro, porque o histórico é do casal', () => {

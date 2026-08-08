@@ -9,6 +9,7 @@ import type {
   Transaction,
 } from '@caixa-familia/shared-types';
 import type { NewCard } from '../core/api/card.mapper';
+import type { FixedPayment } from '../core/api/fixed.mapper';
 import type { NewGoal } from '../core/api/goal.mapper';
 import { CatalogStore } from '../core/state/catalog.store';
 import { FixedStore } from '../core/state/fixed.store';
@@ -153,6 +154,13 @@ export class AppDataService {
   }
   updateFixed(f: FixedExpense): void {
     this.fix.update(f);
+  }
+  /** Lança o pagamento do mês. A competência sai da data informada. */
+  payFixed(id: string, payment: FixedPayment): void {
+    this.fix.pay(id, payment);
+  }
+  unpayFixed(id: string): void {
+    this.fix.unpay(id);
   }
   removeFixed(id: string): void {
     this.fix.remove(id);

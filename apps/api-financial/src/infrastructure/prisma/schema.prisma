@@ -151,6 +151,11 @@ model FixedExpense {
   label       String
   value       Decimal @db.Decimal(12, 2)
   dueDay      Int
+  /// Primeiro mês em que a conta passa a ser devida. Sem isto um fixo cadastrado
+  /// hoje apareceria como pendente em todo mês passado que a UI visitasse.
+  startDate   DateTime @db.Date
+  /// O pagamento de cada mês. Não há tabela de ocorrências: o fixo é devido em
+  /// todo mês >= startDate, e estar pago é existir aqui um lançamento no mês.
   transactions Transaction[]
   @@index([householdId])
 }

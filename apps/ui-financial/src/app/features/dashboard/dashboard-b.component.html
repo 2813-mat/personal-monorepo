@@ -70,14 +70,14 @@
   <div class="panel">
     <div class="panel-head">
       <span class="panel-title">Onde foi o dinheiro</span>
-      <span class="panel-meta">Mai 2026</span>
+      <span class="panel-meta">{{ data.currentMonth().label }}</span>
     </div>
     <div class="donut-section">
       <div class="donut-wrap">
         <cf-donut [segments]="donutSegments()" [size]="110" [stroke]="18" />
         <div class="donut-center">
           <div class="kpi-label-sm">Total</div>
-          <cf-money [value]="totalSpent()" [negColor]="false" [cents]="false" />
+          <cf-money [value]="totalCommitted()" [negColor]="false" [cents]="false" />
         </div>
       </div>
       <div class="donut-legend">
@@ -98,7 +98,8 @@
 <!-- Recent transactions -->
 <div class="panel">
   <div class="panel-head">
-    <span class="panel-title">Últimos lançamentos</span>
+    <!-- Não é "últimos": a lista abre com o que ainda vai vencer. -->
+    <span class="panel-title">Lançamentos do mês</span>
     <a class="panel-meta" routerLink="/transactions">Ver todos →</a>
   </div>
   @if (vp.isDesktop()) {
@@ -114,31 +115,41 @@
       </tr>
     </thead>
     <tbody>
-      @for (tx of recentTx(); track tx.id) {
-        <tr class="tx-row">
-          <td class="tx-date num">{{ formatDate(tx.date) }}</td>
+      @for (row of recentRows(); track row.kind + row.id) {
+        <tr class="tx-row" [class.row-pending]="row.kind === 'fixed'">
+          <td class="tx-date num">{{ formatDate(row.date) }}</td>
           <td>
             <div class="desc-cell">
-              <span>{{ tx.label }}</span>
-              @if (tx.installments) {
-                <span class="mini-pill">{{ tx.installments.n }}/{{ tx.installments.of }}</span>
-              }
-              @if (tx.recurring) {
-                <span class="mini-pill"><cf-icon name="repeat" [size]="9" /></span>
+              @if (row.kind === 'tx') {
+                <span>{{ row.tx.label }}</span>
+                @if (row.tx.installments) {
+                  <span class="mini-pill">{{ row.tx.installments.n }}/{{ row.tx.installments.of }}</span>
+                }
+                @if (row.tx.recurring) {
+                  <span class="mini-pill"><cf-icon name="repeat" [size]="9" /></span>
+                }
+              } @else {
+                <span>{{ row.fixed.label }}</span>
+                <span class="mini-pill pill-pending">
+                  <cf-icon name="repeat" [size]="9" /> a pagar
+                </span>
               }
             </div>
           </td>
           <td>
             <div class="cat-cell">
-              <cf-cat-dot [catId]="tx.cat" [size]="6" />
-              <span class="cat-label">{{ catLabel(tx.cat) }}</span>
+              <cf-cat-dot [catId]="row.cat" [size]="6" />
+              <span class="cat-label">{{ catLabel(row.cat) }}</span>
             </div>
           </td>
           <td>
-            @if (cardOf(tx.method)) {
+            @if (row.kind === 'fixed') {
+              <!-- Ainda não foi pago, então não há forma de pagamento. -->
+              <span class="last4">—</span>
+            } @else if (cardOf(row.tx.method)) {
               <div class="method-cell">
-                <cf-card-chip [cardId]="tx.method" size="sm" />
-                <span class="last4">···{{ cardOf(tx.method)!.last4 }}</span>
+                <cf-card-chip [cardId]="row.tx.method" size="sm" />
+                <span class="last4">···{{ cardOf(row.tx.method)!.last4 }}</span>
               </div>
             } @else {
               <div class="method-cell">
@@ -148,10 +159,10 @@
             }
           </td>
           <td>
-            <cf-avatar [holder]="tx.holder === 'shared' ? 'Mateus' : tx.holder" [size]="16" />
+            <cf-avatar [holder]="row.holder === 'shared' ? 'Mateus' : row.holder" [size]="16" />
           </td>
           <td class="r num tx-val">
-            <cf-money [value]="tx.value" [negColor]="false" />
+            <cf-money [value]="row.value" [negColor]="false" />
           </td>
         </tr>
       }
@@ -159,24 +170,31 @@
   </table>
   } @else {
   <div class="dsh-cards">
-    @for (tx of recentTx(); track tx.id) {
-      <div class="dsh-card">
+    @for (row of recentRows(); track row.kind + row.id) {
+      <div class="dsh-card" [class.row-pending]="row.kind === 'fixed'">
         <div class="dshc-main">
-          <span class="dshc-label">{{ tx.label }}</span>
-          <cf-money [value]="tx.value" [negColor]="false" />
+          <span class="dshc-label">
+            {{ row.kind === 'tx' ? row.tx.label : row.fixed.label }}
+          </span>
+          <cf-money [value]="row.value" [negColor]="false" />
         </div>
         <div class="dshc-meta">
-          <span class="dshc-tag num">{{ formatDate(tx.date) }}</span>
-          <span class="dshc-tag">
-            <cf-cat-dot [catId]="tx.cat" [size]="6" /> {{ catLabel(tx.cat) }}
-          </span>
-          @if (cardOf(tx.method); as card) {
-            <span class="dshc-tag num">···{{ card.last4 }}</span>
-          } @else {
-            <span class="dshc-tag">Pix</span>
+          <span class="dshc-tag num">{{ formatDate(row.date) }}</span>
+          @if (row.kind === 'fixed') {
+            <span class="dshc-tag tag-pending">a pagar</span>
           }
           <span class="dshc-tag">
-            {{ tx.holder === 'shared' ? 'Compartilhado' : tx.holder }}
+            <cf-cat-dot [catId]="row.cat" [size]="6" /> {{ catLabel(row.cat) }}
+          </span>
+          @if (row.kind === 'tx') {
+            @if (cardOf(row.tx.method); as card) {
+              <span class="dshc-tag num">···{{ card.last4 }}</span>
+            } @else {
+              <span class="dshc-tag">Pix</span>
+            }
+          }
+          <span class="dshc-tag">
+            {{ row.holder === 'shared' ? 'Compartilhado' : row.holder }}
           </span>
         </div>
       </div>

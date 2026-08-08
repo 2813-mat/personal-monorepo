@@ -100,7 +100,8 @@ describe('ExpenseDrawerComponent — fixed type', () => {
         due: 5,
         cat: 'casa',
         holder: 'shared',
-        paidThisMonth: false,
+        // Vazio: o servidor resolve a vigência como o mês corrente.
+        startDate: '',
       }),
     );
     expect(data.createTransaction).not.toHaveBeenCalled();

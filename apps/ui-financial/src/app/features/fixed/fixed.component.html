@@ -67,7 +67,7 @@
           <th style="width:110px">Categoria</th>
           <th style="width:60px">Quem</th>
           <th class="r" style="width:100px">Valor</th>
-          <th style="width:84px"></th>
+          <th style="width:116px"></th>
         </tr>
       </thead>
       <tbody>
@@ -76,17 +76,19 @@
             <td>
               <div class="due-cell">
                 <span class="num date-label">{{ formatDay(f.due) }}</span>
-                <span class="num days-away">{{ formatDaysAway(f.due) }}</span>
+                @if (isCurrentMonth()) {
+                  <span class="num days-away">{{ formatDaysAway(f.due) }}</span>
+                }
               </div>
             </td>
             <td>
               <div class="desc-cell">
                 <cf-icon name="repeat" [size]="11" color="var(--ink-4)" />
                 <span>{{ f.label }}</span>
-                @if (daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
+                @if (isCurrentMonth() && daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
                   <span class="pill warn">urgente</span>
                 }
-                @if (daysAway(f.due) < 0) {
+                @if (isCurrentMonth() && daysAway(f.due) < 0) {
                   <span class="pill neg">vencido</span>
                 }
               </div>
@@ -111,6 +113,10 @@
               <cf-money [value]="f.value" [negColor]="false" />
             </td>
             <td class="act-cell">
+              <button type="button" class="icon-btn btn-pos" (click)="payingFixed.set(f)"
+                [disabled]="!auth.canWrite()" aria-label="Marcar como pago">
+                <cf-icon name="check" [size]="11" />
+              </button>
               <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />
@@ -139,19 +145,23 @@
           </div>
           <div class="fxc-meta">
             <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
-            <span class="fxc-tag num">{{ formatDaysAway(f.due) }}</span>
+            @if (isCurrentMonth()) {
+              <span class="fxc-tag num">{{ formatDaysAway(f.due) }}</span>
+            }
             <span class="fxc-tag">
               <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
             </span>
             <span class="fxc-tag">
               {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
             </span>
-            @if (daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
+            @if (isCurrentMonth() && daysAway(f.due) >= 0 && daysAway(f.due) <= 3) {
               <span class="pill warn">urgente</span>
             }
-            @if (daysAway(f.due) < 0) {
+            @if (isCurrentMonth() && daysAway(f.due) < 0) {
               <span class="pill neg">vencido</span>
             }
+            <button type="button" class="fxc-tag pos" (click)="payingFixed.set(f)"
+              [disabled]="!auth.canWrite()">Pagar</button>
             <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
               [disabled]="!auth.canWrite()">Editar</button>
             <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
@@ -178,7 +188,7 @@
         <span class="card-title">Pagos no mês</span>
         <span class="pill pos">{{ paidItems().length }}</span>
       </div>
-      <span class="card-meta">automático via boleto/PIX</span>
+      <span class="card-meta">ordenado por data do pagamento</span>
     </div>
 
     @if (vp.isDesktop()) {
@@ -199,7 +209,9 @@
             <td>
               <div class="paid-date">
                 <cf-icon name="check" [size]="11" color="var(--pos)" />
-                <span class="num date-label">{{ formatDay(f.due) }}</span>
+                @if (f.paidAt; as pago) {
+                  <span class="num date-label">{{ formatPaidAt(pago) }}</span>
+                }
               </div>
             </td>
             <td>
@@ -225,16 +237,19 @@
               }
             </td>
             <td class="r num paid-value">
-              <cf-money [value]="f.value" [negColor]="false" />
+              <cf-money [value]="f.paidValue ?? f.value" [negColor]="false" />
+              @if (valueDiverged(f)) {
+                <span class="value-diff">cadastro R$ {{ f.value }}</span>
+              }
             </td>
             <td class="act-cell">
+              <button type="button" class="icon-btn" (click)="askUnpay(f)"
+                [disabled]="!auth.canWrite()" aria-label="Desfazer pagamento">
+                <cf-icon name="repeat" [size]="11" />
+              </button>
               <button type="button" class="icon-btn" (click)="editingFixed.set(f)"
                 [disabled]="!auth.canWrite()" aria-label="Editar gasto fixo">
                 <cf-icon name="settings" [size]="11" />
-              </button>
-              <button type="button" class="icon-btn btn-neg" (click)="askRemove(f.id)"
-                [disabled]="!auth.canWrite()" aria-label="Remover gasto fixo">
-                <cf-icon name="x" [size]="11" />
               </button>
             </td>
           </tr>
@@ -249,20 +264,25 @@
             <span class="fxc-label">
               <cf-icon name="check" [size]="11" color="var(--pos)" /> {{ f.label }}
             </span>
-            <cf-money [value]="f.value" [negColor]="false" />
+            <cf-money [value]="f.paidValue ?? f.value" [negColor]="false" />
           </div>
           <div class="fxc-meta">
-            <span class="fxc-tag num">{{ formatDay(f.due) }}</span>
+            @if (f.paidAt; as pago) {
+              <span class="fxc-tag num">pago {{ formatPaidAt(pago) }}</span>
+            }
             <span class="fxc-tag">
               <cf-cat-dot [catId]="f.cat" [size]="6" /> {{ catLabel(f.cat) }}
             </span>
             <span class="fxc-tag">
               {{ f.holder === 'shared' ? 'Compartilhado' : f.holder }}
             </span>
+            @if (valueDiverged(f)) {
+              <span class="fxc-tag">cadastro R$ {{ f.value }}</span>
+            }
+            <button type="button" class="fxc-tag" (click)="askUnpay(f)"
+              [disabled]="!auth.canWrite()">Desfazer</button>
             <button type="button" class="fxc-tag" (click)="editingFixed.set(f)"
               [disabled]="!auth.canWrite()">Editar</button>
-            <button type="button" class="fxc-tag neg" (click)="askRemove(f.id)"
-              [disabled]="!auth.canWrite()">Remover</button>
           </div>
         </div>
       }
@@ -280,6 +300,10 @@
   <cf-fixed-edit-drawer [fixed]="f" (closed)="editingFixed.set(null)" />
 }
 
+@if (payingFixed(); as f) {
+  <cf-fixed-pay-drawer [fixed]="f" (closed)="payingFixed.set(null)" />
+}
+
 @if (confirmingRemoval()) {
   <cf-confirm-modal
     title="Remover gasto fixo?"
@@ -288,5 +312,16 @@
     [danger]="true"
     (confirmed)="confirmRemove()"
     (cancelled)="cancelRemove()"
+  />
+}
+
+@if (confirmingUnpay()) {
+  <cf-confirm-modal
+    title="Desfazer o pagamento?"
+    description="O lançamento deste pagamento será apagado do extrato, e a conta volta para 'a vencer' neste mês."
+    confirmLabel="Desfazer"
+    [danger]="true"
+    (confirmed)="confirmUnpay()"
+    (cancelled)="cancelUnpay()"
   />
 }

@@ -1,9 +1,22 @@
-import type { FixedExpense, Holder } from '@caixa-familia/shared-types';
+import type {
+  FixedExpense,
+  Holder,
+  IsoDate,
+  PaymentMethod,
+} from '@caixa-familia/shared-types';
 import type {
   FixedExpenseWire,
   CreateFixedExpenseWire,
   UpdateFixedExpenseWire,
+  PayFixedExpenseWire,
 } from './wire.types';
+
+/** O que a tela coleta para quitar um fixo. `value` ausente = o do cadastro. */
+export interface FixedPayment {
+  date: IsoDate;
+  value?: number;
+  method: PaymentMethod;
+}
 
 export function wireToFixed(w: FixedExpenseWire): FixedExpense {
   return {
@@ -13,11 +26,13 @@ export function wireToFixed(w: FixedExpenseWire): FixedExpense {
     due: w.dueDay,
     cat: w.categorySlug,
     holder: w.holder as Holder,
-    paidThisMonth: w.paidThisMonth,
+    startDate: w.startDate,
+    paidAt: w.paidAt,
+    paidValue: w.paidValue,
   };
 }
 
-/** `paidThisMonth` fica de fora: deriva dos lançamentos do mês, não é editável. */
+/** `paidAt`/`paidValue` ficam de fora: pagamento tem endpoint próprio. */
 export function fixedToUpdateWire(f: FixedExpense): UpdateFixedExpenseWire {
   return {
     label: f.label,
@@ -25,6 +40,7 @@ export function fixedToUpdateWire(f: FixedExpense): UpdateFixedExpenseWire {
     dueDay: f.due,
     categorySlug: f.cat,
     holder: f.holder,
+    startDate: f.startDate,
   };
 }
 
@@ -35,5 +51,19 @@ export function fixedToCreateWire(f: FixedExpense): CreateFixedExpenseWire {
     dueDay: f.due,
     categorySlug: f.cat,
     holder: f.holder,
+    // Vazio = deixa o servidor usar o mês corrente. Mandar '' quebraria o
+    // IsDateString do DTO em vez de cair no default.
+    startDate: f.startDate || undefined,
+  };
+}
+
+/** `method` na UI é o id do cartão ou `'pix'`; o wire separa tipo e cartão. */
+export function fixedPaymentToWire(p: FixedPayment): PayFixedExpenseWire {
+  const isPix = p.method === 'pix';
+  return {
+    date: p.date,
+    value: p.value,
+    method: isPix ? 'PIX' : 'CARD',
+    cardId: isPix ? undefined : p.method,
   };
 }

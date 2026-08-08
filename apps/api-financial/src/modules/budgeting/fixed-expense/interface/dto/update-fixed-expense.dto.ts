@@ -1,4 +1,4 @@
-import { IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateFixedExpenseDto {
   @IsOptional() @IsString() label?: string;
@@ -6,4 +6,5 @@ export class UpdateFixedExpenseDto {
   @IsOptional() @IsInt() @Min(1) @Max(31) dueDay?: number;
   @IsOptional() @IsString() categorySlug?: string;
   @IsOptional() @IsString() holder?: string;
+  @IsOptional() @IsDateString() startDate?: string;
 }

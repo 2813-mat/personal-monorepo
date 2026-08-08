@@ -4,6 +4,8 @@ import { ListFixedExpensesUseCase } from './fixed-expense/application/list-fixed
 import { CreateFixedExpenseUseCase } from './fixed-expense/application/create-fixed-expense.usecase';
 import { UpdateFixedExpenseUseCase } from './fixed-expense/application/update-fixed-expense.usecase';
 import { RemoveFixedExpenseUseCase } from './fixed-expense/application/remove-fixed-expense.usecase';
+import { PayFixedExpenseUseCase } from './fixed-expense/application/pay-fixed-expense.usecase';
+import { UnpayFixedExpenseUseCase } from './fixed-expense/application/unpay-fixed-expense.usecase';
 import { FixedExpenseRepository } from './fixed-expense/domain/fixed-expense.repository';
 import { FixedExpensePrismaRepository } from './fixed-expense/infrastructure/fixed-expense.prisma.repository';
 
@@ -14,6 +16,8 @@ import { FixedExpensePrismaRepository } from './fixed-expense/infrastructure/fix
     CreateFixedExpenseUseCase,
     UpdateFixedExpenseUseCase,
     RemoveFixedExpenseUseCase,
+    PayFixedExpenseUseCase,
+    UnpayFixedExpenseUseCase,
     { provide: FixedExpenseRepository, useClass: FixedExpensePrismaRepository },
   ],
 })

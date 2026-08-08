@@ -8,7 +8,7 @@ const view = {
   dueDay: 10,
   categorySlug: 'casa',
   holder: 'shared',
-  paidThisMonth: false,
+  startDate: '2026-01-01',
 };
 
 function setup(result: typeof view | null) {
@@ -22,7 +22,7 @@ describe('UpdateFixedExpenseUseCase', () => {
     await expect(uc.execute('f1', { value: 200 })).resolves.toMatchObject({ id: 'f1' });
   });
 
-  it('passa o mês corrente ao repositório, porque paidThisMonth depende dele', async () => {
+  it('passa o mês corrente ao repositório, porque o pagamento depende dele', async () => {
     const { uc, repo } = setup(view);
     const now = new Date();
     await uc.execute('f1', { value: 200 });

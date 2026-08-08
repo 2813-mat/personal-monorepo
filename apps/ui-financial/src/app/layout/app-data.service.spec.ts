@@ -45,7 +45,8 @@ const fixedWire: FixedExpenseWire = {
   dueDay: 5,
   categorySlug: 'casa',
   holder: 'Mateus',
-  paidThisMonth: true,
+  startDate: '2026-01-01',
+  paidAt: '2026-05-06',
 };
 
 const goalWire: GoalWire = {
@@ -191,7 +192,7 @@ describe('AppDataService.loadFixed', () => {
       due: 5,
       cat: 'casa',
       holder: 'Mateus',
-      paidThisMonth: true,
+      paidAt: '2026-05-06',
     });
     expect(svc.fixedLoading()).toBe(false);
   });
@@ -212,7 +213,7 @@ describe('AppDataService.createFixed', () => {
       due: 15,
       cat: 'assin',
       holder: 'shared',
-      paidThisMonth: false,
+      startDate: '',
     });
     expect(fixApi.create).toHaveBeenCalledWith(
       expect.objectContaining({

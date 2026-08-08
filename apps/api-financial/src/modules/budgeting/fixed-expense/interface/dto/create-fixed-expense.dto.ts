@@ -1,4 +1,4 @@
-import { IsInt, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateFixedExpenseDto {
   @IsString() label!: string;
@@ -6,4 +6,6 @@ export class CreateFixedExpenseDto {
   @IsInt() @Min(1) @Max(31) dueDay!: number;
   @IsString() categorySlug!: string;
   @IsString() holder!: string;
+  /** Primeiro mês em que a conta é devida. Ausente = mês corrente. */
+  @IsOptional() @IsDateString() startDate?: string;
 }

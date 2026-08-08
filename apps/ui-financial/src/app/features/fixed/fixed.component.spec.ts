@@ -7,9 +7,10 @@ import { AuthService } from '../../core/auth/auth.service';
 import type { FixedExpense, Transaction, Income, Category } from '@caixa-familia/shared-types';
 
 const FIXED: FixedExpense[] = [
-  { id: 'f1', label: 'Conta A', value: 100, due: 5,  cat: 'casa',  holder: 'shared', paidThisMonth: true  },
-  { id: 'f2', label: 'Conta B', value: 200, due: 15, cat: 'assin', holder: 'Mateus', paidThisMonth: false },
-  { id: 'f3', label: 'Conta C', value: 300, due: 25, cat: 'educ',  holder: 'Thais',  paidThisMonth: false },
+  // Pago com valor acima do cadastro: é o pago que os totais somam.
+  { id: 'f1', label: 'Conta A', value: 100, due: 5,  cat: 'casa',  holder: 'shared', startDate: '2026-01-01', paidAt: '2026-05-06', paidValue: 115 },
+  { id: 'f2', label: 'Conta B', value: 200, due: 15, cat: 'assin', holder: 'Mateus', startDate: '2026-01-01' },
+  { id: 'f3', label: 'Conta C', value: 300, due: 25, cat: 'educ',  holder: 'Thais',  startDate: '2026-01-01' },
 ];
 
 const TRANSACTIONS: Transaction[] = [
@@ -37,6 +38,9 @@ function mockDataService() {
     transactions: signal(TRANSACTIONS),
     incomes: signal(INCOMES),
     catBy: signal(CAT_BY),
+    categories: signal(Object.values(CAT_BY)),
+    activeCards: signal([]),
+    currentMonth: signal({ year: 2026, month: 5, label: 'Maio 2026', short: 'Mai/26' }),
   };
 }
 
@@ -58,13 +62,13 @@ describe('FixedComponent', () => {
   });
 
   describe('paidItems', () => {
-    it('includes only fixed items flagged as paid this month', () => {
+    it('includes only fixed items with a payment date', () => {
       expect(component.paidItems().map(f => f.id)).toEqual(['f1']);
     });
 
     it('ignores transaction values entirely', () => {
-      // t3 is recurring with value 200 = f2.value; only paidThisMonth decides,
-      // so f2 must stay pending
+      // t3 is recurring with value 200 = f2.value; only paidAt decides, so f2
+      // must stay pending.
       expect(component.paidItems().map(f => f.id)).not.toContain('f2');
     });
   });
@@ -85,8 +89,8 @@ describe('FixedComponent', () => {
       expect(component.totalFixed()).toBeCloseTo(600);
     });
 
-    it('totalPaid is sum of paid item values', () => {
-      expect(component.totalPaid()).toBeCloseTo(100);
+    it('totalPaid usa o valor pago, não o do cadastro', () => {
+      expect(component.totalPaid()).toBeCloseTo(115);
     });
 
     it('totalPending is sum of pending item values', () => {
@@ -98,6 +102,20 @@ describe('FixedComponent', () => {
     });
   });
 
+  describe('valueDiverged', () => {
+    it('acusa a conta que veio diferente do cadastro', () => {
+      expect(component.valueDiverged(FIXED[0])).toBe(true);
+    });
+
+    it('fica falso para o fixo pendente', () => {
+      expect(component.valueDiverged(FIXED[1])).toBe(false);
+    });
+
+    it('fica falso quando o pago bateu com o cadastro', () => {
+      expect(component.valueDiverged({ ...FIXED[0], paidValue: 100 })).toBe(false);
+    });
+  });
+
   describe('formatPercent', () => {
     it('formats ratio as integer percent string', () => {
       expect(component.formatPercent(0.6)).toBe('60%');
@@ -106,9 +124,51 @@ describe('FixedComponent', () => {
   });
 
   describe('formatDay', () => {
-    it('zero-pads day and appends /mai', () => {
+    it('usa o mês que está sendo visto, não um mês fixo no código', () => {
       expect(component.formatDay(5)).toBe('05/mai');
       expect(component.formatDay(25)).toBe('25/mai');
+    });
+  });
+
+  describe('formatDay ao navegar de mês', () => {
+    it('acompanha o mês da topbar em vez de dizer sempre "mai"', () => {
+      // Regressão do bug visto em produção: um fixo com dueDay 7 aparecia como
+      // "07/mai" com a topbar em Agosto 2026, porque o sufixo era literal.
+      const data = mockDataService();
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [FixedComponent],
+        providers: [
+          { provide: AppDataService, useValue: data },
+          { provide: AuthService, useValue: { canWrite: signal(true) } },
+        ],
+      });
+      const c = TestBed.createComponent(FixedComponent).componentInstance;
+
+      data.currentMonth.set({ year: 2026, month: 8, label: 'Agosto 2026', short: 'Ago/26' });
+      expect(c.formatDay(7)).toBe('07/ago');
+      expect(c.formatDay(10)).toBe('10/ago');
+
+      data.currentMonth.set({ year: 2026, month: 12, label: 'Dezembro 2026', short: 'Dez/26' });
+      expect(c.formatDay(7)).toBe('07/dez');
+    });
+  });
+
+  describe('formatPaidAt', () => {
+    it('lê o ISO como data civil, sem deslocar por fuso', () => {
+      expect(component.formatPaidAt('2026-08-06')).toBe('06/ago');
+      expect(component.formatPaidAt('2026-01-01')).toBe('01/jan');
+    });
+  });
+
+  describe('isCurrentMonth', () => {
+    it('é falso quando o mês visto não é o de hoje', () => {
+      // O mock navega para mai/2026; "vence em N dias" não vale para outro mês.
+      expect(component.isCurrentMonth()).toBe(false);
+    });
+
+    it('zera o contador de próximos 7 dias fora do mês corrente', () => {
+      expect(component.upcoming7()).toBe(0);
     });
   });
 });
@@ -147,11 +207,18 @@ describe('FixedComponent — responsive rendering', () => {
     expect(lists[0].querySelectorAll('.fx-card').length).toBe(2);
     expect(lists[1].querySelectorAll('.fx-card').length).toBe(1);
   });
+
+  it('mostra a data real do pagamento, não o dia de vencimento', () => {
+    const el = buildResponsive(true);
+    // f1 vence dia 5 e foi pago dia 6: a coluna tem de dizer 06.
+    const pagos = el.querySelectorAll('table.tx-table')[1];
+    expect(pagos.querySelector('.paid-date')?.textContent).toContain('06/mai');
+  });
 });
 
 /** No molde do buildResponsive acima, mas devolvendo o mock para as asserções. */
 function buildFixed() {
-  const data = { ...mockDataService(), removeFixed: jest.fn() };
+  const data = { ...mockDataService(), removeFixed: jest.fn(), unpayFixed: jest.fn() };
   TestBed.configureTestingModule({
     imports: [FixedComponent],
     providers: [
@@ -186,5 +253,30 @@ describe('FixedComponent — remover', () => {
     component.cancelRemove();
     expect(data.removeFixed).not.toHaveBeenCalled();
     expect(component.confirmingRemoval()).toBeNull();
+  });
+});
+
+describe('FixedComponent — desfazer pagamento', () => {
+  it('pede confirmação antes de desfazer, porque apaga um lançamento', () => {
+    const { component, data } = buildFixed();
+    component.askUnpay(FIXED[0]);
+    expect(component.confirmingUnpay()?.id).toBe('f1');
+    expect(data.unpayFixed).not.toHaveBeenCalled();
+  });
+
+  it('desfaz ao confirmar', () => {
+    const { component, data } = buildFixed();
+    component.askUnpay(FIXED[0]);
+    component.confirmUnpay();
+    expect(data.unpayFixed).toHaveBeenCalledWith('f1');
+    expect(component.confirmingUnpay()).toBeNull();
+  });
+
+  it('não desfaz ao cancelar', () => {
+    const { component, data } = buildFixed();
+    component.askUnpay(FIXED[0]);
+    component.cancelUnpay();
+    expect(data.unpayFixed).not.toHaveBeenCalled();
+    expect(component.confirmingUnpay()).toBeNull();
   });
 });

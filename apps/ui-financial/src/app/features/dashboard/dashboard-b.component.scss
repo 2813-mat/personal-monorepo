@@ -68,6 +68,18 @@
 .method-cell { display:flex; align-items:center; gap:5px; }
 .last4 { font-size:11px; color:var(--ink-4); }
 
+/* Fixo que ainda vai vencer: é previsão, não fato. A borda à esquerda separa os
+   dois grupos sem precisar de um cabeçalho no meio da tabela. */
+.row-pending {
+  background: var(--surface-sunk);
+  box-shadow: inset 2px 0 0 var(--warn);
+}
+.pill-pending, .tag-pending {
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-color: var(--warn-soft);
+}
+
 /* ── Celular ────────────────────────────────────────────────────────────────
    A tabela de 6 colunas vira lista de cards; as tabelas sem cabeçalho
    (faturas abertas) já leem como lista e só empilham com o grid. */

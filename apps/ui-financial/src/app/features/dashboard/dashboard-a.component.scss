@@ -48,6 +48,18 @@
 .method-cell { display:flex; align-items:center; gap:5px; }
 .last4 { font-size:11px; color:var(--ink-4); }
 
+/* Fixo que ainda vai vencer: é previsão, não fato. A borda à esquerda separa os
+   dois grupos sem precisar de um cabeçalho no meio da tabela. */
+.row-pending {
+  background: var(--surface-sunk);
+  box-shadow: inset 2px 0 0 var(--warn);
+}
+.pill-pending, .tag-pending {
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-color: var(--warn-soft);
+}
+
 /* Card table rows */
 .card-stripe { display:inline-block; width:3px; height:22px; }
 .card-bank { font-size:12px; font-weight:500; color:var(--ink-1); }

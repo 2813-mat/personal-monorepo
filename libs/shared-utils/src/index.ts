@@ -3,3 +3,4 @@ export * from './lib/card';
 export * from './lib/slug';
 export * from './lib/month';
 export * from './lib/holder';
+export * from './lib/fixed';

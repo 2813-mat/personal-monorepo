@@ -26,6 +26,8 @@ export class FixedEditDrawerComponent {
     }),
     cat: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     holder: new FormControl<Holder>('shared', { nonNullable: true }),
+    /** Competência, não data: o input é `month` e o dia é sempre o dia 1. */
+    startMonth: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
   constructor() {
@@ -37,6 +39,7 @@ export class FixedEditDrawerComponent {
         due: f.due,
         cat: f.cat,
         holder: f.holder,
+        startMonth: f.startDate.slice(0, 7),
       });
       this.form.markAsPristine();
     });
@@ -44,8 +47,10 @@ export class FixedEditDrawerComponent {
 
   save() {
     if (this.form.invalid) return;
-    // paidThisMonth é derivado e sobrevive pelo espalhamento do original.
-    this.data.updateFixed({ ...this.fixed(), ...this.form.getRawValue() });
+    const { startMonth, ...campos } = this.form.getRawValue();
+    // `paidAt`/`paidValue` são do mês consultado e sobrevivem pelo espalhamento
+    // do original; o update não os aceita.
+    this.data.updateFixed({ ...this.fixed(), ...campos, startDate: `${startMonth}-01` });
     this.closed.emit();
   }
 }
