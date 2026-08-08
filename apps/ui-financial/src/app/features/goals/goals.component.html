@@ -41,13 +41,33 @@
 </div>
 
 <!-- Goal cards -->
-<div class="cards-grid">
-  @for (goal of goals(); track goal.id) {
-    <cf-goal-card [goal]="goal" />
-  }
+<div class="section-head">
+  <span class="section-title">Suas metas</span>
+  <button type="button" class="head-btn" [disabled]="!auth.canWrite()" (click)="creating.set(true)">
+    <cf-icon name="plus" [size]="11" /> Nova meta
+  </button>
 </div>
 
+@if (isEmpty()) {
+  <div class="panel goals-empty">
+    <cf-empty-state
+      icon="target"
+      title="Nenhuma meta ainda"
+      description="Crie a primeira meta para começar a acompanhar quanto já foi guardado."
+      [actions]="emptyActions()"
+      (actionClick)="creating.set(true)"
+    />
+  </div>
+} @else {
+  <div class="cards-grid">
+    @for (goal of goals(); track goal.id) {
+      <cf-goal-card [goal]="goal" />
+    }
+  </div>
+}
+
 <!-- Projection table -->
+@if (!isEmpty()) {
 <div class="panel">
   <div class="panel-head">
     <span class="panel-title">Projeção · próximos 12 meses</span>
@@ -99,3 +119,8 @@
   </table>
   </div>
 </div>
+}
+
+@if (creating()) {
+  <cf-goal-edit-drawer (closed)="creating.set(false)" />
+}

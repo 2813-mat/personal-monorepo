@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import type { Goal } from '@caixa-familia/shared-types';
 import { GoalApiService } from '../api/goal-api.service';
-import { wireToGoal, goalToUpdateWire } from '../api/goal.mapper';
+import { wireToGoal, goalToCreateWire, goalToUpdateWire, type NewGoal } from '../api/goal.mapper';
 import { FailureReporter } from './failure.reporter';
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +25,13 @@ export class GoalStore {
         this.failure.report('Falha ao carregar metas', this.error);
         this.loading.set(false);
       },
+    });
+  }
+
+  create(g: NewGoal): void {
+    this.api.create(goalToCreateWire(g)).subscribe({
+      next: () => this.load(),
+      error: () => this.failure.report('Falha ao criar meta', this.error),
     });
   }
 

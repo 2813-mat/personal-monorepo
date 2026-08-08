@@ -34,4 +34,5 @@ export const toView = (g: GoalRow, ref: Date = new Date()): GoalView => ({
   type: g.type,
   balance: g.contributions.reduce((s, c) => s + Number(c.amount), 0),
   history: monthlyHistory(g.contributions, ref),
+  contributionCount: g.contributions.length,
 });

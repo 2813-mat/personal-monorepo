@@ -3,7 +3,7 @@
 
 <aside class="panel" [formGroup]="form">
   <header class="drawer-head">
-    <span class="head-title">Editar meta</span>
+    <span class="head-title">{{ isEditing() ? 'Editar meta' : 'Nova meta' }}</span>
     <button type="button" class="close-btn" (click)="closed.emit()" aria-label="Fechar">
       <cf-icon name="x" [size]="14" />
     </button>
@@ -22,8 +22,8 @@
     <label class="label mt" for="goal-monthly">Aporte por mês</label>
     <input id="goal-monthly" class="text-input" type="number" formControlName="monthly" />
 
-    <label class="label mt" for="goal-color">Cor</label>
-    <input id="goal-color" class="text-input" formControlName="color" />
+    <div class="label mt">Cor</div>
+    <cf-color-picker formControlName="color" [palette]="paleta" inputId="goal-color" />
 
     <label class="label mt" for="goal-type">Tipo</label>
     <select id="goal-type" class="text-input" formControlName="type">
@@ -33,9 +33,9 @@
   </div>
 
   <footer class="drawer-foot">
-    <span class="foot-hint">{{ goal().id }}</span>
+    <span class="foot-hint">{{ goal()?.id }}</span>
     <button type="button" class="save-btn" [disabled]="form.invalid || form.pristine" (click)="save()">
-      Salvar
+      {{ isEditing() ? 'Salvar' : 'Criar meta' }}
     </button>
   </footer>
 </aside>

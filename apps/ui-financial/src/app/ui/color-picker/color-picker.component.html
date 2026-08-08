@@ -1,0 +1,26 @@
+<div class="swatches">
+  @for (c of palette(); track c.hex) {
+    <button
+      type="button"
+      class="swatch"
+      [class.active]="isSelected(c.hex)"
+      [style.background]="c.hex"
+      [title]="c.nome"
+      [attr.aria-label]="c.nome"
+      [attr.aria-pressed]="isSelected(c.hex)"
+      (click)="pick(c.hex)"
+    ></button>
+  }
+</div>
+<label class="color-custom" [attr.for]="inputId()">
+  <input
+    [id]="inputId()"
+    type="color"
+    class="color-native"
+    [value]="value()"
+    (input)="pickNative($event)"
+    (blur)="onTouched()"
+  />
+  <span class="color-hint">Outra cor</span>
+  <span class="color-hex">{{ value() }}</span>
+</label>

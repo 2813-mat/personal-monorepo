@@ -4,11 +4,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
+RUN npm ci
+
 COPY nx.json tsconfig.base.json ./
 COPY libs ./libs
 COPY apps/api-financial ./apps/api-financial
-
-RUN npm ci
 
 RUN npx prisma generate --schema=apps/api-financial/src/infrastructure/prisma/schema.prisma
 

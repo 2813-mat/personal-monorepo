@@ -7,15 +7,26 @@
       "name": "Debug api-financial with Nx",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["nx", "serve", "api-financial"],
-      "env": {
-        "NODE_OPTIONS": "--inspect=9229"
-      },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
+      "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/api-financial/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/dist/apps/api-financial/**/*.js",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to api-financial (nx serve rodando)",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/dist/apps/api-financial/**/*.js",
         "!**/node_modules/**"
       ]
     }

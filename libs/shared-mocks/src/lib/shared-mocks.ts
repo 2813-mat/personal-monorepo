@@ -60,6 +60,7 @@ export const MOCK_GOALS: Goal[] = [
     subtitle: 'evento · agosto/2027',
     type: 'sonho',
     history: [500, 500, 500, 600, 600, 700, 700, 800, 800, 800, 800, 800],
+    contributionCount: 12,
   },
   {
     id: 'sos',
@@ -71,6 +72,7 @@ export const MOCK_GOALS: Goal[] = [
     subtitle: 'emergência · 6 meses de despesas',
     type: 'emergencia',
     history: [200, 200, 300, 300, 300, 300, 300, 300, 500, 800, 1000, 1000],
+    contributionCount: 12,
   },
 ];
 

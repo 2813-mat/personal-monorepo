@@ -3,12 +3,10 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import type { Card, Holder } from '@caixa-familia/shared-types';
 import { AppDataService } from '../../layout/app-data.service';
 import { IconComponent } from '../../ui/icon/icon.component';
+import { ColorPickerComponent, type ColorOption } from '../../ui/color-picker/color-picker.component';
 
-/**
- * Cores de marca dos bancos que a gente usa, mais alguns neutros. Ninguém sabe
- * hexadecimal de cabeça: o campo livre só existe atrás do seletor nativo.
- */
-const PALETA = [
+/** Cores de marca dos bancos que a gente usa, mais alguns neutros. */
+const PALETA: readonly ColorOption[] = [
   { hex: '#820AD1', nome: 'Roxo Nubank' },
   { hex: '#FF7A00', nome: 'Laranja Inter' },
   { hex: '#EC7000', nome: 'Laranja Itaú' },
@@ -37,7 +35,7 @@ const VAZIO = {
 @Component({
   selector: 'cf-card-edit-drawer',
   standalone: true,
-  imports: [ReactiveFormsModule, IconComponent],
+  imports: [ReactiveFormsModule, IconComponent, ColorPickerComponent],
   templateUrl: './card-edit-drawer.component.html',
   styleUrl: './card-edit-drawer.component.scss',
 })
@@ -95,17 +93,6 @@ export class CardEditDrawerComponent {
       );
       this.form.markAsPristine();
     });
-  }
-
-  /** O seletor nativo devolve minúsculo; o cartão salvo pode estar maiúsculo. */
-  protected isSelected(hex: string) {
-    return this.form.controls.color.value.toUpperCase() === hex.toUpperCase();
-  }
-
-  protected pickColor(hex: string) {
-    this.form.controls.color.setValue(hex);
-    // setValue sozinho não suja o form, e Salvar depende de dirty.
-    this.form.controls.color.markAsDirty();
   }
 
   save() {

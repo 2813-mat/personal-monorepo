@@ -4,11 +4,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
+RUN npm ci
+
 COPY nx.json tsconfig.base.json ./
 COPY libs ./libs
 COPY apps/ui-financial ./apps/ui-financial
-
-RUN npm ci
 
 RUN npx nx build ui-financial --configuration=production
 

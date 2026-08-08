@@ -17,25 +17,7 @@
     <input id="card-bank" class="text-input" formControlName="bank" />
 
     <div class="label mt">Cor</div>
-    <div class="swatches">
-      @for (c of paleta; track c.hex) {
-        <button
-          type="button"
-          class="swatch"
-          [class.active]="isSelected(c.hex)"
-          [style.background]="c.hex"
-          [title]="c.nome"
-          [attr.aria-label]="c.nome"
-          [attr.aria-pressed]="isSelected(c.hex)"
-          (click)="pickColor(c.hex)"
-        ></button>
-      }
-    </div>
-    <label class="color-custom" for="card-color">
-      <input id="card-color" type="color" class="color-native" formControlName="color" />
-      <span class="color-hint">Outra cor</span>
-      <span class="color-hex">{{ form.controls.color.value }}</span>
-    </label>
+    <cf-color-picker formControlName="color" [palette]="paleta" inputId="card-color" />
 
     <label class="label mt" for="card-last4">Últimos 4 dígitos</label>
     <input id="card-last4" class="text-input" formControlName="last4" inputmode="numeric"

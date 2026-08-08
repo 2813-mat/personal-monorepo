@@ -13,8 +13,25 @@
 .kpi-value { font-size: 22px; font-weight: 700; color: var(--ink-1); }
 .kpi-sub { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
 
+/* Cabeçalho da lista de metas */
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.section-title {
+  font-size: 11px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600;
+}
+.head-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 32px; padding: 0 10px;
+  border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink-2); font-family: inherit; font-size: 11px; cursor: pointer;
+}
+.head-btn:disabled { opacity: 0.4; cursor: default; }
+
 /* Cards grid */
 .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+/* O miolo é o cf-empty-state; o painel só dá a moldura das outras seções. */
+.goals-empty { margin-bottom: 12px; }
 
 /* Projection table */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }

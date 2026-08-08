@@ -40,6 +40,86 @@ describe('GoalPrismaRepository.addContribution', () => {
   });
 });
 
+describe('GoalPrismaRepository.create', () => {
+  const DADOS = {
+    label: 'Reserva de emergência',
+    subtitle: '6 meses',
+    target: 30000,
+    monthly: 800,
+    color: '#0B6E2F',
+    type: 'EMERGENCIA' as const,
+  };
+
+  function setupCreate(existentes: string[]) {
+    const prisma = {
+      goal: {
+        findMany: jest.fn(async (_args: WhereArg) => existentes.map((slug) => ({ slug }))),
+        create: jest.fn(async (args: { data: Record<string, unknown> }) => ({
+          id: 'cuid-1',
+          householdId: 'h1',
+          ...args.data,
+          contributions: [],
+        })),
+      },
+    };
+    const repo = new GoalPrismaRepository(prisma as never, { householdId: 'h1' } as never);
+    return { repo, prisma };
+  }
+
+  const slugCriado = (prisma: { goal: { create: jest.Mock } }) =>
+    prisma.goal.create.mock.calls[0][0].data.slug;
+
+  it('deriva o slug do label', async () => {
+    const { repo, prisma } = setupCreate([]);
+    await repo.create(DADOS);
+    expect(slugCriado(prisma)).toBe('reserva-de-emergencia');
+  });
+
+  it('acrescenta sufixo quando o slug já existe no household', async () => {
+    const { repo, prisma } = setupCreate(['reserva-de-emergencia']);
+    await repo.create(DADOS);
+    expect(slugCriado(prisma)).toBe('reserva-de-emergencia-2');
+  });
+
+  it('pula os sufixos já ocupados', async () => {
+    const { repo, prisma } = setupCreate([
+      'reserva-de-emergencia',
+      'reserva-de-emergencia-2',
+      'reserva-de-emergencia-3',
+    ]);
+    await repo.create(DADOS);
+    expect(slugCriado(prisma)).toBe('reserva-de-emergencia-4');
+  });
+
+  it('ignora slugs que só compartilham o prefixo', async () => {
+    const { repo, prisma } = setupCreate(['reserva-de-emergencia-do-carro']);
+    await repo.create(DADOS);
+    expect(slugCriado(prisma)).toBe('reserva-de-emergencia');
+  });
+
+  it('usa um slug de reserva quando o label não tem letra nem número', async () => {
+    const { repo, prisma } = setupCreate([]);
+    await repo.create({ ...DADOS, label: '💰' });
+    expect(slugCriado(prisma)).toBe('meta');
+  });
+
+  it('escopa a meta e a busca de slugs ao household', async () => {
+    const { repo, prisma } = setupCreate([]);
+    await repo.create(DADOS);
+    expect(prisma.goal.findMany.mock.calls[0][0].where).toMatchObject({ householdId: 'h1' });
+    expect(prisma.goal.create.mock.calls[0][0].data).toMatchObject({ householdId: 'h1' });
+  });
+
+  it('devolve a meta zerada, sem saldo e sem aportes', async () => {
+    const { repo } = setupCreate([]);
+    await expect(repo.create(DADOS)).resolves.toMatchObject({
+      slug: 'reserva-de-emergencia',
+      balance: 0,
+      contributionCount: 0,
+    });
+  });
+});
+
 describe('GoalPrismaRepository.update', () => {
   type UpdateArg = { where: Record<string, unknown>; data: Record<string, unknown> };
 

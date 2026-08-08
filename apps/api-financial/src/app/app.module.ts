@@ -7,6 +7,7 @@ import { LedgerModule } from '../modules/ledger/ledger.module';
 import { BudgetingModule } from '../modules/budgeting/budgeting.module';
 import { GoalsModule } from '../modules/goals/goals.module';
 import { ReportingModule } from '../modules/reporting/reporting.module';
+import { HealthModule } from '../infrastructure/health/health.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReportingModule } from '../modules/reporting/reporting.module';
     BudgetingModule,
     GoalsModule,
     ReportingModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

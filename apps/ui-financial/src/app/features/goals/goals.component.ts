@@ -1,9 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { AppDataService } from '../../layout/app-data.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { MoneyComponent } from '../../ui/money/money.component';
 import { ProgressBarComponent } from '../../ui/progress-bar/progress-bar.component';
+import { IconComponent } from '../../ui/icon/icon.component';
+import { EmptyStateComponent } from '../../ui/empty-state/empty-state.component';
 import type { Goal } from '@caixa-familia/shared-types';
 import { GoalCardComponent } from './goal-card.component';
+import { GoalEditDrawerComponent } from './goal-edit-drawer.component';
 import { fmtShort, MONTH_ABBR } from './goal-format.utils';
 
 // ─── GoalsComponent (exported) ────────────────────────────────────────────────
@@ -17,7 +21,14 @@ type ProjectionRow = {
 @Component({
   selector: 'cf-goals',
   standalone: true,
-  imports: [MoneyComponent, ProgressBarComponent, GoalCardComponent],
+  imports: [
+    MoneyComponent,
+    ProgressBarComponent,
+    IconComponent,
+    EmptyStateComponent,
+    GoalCardComponent,
+    GoalEditDrawerComponent,
+  ],
   templateUrl: './goals.component.html',
   styleUrl: './goals.component.scss',
 })
@@ -25,7 +36,17 @@ export class GoalsComponent {
   protected readonly fmtShort = fmtShort;
 
   private readonly data = inject(AppDataService);
+  protected readonly auth = inject(AuthService);
   readonly goals = this.data.goals;
+
+  protected readonly creating = signal(false);
+
+  readonly isEmpty = computed(() => this.goals().length === 0);
+
+  /** Quem só lê vê o estado vazio, mas sem o convite para criar. */
+  protected readonly emptyActions = computed(() =>
+    this.auth.canWrite() ? [{ label: 'Criar primeira meta', icon: 'plus' }] : [],
+  );
 
   readonly goalsSubtitle = computed(() => {
     const goals = this.goals();
@@ -40,7 +61,11 @@ export class GoalsComponent {
   readonly totalSaved   = computed(() => this.goals().reduce((s, g) => s + g.balance, 0));
   readonly totalTarget  = computed(() => this.goals().reduce((s, g) => s + g.target, 0));
   readonly totalMonthly = computed(() => this.goals().reduce((s, g) => s + g.monthly, 0));
-  readonly totalPct     = computed(() => this.totalSaved() / this.totalTarget() * 100);
+  /** Sem meta nenhuma o objetivo total é 0, e a divisão daria NaN%. */
+  readonly totalPct     = computed(() => {
+    const target = this.totalTarget();
+    return target ? this.totalSaved() / target * 100 : 0;
+  });
 
   readonly projectionRows = computed((): ProjectionRow[] => {
     const goals = this.goals();

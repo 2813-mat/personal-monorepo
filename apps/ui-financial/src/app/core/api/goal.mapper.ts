@@ -1,5 +1,8 @@
 import type { Goal } from '@caixa-familia/shared-types';
-import type { GoalWire, UpdateGoalWire } from './wire.types';
+import type { CreateGoalWire, GoalWire, UpdateGoalWire } from './wire.types';
+
+/** O que o usuário preenche: o resto do `Goal` nasce no servidor. */
+export type NewGoal = Omit<Goal, 'id' | 'balance' | 'history' | 'contributionCount'>;
 
 export function wireToGoal(w: GoalWire): Goal {
   return {
@@ -12,6 +15,19 @@ export function wireToGoal(w: GoalWire): Goal {
     subtitle: w.subtitle,
     type: w.type.toLowerCase() as Goal['type'],
     history: w.history,
+    contributionCount: w.contributionCount,
+  };
+}
+
+/** `slug` fica de fora: a API o deriva do label. */
+export function goalToCreateWire(g: NewGoal): CreateGoalWire {
+  return {
+    label: g.label,
+    subtitle: g.subtitle,
+    target: g.target,
+    monthly: g.monthly,
+    color: g.color,
+    type: g.type.toUpperCase() as 'SONHO' | 'EMERGENCIA',
   };
 }
 

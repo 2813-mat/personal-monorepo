@@ -78,5 +78,6 @@ describe('api-financial e2e (smoke)', () => {
     expect(goals.length).toBeGreaterThan(0);
     expect(Array.isArray(goals[0].history)).toBe(true);
     expect(typeof goals[0].balance).toBe('number');
+    expect(typeof goals[0].contributionCount).toBe('number');
   });
 });

@@ -75,7 +75,10 @@ export interface Goal {
   color: string;
   subtitle: string;
   type: 'sonho' | 'emergencia';
+  /** Janela fixa de 12 meses — não é a lista de aportes. */
   history: number[];
+  /** Quantos aportes a meta recebeu ao todo. */
+  contributionCount: number;
 }
 
 export interface Installments {

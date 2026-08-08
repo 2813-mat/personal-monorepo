@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
+import { slugify } from '@caixa-familia/shared-utils';
 import {
   AddContributionData,
+  CreateGoalData,
   GoalRepository,
   GoalView,
   UpdateGoalData,
 } from '../domain/goal.repository';
 import { toView } from './goal.mapper';
+
+/** Label sem letra nem número nenhum ("💰") ainda precisa virar uma chave de URL. */
+const SLUG_FALLBACK = 'meta';
 
 @Injectable()
 export class GoalPrismaRepository extends TenantRepository implements GoalRepository {
@@ -23,6 +28,45 @@ export class GoalPrismaRepository extends TenantRepository implements GoalReposi
       orderBy: { label: 'asc' },
     });
     return goals.map((g) => toView(g));
+  }
+
+  async create(data: CreateGoalData): Promise<GoalView> {
+    const row = await this.prisma.goal.create({
+      data: {
+        householdId: this.householdId,
+        slug: await this.freeSlug(data.label),
+        label: data.label,
+        target: data.target,
+        monthly: data.monthly,
+        color: data.color,
+        subtitle: data.subtitle,
+        type: data.type,
+      },
+      include: { contributions: true },
+    });
+    return toView(row);
+  }
+
+  /**
+   * `slugify(label)` e, se o household já tiver esse slug, o primeiro sufixo
+   * livre: `reserva`, `reserva-2`, `reserva-3`. Duas metas podem se chamar
+   * igual — o nome é do usuário, o slug é chave de URL.
+   *
+   * O `startsWith` traz slugs que só compartilham o prefixo (`reserva-do-carro`
+   * quando a base é `reserva`); a comparação abaixo é exata, então eles apenas
+   * engordam o conjunto sem afetar a escolha.
+   */
+  private async freeSlug(label: string): Promise<string> {
+    const base = slugify(label) || SLUG_FALLBACK;
+    const rows = await this.prisma.goal.findMany({
+      where: this.scoped({ slug: { startsWith: base } }),
+      select: { slug: true },
+    });
+    const taken = new Set(rows.map((r) => r.slug));
+    if (!taken.has(base)) return base;
+    let n = 2;
+    while (taken.has(`${base}-${n}`)) n++;
+    return `${base}-${n}`;
   }
 
   async update(slug: string, data: UpdateGoalData): Promise<GoalView | null> {

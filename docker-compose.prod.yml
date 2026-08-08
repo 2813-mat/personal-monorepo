@@ -49,12 +49,25 @@ services:
       KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL}
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: 'true'
+      KC_HEALTH_ENABLED: 'true'
     volumes:
       - ./keycloak:/opt/keycloak/data/import
       - ./keycloak/themes:/opt/keycloak/themes
     depends_on:
       keycloak-db:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bash',
+          '-c',
+          'exec 3<>/dev/tcp/127.0.0.1/9000 && printf "GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" >&3 && grep -q "200 OK" <&3',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     networks:
       - default
       - infra
@@ -76,6 +89,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health/ready',{signal:AbortSignal.timeout(3000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     networks:
       - default
       - infra
@@ -91,6 +116,12 @@ services:
       API_BASE_URL: ${UI_API_BASE_URL}
       AUTH_AUTHORITY: ${UI_AUTH_AUTHORITY}
       AUTH_CLIENT_ID: ${UI_AUTH_CLIENT_ID}
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1/config.js || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
     networks:
       - infra
 

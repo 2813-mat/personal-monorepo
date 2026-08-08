@@ -25,6 +25,23 @@ describe('GoalApiService', () => {
     req.flush([]);
   });
 
+  it('POSTs a new goal without a slug — a API deriva do label', () => {
+    const body = {
+      label: 'Reserva de emergência',
+      subtitle: '6 meses',
+      target: 30000,
+      monthly: 800,
+      color: '#0B6E2F',
+      type: 'EMERGENCIA' as const,
+    };
+    service.create(body).subscribe();
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/goals`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(body);
+    expect(req.request.body).not.toHaveProperty('slug');
+    req.flush({});
+  });
+
   it('POSTs a contribution to the goal slug', () => {
     const body = { amount: 500, date: '2026-05-22' };
     service.addContribution('sos', body).subscribe();

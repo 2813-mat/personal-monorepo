@@ -3,6 +3,8 @@ export { AvatarComponent } from './avatar/avatar.component';
 export { CatDotComponent } from './cat-dot/cat-dot.component';
 export { CardChipComponent } from './card-chip/card-chip.component';
 export { IconComponent } from './icon/icon.component';
+export { ColorPickerComponent } from './color-picker/color-picker.component';
+export type { ColorOption } from './color-picker/color-picker.component';
 export { ProgressBarComponent } from './progress-bar/progress-bar.component';
 export { SparkbarsComponent } from './sparkbars/sparkbars.component';
 export { EmptyStateComponent } from './empty-state/empty-state.component';

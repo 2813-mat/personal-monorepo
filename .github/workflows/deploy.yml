@@ -31,8 +31,8 @@ jobs:
 
       - name: Build and restart containers
         run: |
-          docker compose -f docker-compose.prod.yml build --no-cache
-          docker compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml build
+          docker compose -f docker-compose.prod.yml up -d --wait --wait-timeout 180
 
       - name: Reload infra nginx
         run: |

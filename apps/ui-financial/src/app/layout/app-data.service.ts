@@ -9,6 +9,7 @@ import type {
   Transaction,
 } from '@caixa-familia/shared-types';
 import type { NewCard } from '../core/api/card.mapper';
+import type { NewGoal } from '../core/api/goal.mapper';
 import { CatalogStore } from '../core/state/catalog.store';
 import { FixedStore } from '../core/state/fixed.store';
 import { GoalStore } from '../core/state/goal.store';
@@ -164,6 +165,9 @@ export class AppDataService {
 
   loadGoals(): void {
     this.goal.load();
+  }
+  createGoal(g: NewGoal): void {
+    this.goal.create(g);
   }
   updateGoal(g: Goal): void {
     this.goal.update(g);

@@ -151,6 +151,7 @@ export interface GoalWire {
   type: 'SONHO' | 'EMERGENCIA';
   balance: number;
   history: number[];
+  contributionCount: number;
 }
 
 export interface CreateCardWire {
@@ -173,6 +174,16 @@ export interface UpdateCardWire {
   creditLimit?: number;
   last4?: string;
   holder?: string;
+}
+
+/** O `slug` fica de fora: a API o deriva do label e desambigua sozinha. */
+export interface CreateGoalWire {
+  label: string;
+  subtitle: string;
+  target: number;
+  monthly: number;
+  color: string;
+  type: 'SONHO' | 'EMERGENCIA';
 }
 
 export interface UpdateGoalWire {

@@ -2,7 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import type { GoalWire, CreateContributionWire, UpdateGoalWire } from './wire.types';
+import type {
+  GoalWire,
+  CreateContributionWire,
+  CreateGoalWire,
+  UpdateGoalWire,
+} from './wire.types';
 
 @Injectable({ providedIn: 'root' })
 export class GoalApiService {
@@ -11,6 +16,10 @@ export class GoalApiService {
 
   list(): Observable<GoalWire[]> {
     return this.http.get<GoalWire[]>(this.base);
+  }
+
+  create(body: CreateGoalWire): Observable<GoalWire> {
+    return this.http.post<GoalWire>(this.base, body);
   }
 
   addContribution(slug: string, body: CreateContributionWire): Observable<void> {
