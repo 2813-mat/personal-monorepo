@@ -126,7 +126,7 @@ function setupWrite(over: Record<string, unknown> = {}) {
       update: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
       delete: jest.fn(async (_a: WriteArgs) => CARD_ROW as unknown),
     },
-    member: { findFirst: jest.fn(async (_a: WriteArgs) => null as unknown) },
+    member: { findFirst: jest.fn(async (_a: WriteArgs) => ({ id: 'm-thais' }) as unknown) },
     transaction: {
       count: jest.fn(async (_a: WriteArgs) => 0),
       aggregate: jest.fn(async (_a: WriteArgs) => ({ _sum: { value: 0 } })),
@@ -162,6 +162,27 @@ describe('CardPrismaRepository.create', () => {
     await repo.create({ ...NOVO, holder: 'shared' });
     expect(prisma.card.create.mock.calls[0][0].data.ownerMemberId).toBeNull();
     expect(prisma.member.findFirst).not.toHaveBeenCalled();
+  });
+
+  // Regressão: em produção os membros nascem com o nome do token ('Mateus
+  // Bispo'), o nome exato não casava e TODO cartão criado virava compartilhado.
+  it('busca o titular pelo nome exato ou pelo primeiro nome do nome completo', async () => {
+    const { repo, prisma } = setupWrite();
+    await repo.create(NOVO);
+    expect(prisma.member.findFirst.mock.calls[0][0].where).toMatchObject({
+      householdId: 'h1',
+      OR: [
+        { name: { equals: 'Thais', mode: 'insensitive' } },
+        { name: { startsWith: 'Thais ', mode: 'insensitive' } },
+      ],
+    });
+  });
+
+  it('recusa o titular ausente do household em vez de criar compartilhado', async () => {
+    const { repo, prisma } = setupWrite();
+    prisma.member.findFirst.mockResolvedValue(null);
+    await expect(repo.create(NOVO)).rejects.toThrow(/Thais/);
+    expect(prisma.card.create).not.toHaveBeenCalled();
   });
 
   it('nasce com fatura zero — não há lançamento ainda', async () => {

@@ -10,6 +10,7 @@ import {
   TxFilter,
   UpdateTransactionData,
 } from '../domain/transaction.repository';
+import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import { toView } from './transaction.mapper';
 import { normalizeMethodFilter } from './method-filter';
 
@@ -49,13 +50,7 @@ export class TransactionPrismaRepository extends TenantRepository implements Tra
       const category = await tx.category.findFirstOrThrow({
         where: { householdId: this.householdId, slug: data.categorySlug },
       });
-      let memberId: string | undefined;
-      if (data.holder && data.holder !== 'shared') {
-        const member = await tx.member.findFirst({
-          where: { householdId: this.householdId, name: data.holder },
-        });
-        memberId = member?.id;
-      }
+      const memberId = await resolveHolderMemberId(tx, this.householdId, data.holder);
       let installmentId: string | undefined;
       if (data.installments) {
         const plan = await tx.installmentPlan.create({
@@ -113,18 +108,7 @@ export class TransactionPrismaRepository extends TenantRepository implements Tra
     }
 
     // `holder` é nome no wire (convenção do umbrella §2.1); 'shared' = sem membro.
-    let memberId: string | null | undefined;
-    if (data.holder !== undefined) {
-      if (data.holder === 'shared') {
-        memberId = null;
-      } else {
-        const member = await this.prisma.member.findFirst({
-          where: this.scoped({ name: data.holder }),
-        });
-        if (!member) throw new BadRequestException(`Membro ${data.holder} não existe`);
-        memberId = member.id;
-      }
-    }
+    const memberId = await resolveHolderMemberId(this.prisma, this.householdId, data.holder);
 
     // Parcelamento fica de fora: vive em InstallmentPlan/Installment e é fatia própria.
     const row = await this.prisma.transaction.update({

@@ -3,6 +3,7 @@ import { PrismaService } from '../../../../infrastructure/prisma/prisma.service'
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
 import { billingCycleFor } from '../../../../shared-kernel/billing-cycle';
+import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import {
   CardRepository,
   CardUsage,
@@ -36,16 +37,9 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
     );
   }
 
-  /**
-   * `holder` não é coluna: vira `ownerMemberId` por nome, como o repositório de
-   * transação já faz. 'shared' é ausência de dono, não um membro chamado shared.
-   */
-  private async memberIdFor(holder: string): Promise<string | null> {
-    if (holder === 'shared') return null;
-    const member = await this.prisma.member.findFirst({
-      where: { householdId: this.householdId, name: holder },
-    });
-    return member?.id ?? null;
+  /** `holder` não é coluna: vira `ownerMemberId` pelo nome do membro. */
+  private memberIdFor(holder: string): Promise<string | null> {
+    return resolveHolderMemberId(this.prisma, this.householdId, holder);
   }
 
   async create(data: CreateCardData) {

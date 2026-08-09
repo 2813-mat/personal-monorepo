@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
@@ -7,6 +7,7 @@ import {
   RecurringIncomeRepository,
   UpdateRecurringIncomeData,
 } from '../domain/recurring-income.repository';
+import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import { toDomain } from './recurring-income.mapper';
 import { monthStartOfIso } from '../../income/infrastructure/materialization';
 
@@ -30,14 +31,8 @@ export class RecurringIncomePrismaRepository
     return rows.map(toDomain);
   }
 
-  private async memberIdFor(holder: string | undefined): Promise<string | null | undefined> {
-    if (holder === undefined) return undefined;
-    if (holder === 'shared') return null;
-    const member = await this.prisma.member.findFirst({
-      where: { householdId: this.householdId, name: holder },
-    });
-    if (!member) throw new BadRequestException(`Membro ${holder} não existe`);
-    return member.id;
+  private memberIdFor(holder: string | undefined): Promise<string | null | undefined> {
+    return resolveHolderMemberId(this.prisma, this.householdId, holder);
   }
 
   async create(data: CreateRecurringIncomeData) {

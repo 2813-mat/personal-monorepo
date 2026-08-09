@@ -97,6 +97,20 @@ describe('CardEditDrawerComponent — criação', () => {
     expect(data.updateCard).not.toHaveBeenCalled();
   });
 
+  it('leva ao createCard o titular escolhido no seletor', () => {
+    const { fixture, el, c, data } = build(null);
+    c.form.patchValue({ name: 'Inter', bank: 'Inter', last4: '0001' });
+
+    const select: HTMLSelectElement = el.querySelector('#card-holder');
+    select.value = 'Mateus';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    el.querySelector('.save-btn').click();
+
+    expect(data.createCard).toHaveBeenCalledWith(expect.objectContaining({ holder: 'Mateus' }));
+  });
+
   it('não salva com últimos 4 inválidos', () => {
     const { c, data } = build(null);
     c.form.setValue({ ...NOVO, last4: '12a' });

@@ -33,7 +33,9 @@ function makeRepo(memberFindFirst: jest.Mock) {
 
 describe('TransactionPrismaRepository.create holder resolution', () => {
   it('resolves a named holder to its memberId', async () => {
-    const findFirst = jest.fn(async () => ({ id: 'm-mateus' }));
+    const findFirst = jest.fn(async (_a: { where: Record<string, unknown> }) => ({
+      id: 'm-mateus',
+    }));
     const { repo, created } = makeRepo(findFirst);
     await repo.create({
       date: '2026-05-10',
@@ -43,7 +45,17 @@ describe('TransactionPrismaRepository.create holder resolution', () => {
       holder: 'Mateus',
       method: 'PIX',
     } as any);
-    expect(findFirst).toHaveBeenCalledWith({ where: { householdId: 'h1', name: 'Mateus' } });
+    // Casa o nome exato ou o primeiro nome de um nome completo: o membro
+    // provisionado pelo Keycloak nasce como 'Mateus Bispo'.
+    expect(findFirst.mock.calls[0][0]).toMatchObject({
+      where: {
+        householdId: 'h1',
+        OR: [
+          { name: { equals: 'Mateus', mode: 'insensitive' } },
+          { name: { startsWith: 'Mateus ', mode: 'insensitive' } },
+        ],
+      },
+    });
     expect(created[0].memberId).toBe('m-mateus');
   });
 
@@ -59,7 +71,25 @@ describe('TransactionPrismaRepository.create holder resolution', () => {
       method: 'PIX',
     } as any);
     expect(findFirst).not.toHaveBeenCalled();
-    expect(created[0].memberId).toBeUndefined();
+    // Null explícito em vez de omitido: os dois deixam a FK vazia, e o nulo diz
+    // "sem dono" em voz alta.
+    expect(created[0].memberId).toBeNull();
+  });
+
+  it('recusa o titular que não é membro do household', async () => {
+    const findFirst = jest.fn(async () => null);
+    const { repo, created } = makeRepo(findFirst);
+    await expect(
+      repo.create({
+        date: '2026-05-10',
+        label: 'Mercado',
+        value: 100,
+        categorySlug: 'mercado',
+        holder: 'Thais',
+        method: 'PIX',
+      } as never),
+    ).rejects.toThrow(/Thais/);
+    expect(created).toHaveLength(0);
   });
 });
 

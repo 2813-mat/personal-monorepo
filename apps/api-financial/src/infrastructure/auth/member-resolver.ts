@@ -7,6 +7,18 @@ export interface ResolvedTenant {
   role: string;
 }
 
+/**
+ * O `name` do membro é a chave por onde todo `holder` do domínio
+ * ('Mateus' | 'Thais' | 'shared') é casado na escrita e devolvido na leitura —
+ * o seed grava exatamente 'Mateus' e 'Thais'. O token do Keycloak traz o nome
+ * completo em `name`, então guardá-lo cru faria o membro nascer como
+ * 'Mateus Bispo' e nenhum titular voltaria a casar.
+ */
+function shortName(payload: JwtPayload): string {
+  const full = payload.given_name ?? payload.name ?? payload.preferred_username;
+  return full.trim().split(/\s+/)[0];
+}
+
 export async function resolveMember(prisma: PrismaService, payload: JwtPayload): Promise<ResolvedTenant> {
   // O seed grava keycloakSub = preferred_username; tokens reais trazem sub UUID.
   // Casamos por qualquer um dos dois para alcançar o household seedado no POC.
@@ -24,7 +36,7 @@ export async function resolveMember(prisma: PrismaService, payload: JwtPayload):
     data: {
       householdId: household.id,
       keycloakSub: payload.sub,
-      name: payload.name ?? payload.preferred_username,
+      name: shortName(payload),
       role: isAdmin ? 'ADMIN' : 'EDITOR',
       color: '#475569',
     },

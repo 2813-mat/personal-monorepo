@@ -120,6 +120,30 @@ describe('FixedExpensePrismaRepository.update', () => {
     await repo.update('f1', { holder: 'shared' }, 2026, 5);
     expect(prisma.fixedExpense.update.mock.calls[0][0].data).toMatchObject({ memberId: null });
   });
+
+  // Regressão: o membro provisionado pelo Keycloak nasce com o nome completo
+  // ('Mateus Bispo'), e o casamento por nome exato não o encontrava.
+  it('casa o titular pelo nome exato ou pelo primeiro nome do nome completo', async () => {
+    const { repo, prisma } = setup({ id: 'f1' });
+    await repo.update('f1', { holder: 'Mateus' }, 2026, 5);
+    expect(prisma.member.findFirst.mock.calls[0][0]).toMatchObject({
+      where: {
+        householdId: 'h1',
+        OR: [
+          { name: { equals: 'Mateus', mode: 'insensitive' } },
+          { name: { startsWith: 'Mateus ', mode: 'insensitive' } },
+        ],
+      },
+    });
+    expect(prisma.fixedExpense.update.mock.calls[0][0].data).toMatchObject({ memberId: 'm2' });
+  });
+
+  it('recusa o titular que não é membro do household', async () => {
+    const { repo, prisma } = setup({ id: 'f1' });
+    prisma.member.findFirst.mockResolvedValue(null);
+    await expect(repo.update('f1', { holder: 'Thais' }, 2026, 5)).rejects.toThrow(/Thais/);
+    expect(prisma.fixedExpense.update).not.toHaveBeenCalled();
+  });
 });
 
 describe('FixedExpensePrismaRepository.pay', () => {

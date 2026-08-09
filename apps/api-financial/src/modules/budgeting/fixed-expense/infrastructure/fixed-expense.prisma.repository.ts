@@ -14,6 +14,7 @@ import {
   PayFixedExpenseData,
   UpdateFixedExpenseData,
 } from '../domain/fixed-expense.repository';
+import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import { FixedExpensePayment, toView } from './fixed-expense.mapper';
 import { isoMonth, isoYearMonth, monthStart } from './month-range';
 
@@ -41,13 +42,7 @@ export class FixedExpensePrismaRepository extends TenantRepository implements Fi
     const category = await this.prisma.category.findFirstOrThrow({
       where: { householdId: this.householdId, slug: data.categorySlug },
     });
-    let memberId: string | undefined;
-    if (data.holder && data.holder !== 'shared') {
-      const member = await this.prisma.member.findFirst({
-        where: { householdId: this.householdId, name: data.holder },
-      });
-      memberId = member?.id;
-    }
+    const memberId = await resolveHolderMemberId(this.prisma, this.householdId, data.holder);
     const row = await this.prisma.fixedExpense.create({
       data: {
         householdId: this.householdId,
@@ -82,18 +77,7 @@ export class FixedExpensePrismaRepository extends TenantRepository implements Fi
     }
 
     // `holder` é nome no wire (convenção do umbrella §2.1); 'shared' = sem membro.
-    let memberId: string | null | undefined;
-    if (data.holder !== undefined) {
-      if (data.holder === 'shared') {
-        memberId = null;
-      } else {
-        const member = await this.prisma.member.findFirst({
-          where: this.scoped({ name: data.holder }),
-        });
-        if (!member) throw new BadRequestException(`Membro ${data.holder} não existe`);
-        memberId = member.id;
-      }
-    }
+    const memberId = await resolveHolderMemberId(this.prisma, this.householdId, data.holder);
 
     const row = await this.prisma.fixedExpense.update({
       where: { id: existing.id },

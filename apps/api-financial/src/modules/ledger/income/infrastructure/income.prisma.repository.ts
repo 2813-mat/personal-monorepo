@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
@@ -9,6 +9,7 @@ import {
   IncomeRepository,
   UpdateIncomeData,
 } from '../domain/income.repository';
+import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import { toDomain } from './income.mapper';
 import { monthStart, occurrenceDate, pendingMonths } from './materialization';
 
@@ -77,14 +78,8 @@ export class IncomePrismaRepository extends TenantRepository implements IncomeRe
     }
   }
 
-  private async memberIdFor(holder: string | undefined): Promise<string | null | undefined> {
-    if (holder === undefined) return undefined;
-    if (holder === 'shared') return null;
-    const member = await this.prisma.member.findFirst({
-      where: { householdId: this.householdId, name: holder },
-    });
-    if (!member) throw new BadRequestException(`Membro ${holder} não existe`);
-    return member.id;
+  private memberIdFor(holder: string | undefined): Promise<string | null | undefined> {
+    return resolveHolderMemberId(this.prisma, this.householdId, holder);
   }
 
   async create(data: CreateIncomeData) {
