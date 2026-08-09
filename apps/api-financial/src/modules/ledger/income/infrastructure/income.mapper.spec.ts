@@ -18,4 +18,10 @@ describe('income toDomain', () => {
     const row = { ...baseRow, member: null } as unknown as IncomeRow;
     expect(toDomain(row).toJSON().holder).toBe('shared');
   });
+
+  // O membro provisionado pelo Keycloak guarda o nome completo do token.
+  it('reduz o membro de nome completo ao titular do domínio', () => {
+    const row = { ...baseRow, member: { name: 'Thais Silva' } } as unknown as IncomeRow;
+    expect(toDomain(row).toJSON().holder).toBe('Thais');
+  });
 });

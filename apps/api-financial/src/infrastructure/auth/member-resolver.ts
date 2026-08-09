@@ -28,9 +28,16 @@ export async function resolveMember(prisma: PrismaService, payload: JwtPayload):
   if (existing) {
     return { memberId: existing.id, householdId: existing.householdId, role: existing.role.toLowerCase() };
   }
-  const household = await prisma.household.create({
-    data: { name: `${payload.name ?? payload.preferred_username} household` },
-  });
+  // O realm é de uma casa só: quem entra nele mora junto. Abrir um household por
+  // pessoa dava à segunda uma casa vazia — ela não via nenhum cartão da
+  // primeira, e a primeira não conseguia atribuir nada a ela, porque o titular
+  // só é procurado dentro do próprio household. A casa mais antiga é a que tem
+  // os dados; entrar nela é só inserir o membro, nada de lá é tocado.
+  const household =
+    (await prisma.household.findFirst({ orderBy: { createdAt: 'asc' } })) ??
+    (await prisma.household.create({
+      data: { name: `${payload.name ?? payload.preferred_username} household` },
+    }));
   const isAdmin = payload.realm_access?.roles?.includes('admin');
   const member = await prisma.member.create({
     data: {

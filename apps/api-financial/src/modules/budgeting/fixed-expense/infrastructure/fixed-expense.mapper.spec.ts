@@ -27,6 +27,16 @@ describe('toView', () => {
     expect(toView(baseRow, null).holder).toBe('shared');
   });
 
+  // O membro provisionado pelo Keycloak guarda o nome completo do token.
+  it('reduz o membro de nome completo ao titular do domínio', () => {
+    const row = {
+      ...baseRow,
+      memberId: 'm1',
+      member: { id: 'm1', householdId: 'h1', name: 'Mateus Bispo', keycloakSub: 'sub', role: 'EDITOR', color: '#111' },
+    } as unknown as FixedExpenseRow;
+    expect(toView(row, null).holder).toBe('Mateus');
+  });
+
   it('does not leak memberId into the view', () => {
     expect(toView(baseRow, null)).not.toHaveProperty('memberId');
   });

@@ -24,6 +24,12 @@ describe('toView', () => {
     const row = { ...baseRow, member: null } as unknown as TransactionRow;
     expect(toView(row).holder).toBe('shared');
   });
+
+  // O membro provisionado pelo Keycloak guarda o nome completo do token.
+  it('reduz o membro de nome completo ao titular do domínio', () => {
+    const row = { ...baseRow, member: { name: 'Mateus Bispo' } } as unknown as TransactionRow;
+    expect(toView(row).holder).toBe('Mateus');
+  });
 });
 
 describe('toView — reviewed', () => {

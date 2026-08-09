@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { holderFrom } from '../../../../shared-kernel/holder-member';
 import { TransactionView } from '../domain/transaction.repository';
 
 export type TransactionRow = Prisma.TransactionGetPayload<{
@@ -11,7 +12,7 @@ export const toView = (r: TransactionRow): TransactionView => ({
   label: r.label,
   value: Number(r.value),
   categorySlug: r.category.slug,
-  holder: r.member?.name ?? 'shared',
+  holder: holderFrom(r.member?.name),
   method: r.method,
   cardId: r.cardId,
   note: r.note ?? undefined,

@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { holderFrom } from '../../../../shared-kernel/holder-member';
 import { FixedExpenseView } from '../domain/fixed-expense.repository';
 
 export type FixedExpenseRow = Prisma.FixedExpenseGetPayload<{
@@ -20,7 +21,7 @@ export const toView = (
   value: Number(r.value),
   dueDay: r.dueDay,
   categorySlug: r.category.slug,
-  holder: r.member?.name ?? 'shared',
+  holder: holderFrom(r.member?.name),
   startDate: r.startDate.toISOString().slice(0, 10),
   paidAt: payment?.date.toISOString().slice(0, 10),
   paidValue: payment?.value,

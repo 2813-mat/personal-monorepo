@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { resolveHolderMemberId } from './holder-member';
+import { holderFrom, resolveHolderMemberId } from './holder-member';
 
 type Args = { where?: Record<string, unknown>; orderBy?: unknown };
 
@@ -81,5 +81,32 @@ describe('resolveHolderMemberId', () => {
     const prisma = prismaWith([{ id: 'm1', name: 'Mateus' }]);
     await resolveHolderMemberId(prisma as never, 'h9', 'Mateus');
     expect(prisma.member.findFirst.mock.calls[0][0].where?.['householdId']).toBe('h9');
+  });
+});
+
+describe('holderFrom', () => {
+  it('traduz a ausência de dono para shared', () => {
+    expect(holderFrom(null)).toBe('shared');
+    expect(holderFrom(undefined)).toBe('shared');
+  });
+
+  it('devolve o nome do membro que já é um titular', () => {
+    expect(holderFrom('Mateus')).toBe('Mateus');
+  });
+
+  // O espelho de 'casa o primeiro nome contra o membro de nome completo': a
+  // escrita aceitava 'Mateus' e achava o membro 'Mateus Bispo', mas a leitura
+  // devolvia o nome cru — um titular que a UI não reconhecia, e todo cartão do
+  // Mateus voltava da API parecendo compartilhado.
+  it('reduz o nome completo ao primeiro nome', () => {
+    expect(holderFrom('Mateus Bispo')).toBe('Mateus');
+  });
+
+  it('ignora espaço em volta e no meio', () => {
+    expect(holderFrom('  Thais   Silva ')).toBe('Thais');
+  });
+
+  it('trata o nome vazio como shared em vez de string vazia', () => {
+    expect(holderFrom('   ')).toBe('shared');
   });
 });

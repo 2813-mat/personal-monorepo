@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../infrastructure/prisma/prisma.service'
 import { TenantContext } from '../../../../infrastructure/auth/tenant-context';
 import { TenantRepository } from '../../../../infrastructure/auth/tenant-repository.base';
 import { billingCycleFor } from '../../../../shared-kernel/billing-cycle';
-import { resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
+import { holderFrom, resolveHolderMemberId } from '../../../../shared-kernel/holder-member';
 import {
   CardRepository,
   CardUsage,
@@ -148,7 +148,7 @@ export class CardPrismaRepository extends TenantRepository implements CardReposi
         label: t.label,
         value: Number(t.value),
         categorySlug: t.category.slug,
-        holder: t.member?.name ?? 'shared',
+        holder: holderFrom(t.member?.name),
         installments: t.installment
           ? { n: t.installment.number, of: t.installment.plan.totalCount }
           : null,

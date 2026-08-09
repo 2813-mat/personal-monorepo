@@ -60,3 +60,22 @@ export async function resolveHolderMemberId(
   }
   return member.id;
 }
+
+/**
+ * O caminho de volta: traduz o nome do membro guardado no banco para o `holder`
+ * do domínio. É o inverso de `resolveHolderMemberId`, e precisa existir porque
+ * os dois lados não falavam a mesma língua — a escrita aceitava 'Mateus' e
+ * achava o membro 'Mateus Bispo', mas a leitura devolvia 'Mateus Bispo' cru.
+ * Esse valor não é um `Holder` válido: o avatar caía no ponto de compartilhado e
+ * o select de titular abria vazio, como se o PATCH não tivesse funcionado.
+ *
+ * Reduzir ao primeiro nome é a mesma regra que `member-resolver` aplica ao
+ * provisionar o membro — só que aqui ela também alcança quem já nasceu com o
+ * nome completo, antes daquela regra existir.
+ *
+ * Sem dono é 'shared': a coluna nula significa despesa da casa, não membro
+ * desconhecido.
+ */
+export function holderFrom(memberName: string | null | undefined): string {
+  return memberName?.trim().split(/\s+/)[0] || 'shared';
+}

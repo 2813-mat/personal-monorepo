@@ -1,4 +1,5 @@
 import { Card as PrismaCard } from '@prisma/client';
+import { holderFrom } from '../../../../shared-kernel/holder-member';
 import { Card } from '../domain/card.entity';
 
 type CardRow = PrismaCard & { owner?: { name: string } | null };
@@ -15,6 +16,6 @@ export const toDomain = (r: CardRow, current: number): Card =>
     last4: r.last4,
     ownerMemberId: r.ownerMemberId,
     current,
-    holder: r.owner?.name ?? null,
+    holder: holderFrom(r.owner?.name),
     archived: r.archivedAt !== null,
   });
