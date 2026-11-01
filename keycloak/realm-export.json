@@ -2,6 +2,8 @@
   "realm": "caixa-familia",
   "enabled": true,
   "loginTheme": "caixa-familia",
+  "ssoSessionIdleTimeout": 2592000,
+  "ssoSessionMaxLifespan": 7776000,
   "roles": { "realm": [{ "name": "admin" }, { "name": "editor" }] },
   "clients": [
     {

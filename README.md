@@ -50,6 +50,13 @@ via OIDC (Authorization Code + PKCE). Para rodar o stack completo:
   uma mudança de `loginTheme` a um realm já importado exige reimportar (recriar o
   `keycloak`/`keycloak-db` + remover o volume `cf-kc-pg`) ou selecionar o tema uma vez em
   Realm settings → Themes no admin console.
+- **Tempo de sessão:** o `realm-export.json` define 30 dias de inatividade e 90 dias de
+  duração máxima, para o app instalado no iPhone continuar logado. A regra vale para todo o
+  realm e, em um realm já importado, é preciso ajustar em Realm settings → Sessions.
+
+### Instalar no iPhone
+
+No Safari, abra o site em HTTPS e use Compartilhar → Adicionar à Tela de Início.
 
 ### Configuração
 

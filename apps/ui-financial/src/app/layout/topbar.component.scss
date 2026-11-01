@@ -65,7 +65,7 @@
 .topbar {
   height: auto;
   min-height: 48px;
-  padding: 8px 12px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
   gap: 10px;
 }
 .topbar-spacer { display: none; }

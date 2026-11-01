@@ -54,6 +54,16 @@ html, body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'ss01' on, 'cv11' on;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* O iOS dá zoom ao focar em campos abaixo de 16px. !important porque os campos
+   definem a fonte em estilos de componente; .value-input já é maior que isso. */
+@media (pointer: coarse) {
+  input:not(.value-input), select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 button {
